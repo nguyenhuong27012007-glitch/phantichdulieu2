@@ -816,24 +816,31 @@ try:
                     s1_df_cur = orch.data_agent.raw_dataframes[s1_chosen_file]
                     st.caption(f"Nhấp đúp vào ô để sửa trực tiếp ({len(s1_df_cur):,} dòng × {len(s1_df_cur.columns)} cột)")
 
-                # Thanh công cụ lọc & tùy chọn kiểu Excel
-                col_f1, col_f2, col_f3, col_f4 = st.columns([1.3, 1.3, 1.5, 1.2])
+                # Thanh công cụ lọc nhiều cột kiểu Excel
+                col_f1, col_f2, col_f3, col_f4 = st.columns([1.2, 1.8, 1.1, 0.9])
                 with col_f1:
                     s1_search = st.text_input("🔍 Tìm kiếm nhanh:", placeholder="Nhập từ khóa...", key=f"s1_search_{s1_chosen_file}")
                 with col_f2:
-                    s1_filter_col = st.selectbox("🔽 Lọc theo cột:", ["(Không lọc)"] + list(s1_df_cur.columns), key=f"s1_fcol_{s1_chosen_file}")
+                    s1_filter_cols = st.multiselect(
+                        "🔽 Lọc theo cột (chọn 1 hoặc nhiều cột, VD: City, Region):",
+                        list(s1_df_cur.columns),
+                        default=[],
+                        key=f"s1_fcols_{s1_chosen_file}"
+                    )
                 with col_f3:
-                    s1_filter_vals = []
-                    if s1_filter_col != "(Không lọc)":
-                        uniq_vals = s1_df_cur[s1_filter_col].dropna().astype(str).unique().tolist()[:200]
-                        s1_filter_vals = st.multiselect(f"Chọn giá trị ({s1_filter_col}):", uniq_vals, key=f"s1_fvals_{s1_chosen_file}")
-                    else:
-                        s1_sort_col = st.selectbox("↕️ Sắp xếp theo:", ["(Mặc định)"] + list(s1_df_cur.columns), key=f"s1_scol_{s1_chosen_file}")
+                    s1_sort_col = st.selectbox("↕️ Sắp xếp theo:", ["(Mặc định)"] + list(s1_df_cur.columns), key=f"s1_scol_{s1_chosen_file}")
                 with col_f4:
-                    if s1_filter_col != "(Không lọc)":
-                        s1_sort_col = st.selectbox("↕️ Sắp xếp theo:", ["(Mặc định)"] + list(s1_df_cur.columns), key=f"s1_scol2_{s1_chosen_file}")
-                    else:
-                        s1_sort_asc = st.selectbox("Thứ tự:", ["Tăng dần", "Giảm dần"], key=f"s1_sasc_{s1_chosen_file}")
+                    s1_sort_asc = st.selectbox("Thứ tự:", ["Tăng dần", "Giảm dần"], key=f"s1_sasc_{s1_chosen_file}")
+
+                s1_active_filters = {}
+                if s1_filter_cols:
+                    f_cols_ui = st.columns(min(len(s1_filter_cols), 3))
+                    for idx_fc, fcol in enumerate(s1_filter_cols):
+                        with f_cols_ui[idx_fc % 3]:
+                            uniq_vals = sorted(s1_df_cur[fcol].dropna().astype(str).unique().tolist())[:300]
+                            picked_vals = st.multiselect(f"Giá trị `{fcol}`:", uniq_vals, key=f"s1_fval_{s1_chosen_file}_{fcol}")
+                            if picked_vals:
+                                s1_active_filters[fcol] = picked_vals
 
                 s1_show_cols = st.multiselect(
                     "👁️ Chọn cột hiển thị (để trống = hiện tất cả):",
@@ -847,14 +854,13 @@ try:
                     kw = s1_search.strip().lower()
                     mask_kw = s1_view_df.astype(str).apply(lambda col: col.str.lower().str.contains(kw, na=False)).any(axis=1)
                     s1_view_df = s1_view_df[mask_kw]
-                if s1_filter_col != "(Không lọc)" and s1_filter_vals:
-                    s1_view_df = s1_view_df[s1_view_df[s1_filter_col].astype(str).isin(s1_filter_vals)]
+                for fcol, fvals in s1_active_filters.items():
+                    s1_view_df = s1_view_df[s1_view_df[fcol].astype(str).isin(fvals)]
                 if s1_sort_col != "(Mặc định)":
-                    asc_flag = True if s1_filter_col != "(Không lọc)" else (s1_sort_asc == "Tăng dần")
-                    s1_view_df = s1_view_df.sort_values(by=s1_sort_col, ascending=asc_flag, kind="mergesort")
+                    s1_view_df = s1_view_df.sort_values(by=s1_sort_col, ascending=(s1_sort_asc == "Tăng dần"), kind="mergesort")
 
                 display_cols = s1_show_cols if s1_show_cols else list(s1_view_df.columns)
-                s1_is_filtered = bool((s1_search and s1_search.strip()) or (s1_filter_col != "(Không lọc)" and s1_filter_vals))
+                s1_is_filtered = bool((s1_search and s1_search.strip()) or s1_active_filters)
                 if s1_is_filtered:
                     st.caption(f"🔎 Đang hiển thị **{len(s1_view_df):,} / {len(s1_df_cur):,}** dòng phù hợp.")
 
@@ -1002,11 +1008,12 @@ try:
             with top_bar_c3:
                 st.write("")
                 if total_records > 0:
-                    if st.button("Duyệt & Sang Bước 3 ➔", type="primary", use_container_width=True, key="btn_approve_step2"):
-                        set_spinner_msg("⏳ Đang phân tích dữ liệu và tạo Báo cáo & Dashboard...")
-                        st.session_state.step2_approved = True
-                        st.session_state.current_step = 3
-                        st.rerun()
+                    with st.container(key="floating_approve_step2"):
+                        if st.button("Duyệt & Sang Bước 3 ➔", type="primary", use_container_width=True, key="btn_approve_step2"):
+                            set_spinner_msg("⏳ Đang phân tích dữ liệu và tạo Báo cáo & Dashboard...")
+                            st.session_state.step2_approved = True
+                            st.session_state.current_step = 3
+                            st.rerun()
 
             if 'show_step2_editor' not in st.session_state:
                 st.session_state.show_step2_editor = False
