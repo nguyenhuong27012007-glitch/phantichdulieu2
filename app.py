@@ -1049,26 +1049,41 @@ try:
                 user_edits = file_info_cur.get("user_action_log", [])
 
                 with st.container(key="zone_step2_audit_card"):
-                    if empty_r == 0 and empty_c == 0 and missing_cells == 0 and not user_edits:
+                    dup_rows_cnt = int(df_current.duplicated().sum())
+                    null_by_col = df_current.isna().sum()
+                    null_cols_detail = [f"`{col}` ({int(cnt)} ô)" for col, cnt in null_by_col.items() if cnt > 0]
+                    txt_cols = [str(c) for c in df_current.select_dtypes(exclude=["number"]).columns]
+                    num_cols_str = ", ".join(f"`{c}`" for c in num_cols[:8]) + (f" (+{len(num_cols)-8} cột)" if len(num_cols) > 8 else "")
+                    txt_cols_str = ", ".join(f"`{c}`" for c in txt_cols[:6]) + (f" (+{len(txt_cols)-6} cột)" if len(txt_cols) > 6 else "")
+                    mapped_str = ", ".join(f"`{k}`" for k in list(mapped_dict.keys())[:8]) + (f" (+{len(mapped_dict)-8})" if len(mapped_dict) > 8 else "")
+
+                    if empty_r == 0 and empty_c == 0 and missing_cells == 0 and dup_rows_cnt == 0 and not user_edits:
                         st.success(
                             f"✅ **File gốc `{selected_file}` của bạn đã chuẩn (OK 100%)!**\n\n"
-                            f"- **Không có dòng trống hay cột trống nào bị xóa:** Giữ nguyên toàn bộ **{total_rows:,} dòng × {len(df_current.columns)} cột**.\n"
-                            f"- **Không có ô dữ liệu bị khuyết (trống):** Tất cả các ô đều đầy đủ giá trị.\n"
-                            f"- **Chuẩn hóa kiểu số tự động:** Đã nhận diện {len(num_cols)} cột số ({', '.join(map(str, num_cols[:6]))}{'...' if len(num_cols) > 6 else ''}) và ánh xạ {len(mapped_dict)} trường thông tin chính."
+                            f"- **Cấu trúc bảng:** Giữ nguyên toàn bộ **{total_rows:,} dòng × {len(df_current.columns)} cột**, không có dòng/cột trống thừa hay dòng trùng lặp.\n"
+                            f"- **Độ đầy đủ dữ liệu:** 100% các ô đều có giá trị (0 ô trống).\n"
+                            f"- **Các cột số đã chuẩn hóa ({len(num_cols)} cột):** {num_cols_str if num_cols else 'Không có'}.\n"
+                            f"- **Các cột văn bản / phân loại ({len(txt_cols)} cột):** {txt_cols_str if txt_cols else 'Không có'}.\n"
+                            f"- **Trường thông tin đã ánh xạ ({len(mapped_dict)} trường):** {mapped_str if mapped_dict else 'Tự động nhận diện'}."
                         )
                     else:
-                        details = [f"📋 **Báo cáo xử lý tự động cho file `{selected_file}`:**"]
+                        details = [f"📋 **Báo cáo xử lý chi tiết cho file `{selected_file}`:**"]
                         if empty_r > 0 or empty_c > 0:
-                            details.append(f"- 🧹 **Đã tự động xóa:** `{empty_r}` dòng hoàn toàn trống và `{empty_c}` cột hoàn toàn trống.")
+                            details.append(f"- 🧹 **Đã tự động xóa:** `{empty_r}` dòng hoàn toàn trống và `{empty_c}` cột hoàn toàn trống (còn lại **{total_rows:,} dòng × {len(df_current.columns)} cột**).")
                         else:
                             details.append(f"- ✅ **Dòng & cột gốc:** Không có dòng/cột trống thừa (giữ nguyên **{total_rows:,} dòng × {len(df_current.columns)} cột**).")
                         if missing_cells > 0:
-                            details.append(f"- ⚠️ **Ô dữ liệu khuyết (NaN/Trống):** Phát hiện `{missing_cells}` ô trống lẻ và đã xử lý mặc định an toàn khi tính toán.")
+                            cols_missing_str = ", ".join(null_cols_detail[:6]) + (f" và {len(null_cols_detail)-6} cột khác" if len(null_cols_detail) > 6 else "")
+                            details.append(f"- ⚠️ **Ô dữ liệu khuyết (NaN/Trống):** Phát hiện **{missing_cells:,} ô trống** tại {cols_missing_str}; hệ thống đã xử lý an toàn khi tính toán (không làm lệch điểm).")
                         else:
                             details.append("- ✅ **Độ đầy đủ:** 100% các ô dữ liệu đều có giá trị (0 ô trống).")
-                        details.append(f"- 🔢 **Chuẩn hóa định dạng số:** Đã chuyển đổi tự động {len(num_cols)} cột số và ánh xạ {len(mapped_dict)} trường thông tin.")
+                        if dup_rows_cnt > 0:
+                            details.append(f"- 🔁 **Dòng trùng lặp:** Phát hiện **{dup_rows_cnt:,} dòng** có nội dung giống hệt nhau.")
+                        details.append(f"- 🔢 **Cột số đã chuẩn hóa ({len(num_cols)} cột):** {num_cols_str if num_cols else 'Không có'}.")
+                        details.append(f"- 🏷️ **Cột phân loại / văn bản ({len(txt_cols)} cột):** {txt_cols_str if txt_cols else 'Không có'}.")
+                        details.append(f"- 🔗 **Trường thông tin đã ánh xạ ({len(mapped_dict)} trường):** {mapped_str if mapped_dict else 'Tự động nhận diện'}.")
                         for u_log in user_edits:
-                            details.append(f"- ✏️ **Thao tác của người dùng:** {u_log}")
+                            details.append(f"- ✏️ **Thao tác của bạn:** {u_log}")
                         st.info("\n".join(details))
 
             if st.session_state.show_step2_editor:
@@ -1319,37 +1334,69 @@ try:
             scoring_map = scoring_data.get("scoring", {})
             top_2 = rec.get("top_2", ["Nhóm 1", "Nhóm 2"])
             dep = rec.get("deprioritized", [])
-            dep_str = ", ".join(dep[:4]) + (f" (+{len(dep)-4} nhóm)" if len(dep) > 4 else "") if dep else "Các nhóm còn lại"
             total_rows_now = sum(len(df) for df in orch.data_agent.raw_dataframes.values())
-            num_cols_sample = scoring_data.get("numeric_cols", [])[:4]
+            num_cols_sample = scoring_data.get("numeric_cols", [])[:5]
             cols_note = ", ".join(num_cols_sample) if num_cols_sample else "các chỉ tiêu tổng hợp"
+
+            file_details_md = ""
+            total_nulls_all = 0
+            for fname, df_f in orch.data_agent.raw_dataframes.items():
+                null_f = int(df_f.isna().sum().sum())
+                total_nulls_all += null_f
+                f_nums = [str(c) for c in df_f.select_dtypes(include=["number"]).columns[:3]]
+                stat_bits = []
+                for nc in f_nums:
+                    s_col = pd.to_numeric(df_f[nc], errors="coerce").dropna()
+                    if len(s_col) > 0:
+                        stat_bits.append(f"`{nc}` (tổng **{s_col.sum():,.1f}**, TB **{s_col.mean():,.1f}**)")
+                stat_str = "; ".join(stat_bits) if stat_bits else "dữ liệu phân loại"
+                file_details_md += f"\n  - **`{fname}`** ({len(df_f):,} dòng × {len(df_f.columns)} cột, {null_f:,} ô trống): {stat_str}."
 
             top_bullets = ""
             for g in top_2:
                 info = scoring_map.get(g, {})
-                top_bullets += f"\n  - **{g}**: {info.get('rows', 0):,} dòng dữ liệu, độ đầy đủ **{info.get('completeness_pct', 100)}%**, điểm tổng hợp **{info.get('weighted_total', 0)}/10**."
+                cs = info.get("criteria_scores", {})
+                s_qm = cs.get("market_size", {}).get("score", 0)
+                s_nc = cs.get("wms_demand_fit", {}).get("score", 0)
+                s_kt = cs.get("deployment_feasibility", {}).get("score", 0)
+                top_bullets += (
+                    f"\n  - **{g}** — Điểm tổng hợp **{info.get('weighted_total', 0)}/10** "
+                    f"({info.get('rows', 0):,} bản ghi, độ đầy đủ **{info.get('completeness_pct', 100)}%**; "
+                    f"Quy mô: {s_qm}, Phù hợp: {s_nc}, Khả thi: {s_kt})."
+                )
 
-            return f"""### 1. Tóm tắt dữ liệu đầu vào
-- **[DỮ LIỆU] Nguồn dữ liệu:** Tệp **{_files_display_str}** gồm **{total_rows_now:,} bản ghi**, phân tích theo **{len(scoring_map)} nhóm** trên các chỉ số chính ({cols_note}).
-- **[ĐỀ XUẤT TRỌNG TÂM]:** Hai nhóm đạt điểm đánh giá cao nhất là **{', '.join(top_2)}**.
-- **[CĂN CỨ]:** {rec.get('reason_top', '')}
+            dep_bullets = ""
+            for g in dep[:4]:
+                info = scoring_map.get(g, {})
+                dep_bullets += f"\n  - **{g}**: **{info.get('weighted_total', 0)}/10** ({info.get('rows', 0):,} bản ghi, độ đầy đủ {info.get('completeness_pct', 100)}%)."
+            if len(dep) > 4:
+                dep_bullets += f"\n  - *Cùng {len(dep) - 4} nhóm khác có điểm thấp hơn trong bảng xếp hạng.*"
+            if not dep_bullets:
+                dep_bullets = "\n  - Không có nhóm nào bị xếp sau."
 
-### 2. Chi tiết nhóm dẫn đầu & nhóm theo dõi
-- **Nhóm ưu tiên ({', '.join(top_2)}):**{top_bullets}
-- **Nhóm theo dõi ({dep_str}):**
-  - **[DỮ LIỆU]** {rec.get('reason_deprioritized', '')}
-  - **[SUY LUẬN]** Cần rà soát thêm dữ liệu chi tiết để cải thiện các tiêu chí có trọng số thấp hơn mặt bằng chung."""
+            return f"""### 1. Tổng quan dữ liệu từ các tệp đã nạp
+- **[DỮ LIỆU] Quy mô tổng hợp:** **{len(orch.data_agent.raw_dataframes)} tệp** ({_files_display_str}) với tổng **{total_rows_now:,} bản ghi**, phân tích theo **{len(scoring_map)} nhóm** trên các chỉ số chính ({cols_note}).{file_details_md}
+- **[CHẤT LƯỢNG DỮ LIỆU]:** Toàn bộ hệ thống hiện còn **{total_nulls_all:,} ô trống**; các phép tính đều đã được chuẩn hóa an toàn.
+
+### 2. Đánh giá chi tiết nhóm dẫn đầu & nhóm theo dõi
+- **[ĐỀ XUẤT TRỌNG TÂM]** Hai nhóm đạt hiệu suất cao nhất là **{', '.join(top_2)}** ({rec.get('reason_top', '')}):{top_bullets}
+- **Nhóm cần theo dõi & cải thiện:**{dep_bullets}
+- **[SUY LUẬN]** Các nhóm ưu tiên đang vượt trội về mật độ dữ liệu và giá trị trung bình chỉ số; các nhóm còn lại cần bổ sung thêm dữ liệu hoặc tối ưu các tiêu chí có trọng số cao."""
 
         def _build_default_plan_standalone(recommended):
             top_str = ", ".join(recommended) if recommended else "Nhóm ưu tiên"
+            num_cols_sample = scoring_data.get("numeric_cols", [])[:3] if "scoring_data" in locals() else []
+            kpi_str = ", ".join(f"`{c}`" for c in num_cols_sample) if num_cols_sample else "các chỉ số trọng tâm"
+            dep_list = scoring_data.get("recommendation", {}).get("deprioritized", []) if "scoring_data" in locals() else []
+            dep_note = f" và đối chiếu khoảng cách hiệu suất với nhóm **{', '.join(dep_list[:3])}**" if dep_list else ""
             return f"""### Kế hoạch hành động đề xuất cho: {top_str}
-- **Giai đoạn 1 (Tuần 1 — Rà soát):** Đối chiếu dữ liệu gốc từ **{_files_display_str}** tại nhóm **{top_str}**, xử lý các giá trị thiếu còn lại nếu có.
-- **Giai đoạn 2 (Tuần 2–3 — Triển khai):** Tập trung nguồn lực chính vào **{top_str}** nhằm tối ưu hiệu suất dựa trên các chỉ số nổi bật trên Dashboard.
-- **Giai đoạn 3 (Tuần 4 — Đánh giá):** Theo dõi biến động định kỳ và cập nhật lại bảng điểm cho các nhóm tiếp theo."""
+- **Giai đoạn 1 (Tuần 1 — Rà soát & Chuẩn hóa):** Kiểm tra lại các bản ghi gốc từ **{_files_display_str}** tại nhóm **{top_str}**, đảm bảo các trường {kpi_str} không còn sai lệch hoặc giá trị khuyết.
+- **Giai đoạn 2 (Tuần 2–3 — Triển khai trọng tâm):** Tập trung nguồn lực mở rộng và tối ưu vận hành tại **{top_str}** dựa trên các chỉ số {kpi_str}{dep_note}.
+- **Giai đoạn 3 (Tuần 4 — Đo lường & Mở rộng):** Theo dõi biến động thực tế hàng tuần trên Dashboard, cập nhật lại bảng điểm để nhân rộng mô hình sang các nhóm tiếp theo."""
 
         # Tự động làm mới kết quả Bước 3 khi người dùng tải/sửa dữ liệu hoặc đổi tệp
         _current_step3_sig = (
-            "v4_real_scoring",
+            "v5_detailed_report",
             tuple(_uploaded_file_names),
             tuple(orch.data_agent.get_regions_detected()),
             sum(len(df) for df in orch.data_agent.raw_dataframes.values())
