@@ -163,14 +163,14 @@ st.markdown(f"""
         100% {{ opacity: 1; transform: translateY(0); }}
     }}
 
-    /* Khung chính — Căn giữa rộng thoáng */
+    /* Khung chính — Rộng toàn màn hình */
     .main .block-container,
     [data-testid="stMainBlockContainer"] {{
         background: #ffffff !important;
         border-radius: 20px !important;
-        padding: 2.5rem 2.6rem 2.2rem 2.6rem !important;
-        margin: 1rem auto !important;
-        max-width: 1280px !important;
+        padding: 2rem 2.2rem 2rem 2.2rem !important;
+        margin: 0.75rem auto !important;
+        max-width: 98% !important;
         box-shadow: 0 8px 30px rgba(30, 58, 138, 0.05) !important;
         border: 1px solid #e2ecf9 !important;
     }}
@@ -787,7 +787,8 @@ try:
                         st.session_state.current_step = 2
                         st.rerun()
 
-            with st.expander("✏️ Sửa nhanh dữ liệu ngay tại Bước 1", expanded=False):
+            st.markdown("#### ✏️ Sửa nhanh dữ liệu ngay tại Bước 1")
+            with st.container():
                 s1_file_list = list(orch.data_agent.raw_dataframes.keys())
                 col_s1_sel, col_s1_info = st.columns([1.5, 2.5])
                 with col_s1_sel:
@@ -798,9 +799,9 @@ try:
 
                 if len(s1_df_cur) > 1000:
                     s1_slice = s1_df_cur.iloc[:500]
-                    s1_edited = st.data_editor(s1_slice, use_container_width=True, num_rows="dynamic", height=240, key=f"s1_editor_{s1_chosen_file}")
+                    s1_edited = st.data_editor(s1_slice, use_container_width=True, num_rows="dynamic", height=520, key=f"s1_editor_{s1_chosen_file}")
                 else:
-                    s1_edited = st.data_editor(s1_df_cur, use_container_width=True, num_rows="dynamic", height=200, key=f"s1_editor_{s1_chosen_file}")
+                    s1_edited = st.data_editor(s1_df_cur, use_container_width=True, num_rows="dynamic", height=460, key=f"s1_editor_{s1_chosen_file}")
 
                 col_s1_save, _ = st.columns([1.4, 3])
                 with col_s1_save:
@@ -826,10 +827,48 @@ try:
                             st.error("❌ Không thể lưu thay đổi. Vui lòng kiểm tra định dạng dữ liệu.")
 
         if st.session_state.file_messages:
+            if "step1_ai_summaries" not in st.session_state:
+                st.session_state.step1_ai_summaries = {}
             with st.expander(f"📋 Chi tiết kiểm tra ({len(st.session_state.file_messages)} tệp)", expanded=not bool(orch.data_agent.raw_dataframes)):
                 for item in st.session_state.file_messages[-6:]:
                     if item["success"]:
                         st.success(f"**{item['file']}**: {item['msg']}")
+                        df_chk = orch.data_agent.raw_dataframes.get(item["file"])
+                        if df_chk is not None and not df_chk.empty:
+                            cache_key = f"{item['file']}_{len(df_chk)}_{len(df_chk.columns)}"
+                            if cache_key not in st.session_state.step1_ai_summaries:
+                                ai_text = ""
+                                if getattr(orch.analysis_agent, "model", None) is not None:
+                                    try:
+                                        cols_preview = ", ".join(str(c) for c in df_chk.columns[:18])
+                                        sample_csv = df_chk.head(3).to_csv(index=False)
+                                        null_cnt = int(df_chk.isna().sum().sum())
+                                        prompt_s1 = (
+                                            f"Bạn là chuyên gia phân tích dữ liệu. Hãy phân tích sơ bộ ngắn gọn bằng tiếng Việt (tối đa 4 gạch đầu dòng súc tích) "
+                                            f"về tệp dữ liệu '{item['file']}' ({len(df_chk):,} dòng, {len(df_chk.columns)} cột, {null_cnt:,} ô trống).\n"
+                                            f"Các cột chính: {cols_preview}\n"
+                                            f"3 dòng mẫu:\n{sample_csv}\n\n"
+                                            f"Nội dung cần nêu:\n"
+                                            f"1. Tệp này phản ánh hoạt động/lĩnh vực gì của doanh nghiệp.\n"
+                                            f"2. Các nhóm chỉ số quan trọng nhất có trong bảng.\n"
+                                            f"3. Đánh giá nhanh chất lượng dữ liệu & gợi ý hướng khai thác ở Bước 2, 3."
+                                        )
+                                        resp = orch.analysis_agent.model.generate_content(prompt_s1)
+                                        ai_text = (getattr(resp, "text", "") or "").strip()
+                                    except Exception:
+                                        ai_text = ""
+                                if not ai_text:
+                                    num_cols = [str(c) for c in df_chk.select_dtypes(include=["number"]).columns[:5]]
+                                    txt_cols = [str(c) for c in df_chk.select_dtypes(exclude=["number"]).columns[:5]]
+                                    null_cnt = int(df_chk.isna().sum().sum())
+                                    ai_text = (
+                                        f"- **Lĩnh vực & cấu trúc:** Tệp `{item['file']}` gồm **{len(df_chk):,} bản ghi** và **{len(df_chk.columns)} trường thông tin**.\n"
+                                        f"- **Chỉ số định lượng chính:** {', '.join(num_cols) if num_cols else 'Đang nhận diện'}.\n"
+                                        f"- **Trường phân loại / định danh:** {', '.join(txt_cols) if txt_cols else 'Đang nhận diện'}.\n"
+                                        f"- **Chất lượng sơ bộ:** Phát hiện **{null_cnt:,} ô trống**; sẵn sàng chuẩn hóa ở Bước 2 và tổng hợp Dashboard ở Bước 3."
+                                    )
+                                st.session_state.step1_ai_summaries[cache_key] = ai_text
+                            st.info(f"🤖 **AI Phân tích sơ bộ ({item['file']}):**\n\n{st.session_state.step1_ai_summaries[cache_key]}")
                     else:
                         st.error(f"**{item['file']}**: {item['msg']}")
 
