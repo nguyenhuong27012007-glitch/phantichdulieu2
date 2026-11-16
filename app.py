@@ -707,19 +707,8 @@ try:
                     st.rerun()
 
             st.markdown("""
-            <div style="max-width:760px; margin:2rem auto 0 auto; display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; text-align:left;">
-                <div style="background:#f8fbff; border:1px solid #dbeafe; border-radius:14px; padding:14px 16px;">
-                    <div style="font-weight:700; color:#1e3a8a; font-size:0.95rem; margin-bottom:4px;">1. Nhập dữ liệu</div>
-                    <div style="color:#475569; font-size:0.85rem; line-height:1.45;">Hỗ trợ tệp CSV, Excel và Google Sheet công khai, tự động nhận diện cấu trúc bảng.</div>
-                </div>
-                <div style="background:#f8fbff; border:1px solid #dbeafe; border-radius:14px; padding:14px 16px;">
-                    <div style="font-weight:700; color:#1e3a8a; font-size:0.95rem; margin-bottom:4px;">2. Làm sạch</div>
-                    <div style="color:#475569; font-size:0.85rem; line-height:1.45;">Chuẩn hóa định dạng số, xử lý ô trống và cho phép chỉnh sửa trực tiếp từng ô.</div>
-                </div>
-                <div style="background:#f8fbff; border:1px solid #dbeafe; border-radius:14px; padding:14px 16px;">
-                    <div style="font-weight:700; color:#1e3a8a; font-size:0.95rem; margin-bottom:4px;">3. Tạo báo cáo</div>
-                    <div style="color:#475569; font-size:0.85rem; line-height:1.45;">Tổng hợp điểm số, vẽ biểu đồ trực quan và xuất báo cáo HTML nhanh chóng.</div>
-                </div>
+            <div style="max-width:660px; margin:1.8rem auto 0 auto; padding:14px 22px; background:#f8fbff; border:1px solid #dbeafe; border-radius:14px; text-align:center; color:#475569; font-size:0.93rem; line-height:1.6;">
+                Hỗ trợ xử lý dữ liệu từ tệp CSV, Excel hoặc Google Sheet một cách nhanh chóng, từ khâu kiểm tra và làm sạch sai sót đến tổng hợp số liệu và tạo báo cáo Dashboard trực quan.
             </div>
             """, unsafe_allow_html=True)
 
