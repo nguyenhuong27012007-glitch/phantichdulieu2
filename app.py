@@ -192,6 +192,29 @@ st.markdown(f"""
         box-shadow: 0 4px 14px rgba(37, 99, 235, 0.04) !important;
     }}
 
+    /* Tiêu đề chính (h2, h3) nổi bật với hiệu ứng chuyển sắc xanh dương */
+    .main h2, .main h3 {{
+        background: linear-gradient(90deg, #1e3a8a 0%, #2563eb 55%, #0284c7 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800 !important;
+        letter-spacing: -0.02em !important;
+        padding-bottom: 4px !important;
+        border-bottom: 2px solid #dbeafe !important;
+        display: inline-block !important;
+    }}
+
+    /* Tiêu đề mục con (h4, h5) nổi bật với thanh nhấn màu xanh bên trái */
+    .main h4, .main h5 {{
+        background: linear-gradient(90deg, #eff6ff 0%, rgba(239, 246, 255, 0) 100%) !important;
+        border-left: 4px solid #3b82f6 !important;
+        padding: 6px 12px !important;
+        border-radius: 0 10px 10px 0 !important;
+        color: #1d4ed8 !important;
+        font-weight: 700 !important;
+        margin-bottom: 0.6rem !important;
+    }}
+
     .st-key-landing_stage_container,
     .st-key-zone_upload_left,
     .st-key-zone_gsheet_right,
@@ -901,20 +924,26 @@ try:
                     first_df = orch.data_agent.raw_dataframes[first_fname]
                     num_c = [str(c) for c in first_df.select_dtypes(include=["number"]).columns[:4]]
                     cat_c = [str(c) for c in first_df.select_dtypes(exclude=["number"]).columns[:4]]
+                    cols_lower = " ".join(str(c).lower() for c in first_df.columns) + " " + first_fname.lower()
                     sug_type = "Kinh doanh / Bán lẻ & Vận hành"
-                    if any(k in " ".join(first_df.columns).lower() for k in ["ship", "delivery", "warehouse", "kho", "logistics"]):
+                    if any(k in cols_lower for k in ["nhan_su", "nhansu", "hr", "employee", "salary", "luong", "department", "phong_ban"]):
+                        sug_type = "Quản trị Nhân sự & Hiệu suất nhân viên"
+                    elif any(k in cols_lower for k in ["ship", "delivery", "warehouse", "kho", "logistics"]):
                         sug_type = "Thương mại & Logistics / Chuỗi cung ứng"
-                    elif any(k in " ".join(first_df.columns).lower() for k in ["campaign", "marketing", "ads", "click"]):
+                    elif any(k in cols_lower for k in ["campaign", "marketing", "ads", "click"]):
                         sug_type = "Marketing & Chiến dịch"
+
                     q_list = []
                     if cat_c and num_c:
-                        q_list.append(f"Nhóm {cat_c[0]} nào đang đóng góp {num_c[0]} cao nhất?")
+                        q_list.append(f"1. Nhóm {cat_c[0]} nào đang có chỉ số {num_c[0]} cao nhất và thấp nhất?")
                         if len(num_c) > 1:
-                            q_list.append(f"Mối tương quan giữa {num_c[0]} và {num_c[1]} theo từng {cat_c[0]} ra sao?")
+                            q_list.append(f"2. Mối tương quan giữa {num_c[0]} và {num_c[1]} theo từng {cat_c[0]} ra sao?")
                     if len(cat_c) > 1 and num_c:
-                        q_list.append(f"Hiệu suất {num_c[0]} khác nhau như thế nào giữa các {cat_c[1]}?")
-                    if not q_list:
-                        q_list = [f"Chỉ số nào trong tệp {first_fname} đang biến động mạnh nhất?", "Nhóm nào cần ưu tiên cải thiện?"]
+                        q_list.append(f"3. Hiệu suất {num_c[0]} khác nhau như thế nào giữa các {cat_c[1]}?")
+                    if len(num_c) > 2:
+                        q_list.append(f"4. Phân bố của {num_c[2]} có điểm bất thường hay chênh lệch lớn giữa các nhóm không?")
+                    q_list.append(f"{len(q_list)+1}. Tỷ lệ dữ liệu thiếu hoặc sai lệch trong tệp {first_fname} tập trung ở nhóm nào?")
+                    q_list.append(f"{len(q_list)+1}. Đề xuất 2 nhóm ưu tiên hàng đầu cần tập trung cải thiện hoặc mở rộng là gì?")
                     st.session_state["_pending_biz_type"] = sug_type
                     st.session_state["_pending_biz_questions"] = "\n".join(q_list)
                     st.session_state["_ai_ctx_done_msg"] = f"✅ Đã gợi ý bối cảnh & câu hỏi dựa trên tệp `{first_fname}`!"
