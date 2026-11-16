@@ -518,22 +518,23 @@ st.markdown(f"""
         line-height: 1.5 !important;
     }}
 
-    /* Nút Duyệt & Tải xuống nổi lơ lửng giữa trang bên phải */
+    /* Nút Duyệt & Tải xuống cố định gọn ở góc dưới bên phải (không che nội dung bảng/chữ) */
     .st-key-floating_approve_step1,
     .st-key-floating_approve_step2,
     .st-key-floating_download_step3 {{
         position: fixed !important;
         right: 24px !important;
-        top: 50% !important;
-        transform: translateY(-50%) !important;
+        bottom: 20px !important;
+        top: auto !important;
+        transform: none !important;
         z-index: 9999 !important;
         width: auto !important;
         min-width: 215px !important;
-        background: rgba(255, 255, 255, 0.94) !important;
+        background: rgba(255, 255, 255, 0.96) !important;
         backdrop-filter: blur(10px) !important;
-        padding: 10px 12px !important;
+        padding: 8px 10px !important;
         border-radius: 16px !important;
-        box-shadow: 0 10px 28px rgba(37, 99, 235, 0.22) !important;
+        box-shadow: 0 10px 28px rgba(37, 99, 235, 0.24) !important;
         border: 1.5px solid #93c5fd !important;
     }}
 
