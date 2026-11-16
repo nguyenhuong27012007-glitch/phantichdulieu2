@@ -470,6 +470,24 @@ st.markdown(f"""
         color: #1e3a8a !important;
         line-height: 1.5 !important;
     }}
+
+    /* Nút Duyệt nổi lơ lửng giữa trang bên phải */
+    .st-key-floating_approve_step1,
+    .st-key-floating_approve_step2 {{
+        position: fixed !important;
+        right: 24px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        z-index: 9999 !important;
+        width: auto !important;
+        min-width: 215px !important;
+        background: rgba(255, 255, 255, 0.94) !important;
+        backdrop-filter: blur(10px) !important;
+        padding: 10px 12px !important;
+        border-radius: 16px !important;
+        box-shadow: 0 10px 28px rgba(37, 99, 235, 0.22) !important;
+        border: 1.5px solid #93c5fd !important;
+    }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -781,6 +799,7 @@ try:
                 sum_c3.metric("Nhóm phân tích", len(detected_groups))
                 with sum_c4:
                     st.markdown(f"<div style='margin-bottom:0.4rem;'><b>Nhóm phát hiện:</b> {_format_groups_preview(detected_groups, 3)}</div>", unsafe_allow_html=True)
+                with st.container(key="floating_approve_step1"):
                     if st.button("Duyệt & Sang Bước 2 ➔", type="primary", use_container_width=True, key="btn_approve_step1"):
                         set_spinner_msg("⏳ Đang chuyển sang Bước 2...")
                         st.session_state.step1_approved = True
@@ -797,22 +816,67 @@ try:
                     s1_df_cur = orch.data_agent.raw_dataframes[s1_chosen_file]
                     st.caption(f"Nhấp đúp vào ô để sửa trực tiếp ({len(s1_df_cur):,} dòng × {len(s1_df_cur.columns)} cột)")
 
-                if len(s1_df_cur) > 1000:
-                    s1_slice = s1_df_cur.iloc[:500]
+                # Thanh công cụ lọc & tùy chọn kiểu Excel
+                col_f1, col_f2, col_f3, col_f4 = st.columns([1.3, 1.3, 1.5, 1.2])
+                with col_f1:
+                    s1_search = st.text_input("🔍 Tìm kiếm nhanh:", placeholder="Nhập từ khóa...", key=f"s1_search_{s1_chosen_file}")
+                with col_f2:
+                    s1_filter_col = st.selectbox("🔽 Lọc theo cột:", ["(Không lọc)"] + list(s1_df_cur.columns), key=f"s1_fcol_{s1_chosen_file}")
+                with col_f3:
+                    s1_filter_vals = []
+                    if s1_filter_col != "(Không lọc)":
+                        uniq_vals = s1_df_cur[s1_filter_col].dropna().astype(str).unique().tolist()[:200]
+                        s1_filter_vals = st.multiselect(f"Chọn giá trị ({s1_filter_col}):", uniq_vals, key=f"s1_fvals_{s1_chosen_file}")
+                    else:
+                        s1_sort_col = st.selectbox("↕️ Sắp xếp theo:", ["(Mặc định)"] + list(s1_df_cur.columns), key=f"s1_scol_{s1_chosen_file}")
+                with col_f4:
+                    if s1_filter_col != "(Không lọc)":
+                        s1_sort_col = st.selectbox("↕️ Sắp xếp theo:", ["(Mặc định)"] + list(s1_df_cur.columns), key=f"s1_scol2_{s1_chosen_file}")
+                    else:
+                        s1_sort_asc = st.selectbox("Thứ tự:", ["Tăng dần", "Giảm dần"], key=f"s1_sasc_{s1_chosen_file}")
+
+                s1_show_cols = st.multiselect(
+                    "👁️ Chọn cột hiển thị (để trống = hiện tất cả):",
+                    list(s1_df_cur.columns),
+                    default=[],
+                    key=f"s1_cols_{s1_chosen_file}"
+                )
+
+                s1_view_df = s1_df_cur.copy()
+                if s1_search and s1_search.strip():
+                    kw = s1_search.strip().lower()
+                    mask_kw = s1_view_df.astype(str).apply(lambda col: col.str.lower().str.contains(kw, na=False)).any(axis=1)
+                    s1_view_df = s1_view_df[mask_kw]
+                if s1_filter_col != "(Không lọc)" and s1_filter_vals:
+                    s1_view_df = s1_view_df[s1_view_df[s1_filter_col].astype(str).isin(s1_filter_vals)]
+                if s1_sort_col != "(Mặc định)":
+                    asc_flag = True if s1_filter_col != "(Không lọc)" else (s1_sort_asc == "Tăng dần")
+                    s1_view_df = s1_view_df.sort_values(by=s1_sort_col, ascending=asc_flag, kind="mergesort")
+
+                display_cols = s1_show_cols if s1_show_cols else list(s1_view_df.columns)
+                s1_is_filtered = bool((s1_search and s1_search.strip()) or (s1_filter_col != "(Không lọc)" and s1_filter_vals))
+                if s1_is_filtered:
+                    st.caption(f"🔎 Đang hiển thị **{len(s1_view_df):,} / {len(s1_df_cur):,}** dòng phù hợp.")
+
+                if len(s1_view_df) > 1000:
+                    s1_slice = s1_view_df[display_cols].iloc[:500]
                     s1_edited = st.data_editor(s1_slice, use_container_width=True, num_rows="dynamic", height=520, key=f"s1_editor_{s1_chosen_file}")
                 else:
-                    s1_edited = st.data_editor(s1_df_cur, use_container_width=True, num_rows="dynamic", height=460, key=f"s1_editor_{s1_chosen_file}")
+                    s1_slice = s1_view_df[display_cols]
+                    s1_edited = st.data_editor(s1_slice, use_container_width=True, num_rows="dynamic", height=460, key=f"s1_editor_{s1_chosen_file}")
 
-                col_s1_save, _ = st.columns([1.4, 3])
+                col_s1_save, col_s1_apply_filter, _ = st.columns([1.3, 1.5, 2.2])
                 with col_s1_save:
                     if st.button("💾 Lưu chỉnh sửa", type="primary", use_container_width=True, key="btn_save_step1"):
                         try:
                             with st.spinner("⏳ Đang lưu thay đổi..."):
-                                if len(s1_df_cur) > 1000:
-                                    updated_full = pd.concat([s1_edited, s1_df_cur.iloc[500:]], ignore_index=True)
-                                    orch.data_agent.raw_dataframes[s1_chosen_file] = updated_full
-                                else:
+                                if not s1_is_filtered and not s1_show_cols and len(s1_df_cur) <= 1000:
                                     orch.data_agent.raw_dataframes[s1_chosen_file] = s1_edited
+                                else:
+                                    updated_full = s1_df_cur.copy()
+                                    common_idx = s1_edited.index.intersection(updated_full.index)
+                                    updated_full.loc[common_idx, display_cols] = s1_edited.loc[common_idx, display_cols]
+                                    orch.data_agent.raw_dataframes[s1_chosen_file] = updated_full
                                 from utils.column_mapper import map_columns
                                 from utils.file_handler import _auto_aggregate
                                 new_df = orch.data_agent.raw_dataframes[s1_chosen_file]
@@ -825,6 +889,12 @@ try:
                             st.rerun()
                         except Exception:
                             st.error("❌ Không thể lưu thay đổi. Vui lòng kiểm tra định dạng dữ liệu.")
+                with col_s1_apply_filter:
+                    if s1_is_filtered:
+                        if st.button("📌 Chỉ giữ lại dữ liệu đang lọc", use_container_width=True, key="btn_keep_filtered_step1"):
+                            orch.data_agent.raw_dataframes[s1_chosen_file] = s1_view_df.reset_index(drop=True)
+                            st.toast(f"✅ Đã lọc giữ lại {len(s1_view_df):,} dòng!", icon="📌")
+                            st.rerun()
 
         if st.session_state.file_messages:
             if "step1_ai_summaries" not in st.session_state:
