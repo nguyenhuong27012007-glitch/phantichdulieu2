@@ -193,26 +193,33 @@ st.markdown(f"""
     }}
 
     /* Tiêu đề chính (h2, h3) nổi bật với hiệu ứng chuyển sắc xanh dương */
-    .main h2, .main h3 {{
+    [data-testid="stMain"] h2, [data-testid="stMain"] h3, .main h2, .main h3 {{
         background: linear-gradient(90deg, #1e3a8a 0%, #2563eb 55%, #0284c7 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         font-weight: 800 !important;
         letter-spacing: -0.02em !important;
         padding-bottom: 4px !important;
-        border-bottom: 2px solid #dbeafe !important;
+        border-bottom: 2.5px solid #93c5fd !important;
         display: inline-block !important;
     }}
 
     /* Tiêu đề mục con (h4, h5) nổi bật với thanh nhấn màu xanh bên trái */
-    .main h4, .main h5 {{
-        background: linear-gradient(90deg, #eff6ff 0%, rgba(239, 246, 255, 0) 100%) !important;
-        border-left: 4px solid #3b82f6 !important;
-        padding: 6px 12px !important;
+    [data-testid="stMain"] h4, [data-testid="stMain"] h5, .main h4, .main h5 {{
+        background: linear-gradient(90deg, #dbeafe 0%, rgba(239, 246, 255, 0.2) 100%) !important;
+        border-left: 5px solid #2563eb !important;
+        padding: 7px 14px !important;
         border-radius: 0 10px 10px 0 !important;
+        color: #1e3a8a !important;
+        font-weight: 800 !important;
+        margin-bottom: 0.65rem !important;
+    }}
+
+    /* Nhãn của các ô nhập liệu (Lĩnh vực hoạt động, Ghi chú thêm, Mục tiêu...) nổi bật hơn */
+    [data-testid="stWidgetLabel"] p {{
         color: #1d4ed8 !important;
         font-weight: 700 !important;
-        margin-bottom: 0.6rem !important;
+        font-size: 0.95rem !important;
     }}
 
     .st-key-landing_stage_container,
@@ -923,7 +930,13 @@ try:
                     first_fname = list(orch.data_agent.raw_dataframes.keys())[0]
                     first_df = orch.data_agent.raw_dataframes[first_fname]
                     num_c = [str(c) for c in first_df.select_dtypes(include=["number"]).columns[:4]]
-                    cat_c = [str(c) for c in first_df.select_dtypes(exclude=["number"]).columns[:4]]
+                    if not num_c:
+                        for c_cand in first_df.columns:
+                            if pd.to_numeric(first_df[c_cand], errors="coerce").notna().mean() > 0.5:
+                                num_c.append(str(c_cand))
+                                if len(num_c) >= 4:
+                                    break
+                    cat_c = [str(c) for c in first_df.columns if str(c) not in num_c][:4]
                     cols_lower = " ".join(str(c).lower() for c in first_df.columns) + " " + first_fname.lower()
                     sug_type = "Kinh doanh / Bán lẻ & Vận hành"
                     if any(k in cols_lower for k in ["nhan_su", "nhansu", "hr", "employee", "salary", "luong", "department", "phong_ban"]):
