@@ -792,27 +792,27 @@ try:
         # ============================================================
         with st.container(border=True):
             st.markdown("##### 📄 Bối cảnh doanh nghiệp")
-            st.caption("Câu hỏi của bạn định hướng việc chọn chỉ số và đọc kết quả.")
+            st.caption("Mô tả ngắn gọn về mô hình kinh doanh và mục tiêu phân tích (tất cả các ô đều không bắt buộc).")
             col_ctx1, col_ctx2 = st.columns([1, 1])
             with col_ctx1:
                 st.text_input(
-                    "Loại hình doanh nghiệp",
+                    "Lĩnh vực hoạt động (không bắt buộc)",
                     value=st.session_state.get("biz_type", ""),
-                    placeholder="Ví dụ: Bán lẻ thời trang, SaaS B2B, dịch vụ logistics",
+                    placeholder="Ví dụ: Thương mại điện tử, chuỗi cửa hàng, phân phối hàng tiêu dùng...",
                     key="biz_type"
                 )
                 st.text_area(
-                    "Thông tin bổ sung (không bắt buộc)",
+                    "Ghi chú thêm (không bắt buộc)",
                     value=st.session_state.get("biz_extra", ""),
-                    placeholder="Ví dụ: Hai chi nhánh, đang đánh giá hiệu quả quý I",
+                    placeholder="Ví dụ: Đang so sánh hiệu quả giữa các khu vực hoặc theo dõi biến động theo tháng...",
                     height=88,
                     key="biz_extra"
                 )
             with col_ctx2:
                 st.text_area(
-                    "Vấn đề cần phân tích",
+                    "Mục tiêu / Câu hỏi cần giải đáp (không bắt buộc)",
                     value=st.session_state.get("biz_questions", ""),
-                    placeholder="Doanh thu theo kênh nào cao nhất?\nChi phí theo chiến dịch nào cao nhất?",
+                    placeholder="Khu vực hoặc nhóm sản phẩm nào đang mang lại hiệu quả tốt nhất?\nChỉ số nào cần tối ưu trong giai đoạn tới?",
                     height=168,
                     key="biz_questions"
                 )
