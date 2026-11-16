@@ -917,9 +917,12 @@ try:
                         q_list = [f"Chỉ số nào trong tệp {first_fname} đang biến động mạnh nhất?", "Nhóm nào cần ưu tiên cải thiện?"]
                     st.session_state["_pending_biz_type"] = sug_type
                     st.session_state["_pending_biz_questions"] = "\n".join(q_list)
+                    st.session_state["_ai_ctx_done_msg"] = f"✅ Đã gợi ý bối cảnh & câu hỏi dựa trên tệp `{first_fname}`!"
                     st.rerun()
                 else:
-                    st.toast("⚠️ Vui lòng tải tệp dữ liệu lên trước để AI gợi ý sát theo tệp của bạn!", icon="⚠️")
+                    st.warning("⚠️ Bạn chưa nạp tệp dữ liệu nào. Vui lòng tải tệp CSV/Excel hoặc dán link Google Sheet ở khung phía trên trước nhé!")
+            if st.session_state.get("_ai_ctx_done_msg"):
+                st.success(st.session_state.pop("_ai_ctx_done_msg"))
 
         if orch.data_agent.raw_dataframes:
             st.write("")
