@@ -489,6 +489,13 @@ st.markdown(f"""
         box-shadow: 0 10px 28px rgba(37, 99, 235, 0.22) !important;
         border: 1.5px solid #93c5fd !important;
     }}
+
+    /* Tên cột / mã trong dấu backtick có cỡ chữ bằng chữ thường */
+    .main code, [data-testid="stAlert"] code, .stMarkdown code {{
+        font-size: 1em !important;
+        font-family: inherit !important;
+        font-weight: 600 !important;
+    }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -1064,7 +1071,7 @@ try:
                             f"- **Độ đầy đủ dữ liệu:** 100% các ô đều có giá trị (0 ô trống).\n"
                             f"- **Các cột số đã chuẩn hóa ({len(num_cols)} cột):** {num_cols_str if num_cols else 'Không có'}.\n"
                             f"- **Các cột văn bản / phân loại ({len(txt_cols)} cột):** {txt_cols_str if txt_cols else 'Không có'}.\n"
-                            f"- **Trường thông tin đã ánh xạ ({len(mapped_dict)} trường):** {mapped_str if mapped_dict else 'Tự động nhận diện'}."
+                            f"- **Đã chuẩn hóa tên trường ({len(mapped_dict)} trường):** {mapped_str if mapped_dict else 'Tự động nhận diện'}."
                         )
                     else:
                         details = [f"📋 **Báo cáo xử lý chi tiết cho file `{selected_file}`:**"]
@@ -1081,7 +1088,7 @@ try:
                             details.append(f"- 🔁 **Dòng trùng lặp:** Phát hiện **{dup_rows_cnt:,} dòng** có nội dung giống hệt nhau.")
                         details.append(f"- 🔢 **Cột số đã chuẩn hóa ({len(num_cols)} cột):** {num_cols_str if num_cols else 'Không có'}.")
                         details.append(f"- 🏷️ **Cột phân loại / văn bản ({len(txt_cols)} cột):** {txt_cols_str if txt_cols else 'Không có'}.")
-                        details.append(f"- 🔗 **Trường thông tin đã ánh xạ ({len(mapped_dict)} trường):** {mapped_str if mapped_dict else 'Tự động nhận diện'}.")
+                        details.append(f"- 🔗 **Đã chuẩn hóa tên trường ({len(mapped_dict)} trường):** {mapped_str if mapped_dict else 'Tự động nhận diện'}.")
                         for u_log in user_edits:
                             details.append(f"- ✏️ **Thao tác của bạn:** {u_log}")
                         st.info("\n".join(details))
