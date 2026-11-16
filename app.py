@@ -792,18 +792,20 @@ try:
 
         with st.container(key="landing_stage_container"):
             st.markdown("""
-            <div style="text-align:center;">
-                <div class="hero-graphic-icon">
-                    <div class="hg-bar-1"></div>
-                    <div class="hg-bar-2"></div>
-                    <div class="hg-bar-3"></div>
-                    <div class="hg-bar-4"></div>
+            <div style="display:flex; align-items:center; justify-content:space-between; padding-bottom:16px; margin-bottom:28px; border-bottom:1px solid #e2ecf9;">
+                <div style="display:inline-flex; align-items:center; gap:8px; background:#eff6ff; border:1px solid #bfdbfe; padding:6px 14px; border-radius:999px; font-weight:700; color:#1e3a8a; font-size:0.9rem;">
+                    <span>📊</span>
+                    <span>SmartData Studio</span>
                 </div>
-                <div class="landing-main-title">
-                    <span class="highlight-grad">Phân Tích Dữ Liệu</span>
+                <div style="font-size:0.85rem; color:#64748b; font-weight:600;">Phân tích &amp; Trực quan hóa 3 bước</div>
+            </div>
+            <div style="text-align:center; max-width:740px; margin:0 auto;">
+                <div style="font-size:clamp(2.2rem, 4.4vw, 3.3rem); font-weight:800; line-height:1.15; letter-spacing:-0.03em; color:#0f172a; margin-bottom:16px;">
+                    Dữ liệu thông minh.<br/>
+                    <span class="highlight-grad">Báo cáo tức thì.</span>
                 </div>
-                <div class="landing-desc">
-                    Tải tệp lên, Kiểm tra &amp; làm sạch và Tạo báo cáo dashboard trực quan
+                <div style="font-size:1rem; color:#475569; line-height:1.65; max-width:620px; margin:0 auto 24px auto;">
+                    Hỗ trợ xử lý dữ liệu từ tệp CSV, Excel hoặc Google Sheet một cách nhanh chóng, từ khâu kiểm tra và làm sạch sai sót đến tổng hợp số liệu và tạo báo cáo Dashboard trực quan.
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -816,8 +818,24 @@ try:
                     st.rerun()
 
             st.markdown("""
-            <div style="max-width:660px; margin:1.8rem auto 0 auto; padding:14px 22px; background:#f8fbff; border:1px solid #dbeafe; border-radius:14px; text-align:center; color:#475569; font-size:0.93rem; line-height:1.6;">
-                Hỗ trợ xử lý dữ liệu từ tệp CSV, Excel hoặc Google Sheet một cách nhanh chóng, từ khâu kiểm tra và làm sạch sai sót đến tổng hợp số liệu và tạo báo cáo Dashboard trực quan.
+            <div style="max-width:720px; margin:2.4rem auto 0.5rem auto; display:flex; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap;">
+                <div style="flex:1; min-width:170px; background:#ffffff; border:1px solid #dbeafe; border-radius:16px; padding:16px 14px; text-align:center; box-shadow:0 6px 18px rgba(37,99,235,0.06);">
+                    <div style="font-size:1.4rem; margin-bottom:6px;">📥</div>
+                    <div style="font-weight:700; color:#1e3a8a; font-size:0.92rem;">1. Nhập dữ liệu</div>
+                    <div style="color:#64748b; font-size:0.8rem; margin-top:2px;">CSV, Excel, Google Sheet</div>
+                </div>
+                <div style="color:#60a5fa; font-weight:800; font-size:1.2rem;">➔</div>
+                <div style="flex:1.1; min-width:185px; background:linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border:1.5px solid #93c5fd; border-radius:18px; padding:20px 16px; text-align:center; box-shadow:0 10px 24px rgba(37,99,235,0.12);">
+                    <div style="font-size:1.55rem; margin-bottom:6px;">🧹</div>
+                    <div style="font-weight:800; color:#1d4ed8; font-size:0.96rem;">2. Làm sạch</div>
+                    <div style="color:#334155; font-size:0.82rem; margin-top:2px;">Chuẩn hóa &amp; chỉnh sửa</div>
+                </div>
+                <div style="color:#60a5fa; font-weight:800; font-size:1.2rem;">➔</div>
+                <div style="flex:1; min-width:170px; background:#ffffff; border:1px solid #dbeafe; border-radius:16px; padding:16px 14px; text-align:center; box-shadow:0 6px 18px rgba(37,99,235,0.06);">
+                    <div style="font-size:1.4rem; margin-bottom:6px;">📊</div>
+                    <div style="font-weight:700; color:#1e3a8a; font-size:0.92rem;">3. Tạo báo cáo</div>
+                    <div style="color:#64748b; font-size:0.8rem; margin-top:2px;">Dashboard &amp; Xuất HTML</div>
+                </div>
             </div>
             """, unsafe_allow_html=True)
 
