@@ -1097,7 +1097,7 @@ try:
                             df_slice,
                             use_container_width=True,
                             num_rows="dynamic",
-                            height=340,
+                            height=540,
                             key=f"editor_{selected_file}_{current_page}_{page_size}_{search_kw}"
                         )
                     else:
@@ -1106,7 +1106,7 @@ try:
                             df_current,
                             use_container_width=True,
                             num_rows="dynamic",
-                            height=240,
+                            height=500,
                             key=f"editor_{selected_file}"
                         )
 
