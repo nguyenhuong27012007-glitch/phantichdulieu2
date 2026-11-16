@@ -471,9 +471,10 @@ st.markdown(f"""
         line-height: 1.5 !important;
     }}
 
-    /* Nút Duyệt nổi lơ lửng giữa trang bên phải */
+    /* Nút Duyệt & Tải xuống nổi lơ lửng giữa trang bên phải */
     .st-key-floating_approve_step1,
-    .st-key-floating_approve_step2 {{
+    .st-key-floating_approve_step2,
+    .st-key-floating_download_step3 {{
         position: fixed !important;
         right: 24px !important;
         top: 50% !important;
@@ -799,12 +800,12 @@ try:
                 sum_c3.metric("Nhóm phân tích", len(detected_groups))
                 with sum_c4:
                     st.markdown(f"<div style='margin-bottom:0.4rem;'><b>Nhóm phát hiện:</b> {_format_groups_preview(detected_groups, 3)}</div>", unsafe_allow_html=True)
-                with st.container(key="floating_approve_step1"):
-                    if st.button("Duyệt & Sang Bước 2 ➔", type="primary", use_container_width=True, key="btn_approve_step1"):
-                        set_spinner_msg("⏳ Đang chuyển sang Bước 2...")
-                        st.session_state.step1_approved = True
-                        st.session_state.current_step = 2
-                        st.rerun()
+            with st.container(key="floating_approve_step1"):
+                if st.button("Duyệt & Sang Bước 2 ➔", type="primary", use_container_width=True, key="btn_approve_step1"):
+                    set_spinner_msg("⏳ Đang chuyển sang Bước 2...")
+                    st.session_state.step1_approved = True
+                    st.session_state.current_step = 2
+                    st.rerun()
 
             st.markdown("#### ✏️ Sửa nhanh dữ liệu ngay tại Bước 1")
             with st.container():
@@ -1007,13 +1008,14 @@ try:
 
             with top_bar_c3:
                 st.write("")
-                if total_records > 0:
-                    with st.container(key="floating_approve_step2"):
-                        if st.button("Duyệt & Sang Bước 3 ➔", type="primary", use_container_width=True, key="btn_approve_step2"):
-                            set_spinner_msg("⏳ Đang phân tích dữ liệu và tạo Báo cáo & Dashboard...")
-                            st.session_state.step2_approved = True
-                            st.session_state.current_step = 3
-                            st.rerun()
+
+            if total_records > 0:
+                with st.container(key="floating_approve_step2"):
+                    if st.button("Duyệt & Sang Bước 3 ➔", type="primary", use_container_width=True, key="btn_approve_step2"):
+                        set_spinner_msg("⏳ Đang phân tích dữ liệu và tạo Báo cáo & Dashboard...")
+                        st.session_state.step2_approved = True
+                        st.session_state.current_step = 3
+                        st.rerun()
 
             if 'show_step2_editor' not in st.session_state:
                 st.session_state.show_step2_editor = False
@@ -1492,21 +1494,19 @@ try:
         unified_html = st.session_state._uni_html_cached
 
         with st.container(key="zone_step3_preview"):
-            col_head_t, col_head_btn = st.columns([2.6, 1.4])
-            with col_head_t:
-                st.markdown("<h4 style='margin: 0.35rem 0 0 0;'>Báo Cáo Tổng Hợp &amp; Dashboard Nhận Xét</h4>", unsafe_allow_html=True)
-            with col_head_btn:
-                st.download_button(
-                    label="🌐 Tải xuống Báo Cáo (.html)",
-                    data=unified_html.encode("utf-8"),
-                    file_name="Bao_Cao_Dashboard_Phan_Tich.html",
-                    mime="text/html",
-                    type="primary",
-                    use_container_width=True,
-                    key="dl_unified_html"
-                )
-            st.write("")
+            st.markdown("<h4 style='margin: 0.35rem 0 0.6rem 0;'>Báo Cáo Tổng Hợp &amp; Dashboard Nhận Xét</h4>", unsafe_allow_html=True)
             components.html(unified_html, height=840, scrolling=True)
+
+        with st.container(key="floating_download_step3"):
+            st.download_button(
+                label="🌐 Tải xuống Báo Cáo (.html)",
+                data=unified_html.encode("utf-8"),
+                file_name="Bao_Cao_Dashboard_Phan_Tich.html",
+                mime="text/html",
+                type="primary",
+                use_container_width=True,
+                key="dl_unified_html"
+            )
 
         # ============================================================
         # HAI NÚT MỞ KHUNG CHỈNH SỬA CHI TIẾT (ẨN GỌN KHI KHÔNG DÙNG)
