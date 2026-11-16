@@ -1038,6 +1038,11 @@ try:
                 st.session_state._last_step2_selected_file = selected_file
 
             st.write("")
+            lbl_s2_btn = "Đóng bảng chỉnh sửa" if st.session_state.show_step2_editor else "✏️ Bấm vào đây nếu muốn sửa dữ liệu"
+            if st.button(lbl_s2_btn, use_container_width=True, key="btn_toggle_s2_editor"):
+                st.session_state.show_step2_editor = not st.session_state.show_step2_editor
+                st.rerun()
+
             if True:
                 empty_r = int(file_info_cur.get("empty_rows_removed", 0))
                 empty_c = int(file_info_cur.get("empty_cols_removed", 0))
@@ -1065,7 +1070,7 @@ try:
                             f"- **Đã chuẩn hóa tên trường ({len(mapped_dict)} trường):** {mapped_str if mapped_dict else 'Tự động nhận diện'}."
                         )
                     else:
-                        details = [f"📋 **Báo cáo xử lý chi tiết cho file `{selected_file}`:**"]
+                        details = [f"🔍 **Những gì hệ thống đã kiểm tra & xử lý trên tệp `{selected_file}`:**"]
                         if empty_r > 0 or empty_c > 0:
                             details.append(f"- 🧹 **Đã tự động xóa:** `{empty_r}` dòng hoàn toàn trống và `{empty_c}` cột hoàn toàn trống (còn lại **{total_rows:,} dòng × {len(df_current.columns)} cột**).")
                         else:
@@ -1083,11 +1088,6 @@ try:
                         for u_log in user_edits:
                             details.append(f"- ✏️ **Thao tác của bạn:** {u_log}")
                         st.info("\n".join(details))
-
-            lbl_s2_btn = "Đóng bảng chỉnh sửa" if st.session_state.show_step2_editor else "✏️ Bấm vào đây nếu muốn sửa dữ liệu"
-            if st.button(lbl_s2_btn, use_container_width=True, key="btn_toggle_s2_editor"):
-                st.session_state.show_step2_editor = not st.session_state.show_step2_editor
-                st.rerun()
 
             if st.session_state.show_step2_editor:
                 with st.container(key="zone_step2_workspace"):
@@ -1374,11 +1374,11 @@ try:
         def _build_default_plan_standalone(recommended):
             top_str = ", ".join(recommended) if recommended else "Nhóm ưu tiên"
             num_cols_sample = scoring_data.get("numeric_cols", [])[:3] if "scoring_data" in locals() else []
-            kpi_str = ", ".join(f"`{c}`" for c in num_cols_sample) if num_cols_sample else "các chỉ số trọng tâm"
+            kpi_str = ", ".join(f"**{c}**" for c in num_cols_sample) if num_cols_sample else "trọng tâm"
             dep_list = scoring_data.get("recommendation", {}).get("deprioritized", []) if "scoring_data" in locals() else []
             dep_note = f" và đối chiếu khoảng cách hiệu suất với nhóm **{', '.join(dep_list[:3])}**" if dep_list else ""
             return f"""### Kế hoạch hành động đề xuất cho: {top_str}
-- **Giai đoạn 1 (Tuần 1 — Rà soát & Chuẩn hóa):** Kiểm tra lại các bản ghi gốc từ **{_files_display_str}** tại nhóm **{top_str}**, đảm bảo các trường {kpi_str} không còn sai lệch hoặc giá trị khuyết.
+- **Giai đoạn 1 (Tuần 1 — Rà soát & Chuẩn hóa):** Kiểm tra lại các bản ghi gốc từ **{_files_display_str}** tại nhóm **{top_str}**, đảm bảo các chỉ số {kpi_str} không còn sai lệch hoặc giá trị khuyết.
 - **Giai đoạn 2 (Tuần 2–3 — Triển khai trọng tâm):** Tập trung nguồn lực mở rộng và tối ưu vận hành tại **{top_str}** dựa trên các chỉ số {kpi_str}{dep_note}.
 - **Giai đoạn 3 (Tuần 4 — Đo lường & Mở rộng):** Theo dõi biến động thực tế hàng tuần trên Dashboard, cập nhật lại bảng điểm để nhân rộng mô hình sang các nhóm tiếp theo."""
 
