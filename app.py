@@ -478,18 +478,7 @@ st.markdown(f"""
 # ============================================================
 if step != 0:
     with st.container(key="top_wizard_bar"):
-        nav_col0, nav_col1, nav_col2, nav_col3 = st.columns([0.85, 1.05, 1.05, 1.25])
-
-        with nav_col0:
-            if st.button(
-                "🏠 Mở đầu",
-                key="top_nav_step0",
-                use_container_width=True,
-                type="secondary"
-            ):
-                set_spinner_msg("⏳ Đang quay lại Trang Mở Đầu...")
-                st.session_state.current_step = 0
-                st.rerun()
+        nav_col1, nav_col2, nav_col3 = st.columns([1, 1, 1])
 
         with nav_col1:
             if st.button(
