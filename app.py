@@ -835,38 +835,63 @@ try:
                         st.success(f"**{item['file']}**: {item['msg']}")
                         df_chk = orch.data_agent.raw_dataframes.get(item["file"])
                         if df_chk is not None and not df_chk.empty:
-                            cache_key = f"{item['file']}_{len(df_chk)}_{len(df_chk.columns)}"
+                            cache_key = f"v2_{item['file']}_{len(df_chk)}_{len(df_chk.columns)}"
                             if cache_key not in st.session_state.step1_ai_summaries:
+                                null_cnt = int(df_chk.isna().sum().sum())
+                                dup_cnt = int(df_chk.duplicated().sum())
+                                null_cols = df_chk.columns[df_chk.isna().any()].tolist()
+                                neg_cols = []
+                                for nc in df_chk.select_dtypes(include=["number"]).columns:
+                                    if (df_chk[nc].dropna() < 0).any():
+                                        neg_cols.append(str(nc))
+                                has_issues = (null_cnt > 0) or (dup_cnt > 0) or bool(neg_cols)
+
                                 ai_text = ""
                                 if getattr(orch.analysis_agent, "model", None) is not None:
                                     try:
                                         cols_preview = ", ".join(str(c) for c in df_chk.columns[:18])
                                         sample_csv = df_chk.head(3).to_csv(index=False)
-                                        null_cnt = int(df_chk.isna().sum().sum())
-                                        prompt_s1 = (
-                                            f"Bạn là chuyên gia phân tích dữ liệu. Hãy phân tích sơ bộ ngắn gọn bằng tiếng Việt (tối đa 4 gạch đầu dòng súc tích) "
-                                            f"về tệp dữ liệu '{item['file']}' ({len(df_chk):,} dòng, {len(df_chk.columns)} cột, {null_cnt:,} ô trống).\n"
-                                            f"Các cột chính: {cols_preview}\n"
-                                            f"3 dòng mẫu:\n{sample_csv}\n\n"
-                                            f"Nội dung cần nêu:\n"
-                                            f"1. Tệp này phản ánh hoạt động/lĩnh vực gì của doanh nghiệp.\n"
-                                            f"2. Các nhóm chỉ số quan trọng nhất có trong bảng.\n"
-                                            f"3. Đánh giá nhanh chất lượng dữ liệu & gợi ý hướng khai thác ở Bước 2, 3."
-                                        )
+                                        if has_issues:
+                                            prompt_s1 = (
+                                                f"Hãy nhận xét ngắn gọn bằng tiếng Việt (2-3 gạch đầu dòng, không đếm số dòng/cột) về vấn đề của tệp '{item['file']}':\n"
+                                                f"- Số ô trống: {null_cnt:,} (tại các cột: {', '.join(str(c) for c in null_cols[:5])})\n"
+                                                f"- Số dòng trùng lặp: {dup_cnt:,}\n"
+                                                f"- Cột có giá trị âm: {', '.join(neg_cols[:5]) if neg_cols else 'Không'}\n"
+                                                f"Các cột: {cols_preview}\nMẫu:\n{sample_csv}\n"
+                                                f"Nêu rõ tệp đang gặp lỗi gì và gợi ý ngắn gọn cách xử lý ở Bước 2."
+                                            )
+                                        else:
+                                            prompt_s1 = (
+                                                f"Tệp '{item['file']}' không có lỗi dữ liệu. Hãy nhận xét ngắn gọn bằng tiếng Việt (2-3 gạch đầu dòng, không đếm số dòng/cột) "
+                                                f"về tình hình hoạt động / kinh doanh của doanh nghiệp dựa trên các cột ({cols_preview}) và mẫu sau:\n{sample_csv}"
+                                            )
                                         resp = orch.analysis_agent.model.generate_content(prompt_s1)
                                         ai_text = (getattr(resp, "text", "") or "").strip()
                                     except Exception:
                                         ai_text = ""
                                 if not ai_text:
-                                    num_cols = [str(c) for c in df_chk.select_dtypes(include=["number"]).columns[:5]]
-                                    txt_cols = [str(c) for c in df_chk.select_dtypes(exclude=["number"]).columns[:5]]
-                                    null_cnt = int(df_chk.isna().sum().sum())
-                                    ai_text = (
-                                        f"- **Lĩnh vực & cấu trúc:** Tệp `{item['file']}` gồm **{len(df_chk):,} bản ghi** và **{len(df_chk.columns)} trường thông tin**.\n"
-                                        f"- **Chỉ số định lượng chính:** {', '.join(num_cols) if num_cols else 'Đang nhận diện'}.\n"
-                                        f"- **Trường phân loại / định danh:** {', '.join(txt_cols) if txt_cols else 'Đang nhận diện'}.\n"
-                                        f"- **Chất lượng sơ bộ:** Phát hiện **{null_cnt:,} ô trống**; sẵn sàng chuẩn hóa ở Bước 2 và tổng hợp Dashboard ở Bước 3."
-                                    )
+                                    if has_issues:
+                                        issues_parts = []
+                                        if null_cnt > 0:
+                                            cols_str = ", ".join(str(c) for c in null_cols[:4])
+                                            more_c = f" (+{len(null_cols)-4} cột)" if len(null_cols) > 4 else ""
+                                            issues_parts.append(f"- **Dữ liệu bị thiếu:** Có **{null_cnt:,} ô trống** rải rác ở các cột `{cols_str}`{more_c}.")
+                                        if dup_cnt > 0:
+                                            issues_parts.append(f"- **Trùng lặp bản ghi:** Phát hiện **{dup_cnt:,} dòng trùng lặp** cần rà soát.")
+                                        if neg_cols:
+                                            issues_parts.append(f"- **Giá trị bất thường:** Cột `{', '.join(neg_cols[:4])}` có chứa số âm.")
+                                        issues_parts.append("- **Đề xuất:** Chuyển sang **Bước 2** để hệ thống tự động làm sạch hoặc sửa trực tiếp các ô lỗi.")
+                                        ai_text = "\n".join(issues_parts)
+                                    else:
+                                        rev_cols = [c for c in df_chk.columns if any(k in str(c).lower() for k in ["revenue", "doanh_thu", "doanhthu", "sales", "amount", "profit", "loi_nhuan"])]
+                                        biz_parts = [f"- **Tình trạng dữ liệu:** Tệp sạch, không phát hiện ô trống hay dòng trùng lặp."]
+                                        if rev_cols:
+                                            rc = rev_cols[0]
+                                            s_val = pd.to_numeric(df_chk[rc], errors="coerce").dropna()
+                                            if len(s_val) > 0:
+                                                biz_parts.append(f"- **Tình hình kinh doanh:** Chỉ số `{rc}` đạt tổng **{s_val.sum():,.0f}** (trung bình **{s_val.mean():,.1f}**/giao dịch).")
+                                        biz_parts.append("- **Đánh giá chung:** Dữ liệu phản ánh hoạt động vận hành ổn định, đủ điều kiện tổng hợp báo cáo và Dashboard ở Bước 3.")
+                                        ai_text = "\n".join(biz_parts)
                                 st.session_state.step1_ai_summaries[cache_key] = ai_text
                             st.info(f"🤖 **AI Phân tích sơ bộ ({item['file']}):**\n\n{st.session_state.step1_ai_summaries[cache_key]}")
                     else:
