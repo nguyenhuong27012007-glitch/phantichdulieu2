@@ -152,9 +152,17 @@ st.markdown(f"""
         line-height: 1.5 !important;
     }}
 
-    /* Nền Xanh Dương Pastel dịu nhẹ, thoáng mắt */
+    /* Nền Xanh Dương Pastel hiện đại, có chiều sâu */
     .stApp {{
-        background: linear-gradient(180deg, #f4f8ff 0%, #eef5ff 50%, #f8fafc 100%) !important;
+        background: radial-gradient(circle at 12% 10%, #dbeafe 0%, transparent 40%),
+                    radial-gradient(circle at 88% 15%, #e0f2fe 0%, transparent 38%),
+                    linear-gradient(180deg, #eff6ff 0%, #f4f8ff 50%, #f8fafc 100%) !important;
+    }}
+
+    /* Thanh bên trái (Sidebar) tông xanh pastel dịu */
+    section[data-testid="stSidebar"] {{
+        background: linear-gradient(180deg, #eff6ff 0%, #e6f0ff 100%) !important;
+        border-right: 1px solid #dbeafe !important;
     }}
 
     /* Hiệu ứng chuyển trang mượt mà */
@@ -163,16 +171,25 @@ st.markdown(f"""
         100% {{ opacity: 1; transform: translateY(0); }}
     }}
 
-    /* Khung chính — Rộng toàn màn hình */
+    /* Khung chính — Rộng toàn màn hình + viền nhấn xanh */
     .main .block-container,
     [data-testid="stMainBlockContainer"] {{
-        background: #ffffff !important;
-        border-radius: 20px !important;
+        background: rgba(255, 255, 255, 0.96) !important;
+        border-radius: 22px !important;
         padding: 2rem 2.2rem 2rem 2.2rem !important;
         margin: 0.75rem auto !important;
         max-width: 98% !important;
-        box-shadow: 0 8px 30px rgba(30, 58, 138, 0.05) !important;
-        border: 1px solid #e2ecf9 !important;
+        box-shadow: 0 12px 36px rgba(37, 99, 235, 0.07), 0 2px 8px rgba(15, 23, 42, 0.03) !important;
+        border: 1px solid #dbeafe !important;
+        border-top: 4px solid #3b82f6 !important;
+    }}
+
+    /* Khung thẻ con (bordered container) tinh tế */
+    [data-testid="stVerticalBlockBorderWrapper"] {{
+        background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%) !important;
+        border-radius: 16px !important;
+        border: 1px solid #dbeafe !important;
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.04) !important;
     }}
 
     .st-key-landing_stage_container,
@@ -792,17 +809,17 @@ try:
         # ============================================================
         with st.container(border=True):
             st.markdown("##### 📄 Bối cảnh doanh nghiệp")
-            st.caption("Mô tả ngắn gọn về mô hình kinh doanh và mục tiêu phân tích (tất cả các ô đều không bắt buộc).")
+            st.caption("Mô tả ngắn gọn về mô hình kinh doanh và mục tiêu phân tích.")
             col_ctx1, col_ctx2 = st.columns([1, 1])
             with col_ctx1:
                 st.text_input(
-                    "Lĩnh vực hoạt động (không bắt buộc)",
+                    "Lĩnh vực hoạt động",
                     value=st.session_state.get("biz_type", ""),
                     placeholder="Ví dụ: Thương mại điện tử, chuỗi cửa hàng, phân phối hàng tiêu dùng...",
                     key="biz_type"
                 )
                 st.text_area(
-                    "Ghi chú thêm (không bắt buộc)",
+                    "Ghi chú thêm",
                     value=st.session_state.get("biz_extra", ""),
                     placeholder="Ví dụ: Đang so sánh hiệu quả giữa các khu vực hoặc theo dõi biến động theo tháng...",
                     height=88,
@@ -810,19 +827,19 @@ try:
                 )
             with col_ctx2:
                 st.text_area(
-                    "Mục tiêu / Câu hỏi cần giải đáp (không bắt buộc)",
+                    "Mục tiêu / Câu hỏi cần giải đáp",
                     value=st.session_state.get("biz_questions", ""),
                     placeholder="Khu vực hoặc nhóm sản phẩm nào đang mang lại hiệu quả tốt nhất?\nChỉ số nào cần tối ưu trong giai đoạn tới?",
                     height=168,
                     key="biz_questions"
                 )
 
-            if has_loaded_files:
-                first_fname = list(orch.data_agent.raw_dataframes.keys())[0]
-                first_df = orch.data_agent.raw_dataframes[first_fname]
-                num_c = [str(c) for c in first_df.select_dtypes(include=["number"]).columns[:4]]
-                cat_c = [str(c) for c in first_df.select_dtypes(exclude=["number"]).columns[:4]]
-                if st.button("✨ AI gợi ý bối cảnh & câu hỏi theo tệp đã nạp", key="btn_ai_suggest_ctx"):
+            if st.button("✨ AI gợi ý bối cảnh & câu hỏi theo tệp đã nạp", key="btn_ai_suggest_ctx"):
+                if has_loaded_files:
+                    first_fname = list(orch.data_agent.raw_dataframes.keys())[0]
+                    first_df = orch.data_agent.raw_dataframes[first_fname]
+                    num_c = [str(c) for c in first_df.select_dtypes(include=["number"]).columns[:4]]
+                    cat_c = [str(c) for c in first_df.select_dtypes(exclude=["number"]).columns[:4]]
                     sug_type = "Kinh doanh / Bán lẻ & Vận hành"
                     if any(k in " ".join(first_df.columns).lower() for k in ["ship", "delivery", "warehouse", "kho", "logistics"]):
                         sug_type = "Thương mại & Logistics / Chuỗi cung ứng"
@@ -840,6 +857,8 @@ try:
                     st.session_state["biz_type"] = sug_type
                     st.session_state["biz_questions"] = "\n".join(q_list)
                     st.rerun()
+                else:
+                    st.toast("⚠️ Vui lòng tải tệp dữ liệu lên trước để AI gợi ý sát theo tệp của bạn!", icon="⚠️")
 
         if has_loaded_files:
             col_s1_h1, col_s1_h2 = st.columns([2.7, 1.3])
