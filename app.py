@@ -663,6 +663,52 @@ def _vietnamese_error_message(exc: Exception) -> str:
         return "⚠️ Định dạng tệp dữ liệu có dòng bị lệch cột. Vui lòng kiểm tra lại tệp CSV/Excel."
     return "⚠️ Hệ thống gặp sự cố nhỏ khi xử lý thao tác vừa rồi. Vui lòng kiểm tra lại dữ liệu hoặc thử lại."
 
+def _render_excel_filter_toolbar(df_cur: pd.DataFrame, key_prefix: str):
+    """Thanh công cụ lọc nhiều cột, tìm kiếm, sắp xếp và chọn cột hiển thị kiểu Excel."""
+    col_f1, col_f2, col_f3, col_f4 = st.columns([1.2, 1.8, 1.1, 0.9])
+    with col_f1:
+        f_search = st.text_input("🔍 Tìm kiếm nhanh:", placeholder="Nhập từ khóa...", key=f"{key_prefix}_search")
+    with col_f2:
+        f_cols = st.multiselect("🔽 Lọc theo cột:", list(df_cur.columns), default=[], key=f"{key_prefix}_fcols")
+    with col_f3:
+        f_sort_col = st.selectbox("↕️ Sắp xếp theo:", ["(Mặc định)"] + list(df_cur.columns), key=f"{key_prefix}_scol")
+    with col_f4:
+        f_sort_asc = st.selectbox("Thứ tự:", ["Tăng dần", "Giảm dần"], key=f"{key_prefix}_sasc")
+
+    active_filters = {}
+    if f_cols:
+        f_cols_ui = st.columns(min(len(f_cols), 3))
+        for idx_fc, fcol in enumerate(f_cols):
+            with f_cols_ui[idx_fc % 3]:
+                uniq_vals = sorted(df_cur[fcol].dropna().astype(str).unique().tolist())[:300]
+                picked_vals = st.multiselect(f"Giá trị `{fcol}`:", uniq_vals, key=f"{key_prefix}_fval_{fcol}")
+                if picked_vals:
+                    active_filters[fcol] = picked_vals
+
+    show_cols = st.multiselect(
+        "👁️ Chọn cột hiển thị (để trống = hiện tất cả):",
+        list(df_cur.columns),
+        default=[],
+        key=f"{key_prefix}_cols"
+    )
+
+    view_df = df_cur
+    if f_search and f_search.strip():
+        kw = f_search.strip().lower()
+        mask_kw = view_df.astype(str).apply(lambda col: col.str.lower().str.contains(kw, na=False)).any(axis=1)
+        view_df = view_df[mask_kw]
+    for fcol, fvals in active_filters.items():
+        view_df = view_df[view_df[fcol].astype(str).isin(fvals)]
+    if f_sort_col != "(Mặc định)":
+        view_df = view_df.sort_values(by=f_sort_col, ascending=(f_sort_asc == "Tăng dần"), kind="mergesort")
+
+    display_cols = show_cols if show_cols else list(view_df.columns)
+    is_filtered = bool((f_search and f_search.strip()) or active_filters)
+    if is_filtered:
+        st.caption(f"🔎 Đang hiển thị **{len(view_df):,} / {len(df_cur):,}** dòng phù hợp.")
+    return view_df, display_cols, is_filtered, bool(show_cols)
+
+
 def _format_groups_preview(groups: list, max_show: int = 3) -> str:
     if not groups:
         return "Toàn bộ dữ liệu"
@@ -824,53 +870,9 @@ try:
                     s1_df_cur = orch.data_agent.raw_dataframes[s1_chosen_file]
                     st.caption(f"Nhấp đúp vào ô để sửa trực tiếp ({len(s1_df_cur):,} dòng × {len(s1_df_cur.columns)} cột)")
 
-                # Thanh công cụ lọc nhiều cột kiểu Excel
-                col_f1, col_f2, col_f3, col_f4 = st.columns([1.2, 1.8, 1.1, 0.9])
-                with col_f1:
-                    s1_search = st.text_input("🔍 Tìm kiếm nhanh:", placeholder="Nhập từ khóa...", key=f"s1_search_{s1_chosen_file}")
-                with col_f2:
-                    s1_filter_cols = st.multiselect(
-                        "🔽 Lọc theo cột (chọn 1 hoặc nhiều cột, VD: City, Region):",
-                        list(s1_df_cur.columns),
-                        default=[],
-                        key=f"s1_fcols_{s1_chosen_file}"
-                    )
-                with col_f3:
-                    s1_sort_col = st.selectbox("↕️ Sắp xếp theo:", ["(Mặc định)"] + list(s1_df_cur.columns), key=f"s1_scol_{s1_chosen_file}")
-                with col_f4:
-                    s1_sort_asc = st.selectbox("Thứ tự:", ["Tăng dần", "Giảm dần"], key=f"s1_sasc_{s1_chosen_file}")
-
-                s1_active_filters = {}
-                if s1_filter_cols:
-                    f_cols_ui = st.columns(min(len(s1_filter_cols), 3))
-                    for idx_fc, fcol in enumerate(s1_filter_cols):
-                        with f_cols_ui[idx_fc % 3]:
-                            uniq_vals = sorted(s1_df_cur[fcol].dropna().astype(str).unique().tolist())[:300]
-                            picked_vals = st.multiselect(f"Giá trị `{fcol}`:", uniq_vals, key=f"s1_fval_{s1_chosen_file}_{fcol}")
-                            if picked_vals:
-                                s1_active_filters[fcol] = picked_vals
-
-                s1_show_cols = st.multiselect(
-                    "👁️ Chọn cột hiển thị (để trống = hiện tất cả):",
-                    list(s1_df_cur.columns),
-                    default=[],
-                    key=f"s1_cols_{s1_chosen_file}"
+                s1_view_df, display_cols, s1_is_filtered, s1_has_show_cols = _render_excel_filter_toolbar(
+                    s1_df_cur, f"s1_{s1_chosen_file}"
                 )
-
-                s1_view_df = s1_df_cur
-                if s1_search and s1_search.strip():
-                    kw = s1_search.strip().lower()
-                    mask_kw = s1_view_df.astype(str).apply(lambda col: col.str.lower().str.contains(kw, na=False)).any(axis=1)
-                    s1_view_df = s1_view_df[mask_kw]
-                for fcol, fvals in s1_active_filters.items():
-                    s1_view_df = s1_view_df[s1_view_df[fcol].astype(str).isin(fvals)]
-                if s1_sort_col != "(Mặc định)":
-                    s1_view_df = s1_view_df.sort_values(by=s1_sort_col, ascending=(s1_sort_asc == "Tăng dần"), kind="mergesort")
-
-                display_cols = s1_show_cols if s1_show_cols else list(s1_view_df.columns)
-                s1_is_filtered = bool((s1_search and s1_search.strip()) or s1_active_filters)
-                if s1_is_filtered:
-                    st.caption(f"🔎 Đang hiển thị **{len(s1_view_df):,} / {len(s1_df_cur):,}** dòng phù hợp.")
 
                 if len(s1_view_df) > 1000:
                     s1_slice = s1_view_df[display_cols].iloc[:500]
@@ -884,7 +886,7 @@ try:
                     if st.button("💾 Lưu chỉnh sửa", type="primary", use_container_width=True, key="btn_save_step1"):
                         try:
                             with st.spinner("⏳ Đang lưu thay đổi..."):
-                                if not s1_is_filtered and not s1_show_cols and len(s1_df_cur) <= 1000:
+                                if not s1_is_filtered and not s1_has_show_cols and len(s1_df_cur) <= 1000:
                                     orch.data_agent.raw_dataframes[s1_chosen_file] = s1_edited
                                 else:
                                     updated_full = s1_df_cur.copy()
@@ -913,7 +915,8 @@ try:
         if st.session_state.file_messages:
             if "step1_ai_summaries" not in st.session_state:
                 st.session_state.step1_ai_summaries = {}
-            with st.expander(f"📋 Chi tiết kiểm tra ({len(st.session_state.file_messages)} tệp)", expanded=not bool(orch.data_agent.raw_dataframes)):
+            st.markdown(f"#### 📋 Chi tiết kiểm tra ({len(st.session_state.file_messages)} tệp)")
+            with st.container():
                 for item in st.session_state.file_messages[-6:]:
                     if item["success"]:
                         st.success(f"**{item['file']}**: {item['msg']}")
@@ -1035,19 +1038,7 @@ try:
                 st.session_state._last_step2_selected_file = selected_file
 
             st.write("")
-            col_s2_btn1, col_s2_btn2 = st.columns(2)
-            with col_s2_btn1:
-                lbl_audit_btn = "Đóng chi tiết xử lý file" if st.session_state.show_step2_audit_log else "📋 Xem hệ thống đã xử lý gì với file"
-                if st.button(lbl_audit_btn, use_container_width=True, key="btn_toggle_s2_audit"):
-                    st.session_state.show_step2_audit_log = not st.session_state.show_step2_audit_log
-                    st.rerun()
-            with col_s2_btn2:
-                lbl_s2_btn = "Đóng bảng chỉnh sửa" if st.session_state.show_step2_editor else "✏️ Bấm vào đây nếu muốn sửa dữ liệu"
-                if st.button(lbl_s2_btn, use_container_width=True, key="btn_toggle_s2_editor"):
-                    st.session_state.show_step2_editor = not st.session_state.show_step2_editor
-                    st.rerun()
-
-            if st.session_state.show_step2_audit_log:
+            if True:
                 empty_r = int(file_info_cur.get("empty_rows_removed", 0))
                 empty_c = int(file_info_cur.get("empty_cols_removed", 0))
                 missing_cells = int(df_current.isna().sum().sum())
@@ -1093,39 +1084,29 @@ try:
                             details.append(f"- ✏️ **Thao tác của bạn:** {u_log}")
                         st.info("\n".join(details))
 
+            lbl_s2_btn = "Đóng bảng chỉnh sửa" if st.session_state.show_step2_editor else "✏️ Bấm vào đây nếu muốn sửa dữ liệu"
+            if st.button(lbl_s2_btn, use_container_width=True, key="btn_toggle_s2_editor"):
+                st.session_state.show_step2_editor = not st.session_state.show_step2_editor
+                st.rerun()
+
             if st.session_state.show_step2_editor:
                 with st.container(key="zone_step2_workspace"):
-                    # Hỗ trợ phân trang & lọc nhanh nếu file lớn (> 1000 dòng) hoặc xem toàn bộ
-                    if total_rows > 1000:
-                        col_p1, col_p2, col_p3 = st.columns([1.2, 1.2, 1.6])
-                        with col_p1:
-                            page_size = st.selectbox("📄 Số dòng/trang:", [500, 1000, 2500, 5000, total_rows], index=1, format_func=lambda x: f"Tất cả ({x:,} dòng)" if x == total_rows else f"{x:,} dòng/trang")
-                        total_pages = max(1, (total_rows + page_size - 1) // page_size)
-                        with col_p2:
-                            current_page = st.number_input(f"🔢 Trang (1-{total_pages}):", min_value=1, max_value=total_pages, value=1, step=1)
-                        with col_p3:
-                            search_kw = st.text_input("🔍 Lọc nhanh từ khóa:", placeholder="Nhập Địa bàn / Mã...")
-
-                        start_idx = (current_page - 1) * page_size
-                        end_idx = min(start_idx + page_size, total_rows)
-
-                        if search_kw.strip():
-                            mask = df_current.astype(str).apply(lambda x: x.str.contains(search_kw.strip(), case=False, na=False)).any(axis=1)
-                            df_slice = df_current[mask]
-                        else:
-                            df_slice = df_current.iloc[start_idx:end_idx]
-
+                    s2_view_df, s2_display_cols, s2_is_filtered, s2_has_show_cols = _render_excel_filter_toolbar(
+                        df_current, f"s2_{selected_file}"
+                    )
+                    if len(s2_view_df) > 1000:
+                        df_slice = s2_view_df[s2_display_cols].iloc[:500]
                         edited_slice = st.data_editor(
                             df_slice,
                             use_container_width=True,
                             num_rows="dynamic",
                             height=540,
-                            key=f"editor_{selected_file}_{current_page}_{page_size}_{search_kw}"
+                            key=f"editor_{selected_file}_large"
                         )
                     else:
                         st.caption("💡 Nhấp đúp vào ô bất kỳ để sửa trực tiếp, sau đó bấm nút **Lưu Dữ Liệu** hoặc **Làm Sạch & Chuẩn Hóa** bên dưới:")
                         edited_slice = st.data_editor(
-                            df_current,
+                            s2_view_df[s2_display_cols],
                             use_container_width=True,
                             num_rows="dynamic",
                             height=500,
@@ -1488,32 +1469,6 @@ try:
         importlib.reload(_exp_mod)
         from utils.export_helper import build_unified_report_dashboard_html
         import streamlit.components.v1 as components
-
-        # ============================================================
-        # KHỐI PHÊ DUYỆT HOÀN TẤT (GỌN 1 DÒNG TRÊN CÙNG)
-        # ============================================================
-        with st.container(key="human_approval_top_card"):
-            col_app0, col_app1, col_app2 = st.columns([1.0, 2.2, 1.3])
-            with col_app0:
-                st.markdown("<div style='padding-top:0.55rem; font-weight:700; color:#1e3a8a;'>Xác nhận kết quả:</div>", unsafe_allow_html=True)
-            with col_app1:
-                approval_decision = st.selectbox(
-                    "Quyết định phê duyệt cuối cùng:",
-                    ["Phê duyệt báo cáo & hoàn tất quy trình", "Quay lại Bước 2 để chỉnh sửa dữ liệu"],
-                    label_visibility="collapsed",
-                    key="step3_approval_decision"
-                )
-            with col_app2:
-                if "Phê duyệt" in approval_decision:
-                    if st.button("✅ Hoàn tất quy trình", type="primary", use_container_width=True, key="btn_final_approve"):
-                        st.session_state.step3_approved = True
-                        st.success("✅ Quy trình 3 bước đã được xác nhận hoàn tất.")
-                else:
-                    if st.button("⬅️ Về Bước 2 sửa lại", type="primary", use_container_width=True, key="btn_final_approve"):
-                        st.session_state.step3_approved = False
-                        set_spinner_msg("⏳ Đang quay lại Bước 2...")
-                        st.session_state.current_step = 2
-                        st.rerun()
 
         # ============================================================
         # BÁO CÁO TỔNG HỢP & DASHBOARD TRỰC QUAN
