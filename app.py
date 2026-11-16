@@ -849,7 +849,7 @@ try:
                     key=f"s1_cols_{s1_chosen_file}"
                 )
 
-                s1_view_df = s1_df_cur.copy()
+                s1_view_df = s1_df_cur
                 if s1_search and s1_search.strip():
                     kw = s1_search.strip().lower()
                     mask_kw = s1_view_df.astype(str).apply(lambda col: col.str.lower().str.contains(kw, na=False)).any(axis=1)
@@ -941,7 +941,7 @@ try:
                                                 f"Tệp '{item['file']}' không có lỗi dữ liệu. Hãy nhận xét ngắn gọn bằng tiếng Việt (2-3 gạch đầu dòng, không đếm số dòng/cột) "
                                                 f"về tình hình hoạt động / kinh doanh của doanh nghiệp dựa trên các cột ({cols_preview}) và mẫu sau:\n{sample_csv}"
                                             )
-                                        resp = orch.analysis_agent.model.generate_content(prompt_s1)
+                                        resp = orch.analysis_agent.model.generate_content(prompt_s1, request_options={"timeout": 5})
                                         ai_text = (getattr(resp, "text", "") or "").strip()
                                     except Exception:
                                         ai_text = ""
