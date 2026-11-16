@@ -804,62 +804,6 @@ try:
             st.session_state.show_step1_uploader = False
 
         has_loaded_files = bool(orch.data_agent.raw_dataframes)
-        # ============================================================
-        # BỐI CẢNH DOANH NGHIỆP (GỌN, ĐƠN GIẢN)
-        # ============================================================
-        with st.container(border=True):
-            st.markdown("##### 📄 Bối cảnh doanh nghiệp")
-            st.caption("Mô tả ngắn gọn về mô hình kinh doanh và mục tiêu phân tích.")
-            col_ctx1, col_ctx2 = st.columns([1, 1])
-            with col_ctx1:
-                st.text_input(
-                    "Lĩnh vực hoạt động",
-                    value=st.session_state.get("biz_type", ""),
-                    placeholder="Ví dụ: Thương mại điện tử, chuỗi cửa hàng, phân phối hàng tiêu dùng...",
-                    key="biz_type"
-                )
-                st.text_area(
-                    "Ghi chú thêm",
-                    value=st.session_state.get("biz_extra", ""),
-                    placeholder="Ví dụ: Đang so sánh hiệu quả giữa các khu vực hoặc theo dõi biến động theo tháng...",
-                    height=88,
-                    key="biz_extra"
-                )
-            with col_ctx2:
-                st.text_area(
-                    "Mục tiêu / Câu hỏi cần giải đáp",
-                    value=st.session_state.get("biz_questions", ""),
-                    placeholder="Khu vực hoặc nhóm sản phẩm nào đang mang lại hiệu quả tốt nhất?\nChỉ số nào cần tối ưu trong giai đoạn tới?",
-                    height=168,
-                    key="biz_questions"
-                )
-
-            if st.button("✨ AI gợi ý bối cảnh & câu hỏi theo tệp đã nạp", key="btn_ai_suggest_ctx"):
-                if has_loaded_files:
-                    first_fname = list(orch.data_agent.raw_dataframes.keys())[0]
-                    first_df = orch.data_agent.raw_dataframes[first_fname]
-                    num_c = [str(c) for c in first_df.select_dtypes(include=["number"]).columns[:4]]
-                    cat_c = [str(c) for c in first_df.select_dtypes(exclude=["number"]).columns[:4]]
-                    sug_type = "Kinh doanh / Bán lẻ & Vận hành"
-                    if any(k in " ".join(first_df.columns).lower() for k in ["ship", "delivery", "warehouse", "kho", "logistics"]):
-                        sug_type = "Thương mại & Logistics / Chuỗi cung ứng"
-                    elif any(k in " ".join(first_df.columns).lower() for k in ["campaign", "marketing", "ads", "click"]):
-                        sug_type = "Marketing & Chiến dịch"
-                    q_list = []
-                    if cat_c and num_c:
-                        q_list.append(f"Nhóm {cat_c[0]} nào đang đóng góp {num_c[0]} cao nhất?")
-                        if len(num_c) > 1:
-                            q_list.append(f"Mối tương quan giữa {num_c[0]} và {num_c[1]} theo từng {cat_c[0]} ra sao?")
-                    if len(cat_c) > 1 and num_c:
-                        q_list.append(f"Hiệu suất {num_c[0]} khác nhau như thế nào giữa các {cat_c[1]}?")
-                    if not q_list:
-                        q_list = [f"Chỉ số nào trong tệp {first_fname} đang biến động mạnh nhất?", "Nhóm nào cần ưu tiên cải thiện?"]
-                    st.session_state["biz_type"] = sug_type
-                    st.session_state["biz_questions"] = "\n".join(q_list)
-                    st.rerun()
-                else:
-                    st.toast("⚠️ Vui lòng tải tệp dữ liệu lên trước để AI gợi ý sát theo tệp của bạn!", icon="⚠️")
-
         if has_loaded_files:
             col_s1_h1, col_s1_h2 = st.columns([2.7, 1.3])
             with col_s1_h1:
@@ -915,6 +859,67 @@ try:
                                     st.session_state.files_loaded.append("Google Sheet")
                                 st.session_state.show_step1_uploader = False
                             st.rerun()
+
+        if "_pending_biz_type" in st.session_state:
+            st.session_state["biz_type"] = st.session_state.pop("_pending_biz_type")
+        if "_pending_biz_questions" in st.session_state:
+            st.session_state["biz_questions"] = st.session_state.pop("_pending_biz_questions")
+
+        # ============================================================
+        # BỐI CẢNH DOANH NGHIỆP (GỌN, ĐƠN GIẢN)
+        # ============================================================
+        with st.container(border=True):
+            st.markdown("##### 📄 Bối cảnh doanh nghiệp")
+            st.caption("Mô tả ngắn gọn về mô hình kinh doanh và mục tiêu phân tích.")
+            col_ctx1, col_ctx2 = st.columns([1, 1])
+            with col_ctx1:
+                st.text_input(
+                    "Lĩnh vực hoạt động",
+                    value=st.session_state.get("biz_type", ""),
+                    placeholder="Ví dụ: Thương mại điện tử, chuỗi cửa hàng, phân phối hàng tiêu dùng...",
+                    key="biz_type"
+                )
+                st.text_area(
+                    "Ghi chú thêm",
+                    value=st.session_state.get("biz_extra", ""),
+                    placeholder="Ví dụ: Đang so sánh hiệu quả giữa các khu vực hoặc theo dõi biến động theo tháng...",
+                    height=88,
+                    key="biz_extra"
+                )
+            with col_ctx2:
+                st.text_area(
+                    "Mục tiêu / Câu hỏi cần giải đáp",
+                    value=st.session_state.get("biz_questions", ""),
+                    placeholder="Khu vực hoặc nhóm sản phẩm nào đang mang lại hiệu quả tốt nhất?\nChỉ số nào cần tối ưu trong giai đoạn tới?",
+                    height=168,
+                    key="biz_questions"
+                )
+
+            if st.button("✨ AI gợi ý bối cảnh & câu hỏi theo tệp đã nạp", key="btn_ai_suggest_ctx"):
+                if has_loaded_files:
+                    first_fname = list(orch.data_agent.raw_dataframes.keys())[0]
+                    first_df = orch.data_agent.raw_dataframes[first_fname]
+                    num_c = [str(c) for c in first_df.select_dtypes(include=["number"]).columns[:4]]
+                    cat_c = [str(c) for c in first_df.select_dtypes(exclude=["number"]).columns[:4]]
+                    sug_type = "Kinh doanh / Bán lẻ & Vận hành"
+                    if any(k in " ".join(first_df.columns).lower() for k in ["ship", "delivery", "warehouse", "kho", "logistics"]):
+                        sug_type = "Thương mại & Logistics / Chuỗi cung ứng"
+                    elif any(k in " ".join(first_df.columns).lower() for k in ["campaign", "marketing", "ads", "click"]):
+                        sug_type = "Marketing & Chiến dịch"
+                    q_list = []
+                    if cat_c and num_c:
+                        q_list.append(f"Nhóm {cat_c[0]} nào đang đóng góp {num_c[0]} cao nhất?")
+                        if len(num_c) > 1:
+                            q_list.append(f"Mối tương quan giữa {num_c[0]} và {num_c[1]} theo từng {cat_c[0]} ra sao?")
+                    if len(cat_c) > 1 and num_c:
+                        q_list.append(f"Hiệu suất {num_c[0]} khác nhau như thế nào giữa các {cat_c[1]}?")
+                    if not q_list:
+                        q_list = [f"Chỉ số nào trong tệp {first_fname} đang biến động mạnh nhất?", "Nhóm nào cần ưu tiên cải thiện?"]
+                    st.session_state["_pending_biz_type"] = sug_type
+                    st.session_state["_pending_biz_questions"] = "\n".join(q_list)
+                    st.rerun()
+                else:
+                    st.toast("⚠️ Vui lòng tải tệp dữ liệu lên trước để AI gợi ý sát theo tệp của bạn!", icon="⚠️")
 
         if orch.data_agent.raw_dataframes:
             st.write("")
