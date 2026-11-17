@@ -419,7 +419,7 @@ if _cur_step_anim != _prev_step_anim and _cur_step_anim != 0:
             }
         }
         .main .block-container, [data-testid="stMainBlockContainer"] {
-            animation: fadeUpPageReveal 0.48s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+            animation: fadeUpPageReveal 0.48s cubic-bezier(0.16, 1, 0.3, 1) !important;
         }
     </style>
     """, unsafe_allow_html=True)
@@ -1331,14 +1331,20 @@ if st.session_state.current_step != 0:
         section[data-testid="stSidebar"] {
             display: none !important;
         }
+        [data-testid="stMain"], .main {
+            z-index: 1 !important;
+            margin-left: 0 !important;
+            padding-left: 0 !important;
+        }
         .main .block-container, [data-testid="stMainBlockContainer"] {
-            padding-left: 74px !important;
-            padding-right: 1.5rem !important;
+            padding-left: 68px !important;
+            padding-right: 1.2rem !important;
             max-width: 100% !important;
+            margin-left: 0 !important;
         }
         .st-key-floating_left_dock {
             position: fixed !important;
-            left: 8px !important;
+            left: 4px !important;
             top: 50% !important;
             transform: translateY(-50%) !important;
             width: 58px !important;
@@ -2495,23 +2501,43 @@ try:
                                         )
 
                                     st.markdown(
-                                        f"<div style='background:rgba(255,255,255,0.85); border:1px solid #e2e8f0; border-radius:10px; padding:9px 14px; margin:4px 0 8px 0; font-size:0.84rem; color:#334155;'>"
+                                        f"<div style='margin:2px 0 8px 0; font-size:0.86rem; color:#334155; line-height:1.45;'>"
                                         f"{clean_desc}</div>",
                                         unsafe_allow_html=True
                                     )
 
-                                    c_sug_lbl, c_sug_inp = st.columns([1.25, 4.75])
-                                    with c_sug_lbl:
-                                        st.markdown(
-                                            f"<div style='background:{sug_bg}; border:1px solid #e2e8f0; border-radius:8px; padding:7px 10px; font-size:0.8rem; font-weight:700; color:#0f172a; white-space:nowrap;'>"
-                                            f"› Đề xuất xử lý:</div>",
-                                            unsafe_allow_html=True
-                                        )
-                                    with c_sug_inp:
+                                    sug_box_key = f"s2_sug_box_{idx_s2i}"
+                                    st.markdown(f"""
+                                    <style>
+                                        .st-key-{sug_box_key} {{
+                                            background: {sug_bg} !important;
+                                            border: 1px solid #cbd5e1 !important;
+                                            border-radius: 10px !important;
+                                            padding: 6px 12px 4px 12px !important;
+                                        }}
+                                        .st-key-{sug_box_key} div[data-testid="stTextInput"] > div,
+                                        .st-key-{sug_box_key} div[data-baseweb="input"],
+                                        .st-key-{sug_box_key} div[data-baseweb="base-input"] {{
+                                            background: transparent !important;
+                                            border: none !important;
+                                            box-shadow: none !important;
+                                        }}
+                                        .st-key-{sug_box_key} div[data-testid="stTextInput"] label {{
+                                            font-size: 0.78rem !important;
+                                            font-weight: 700 !important;
+                                            color: #1e3a8a !important;
+                                            margin-bottom: 0 !important;
+                                        }}
+                                        .st-key-{sug_box_key} input {{
+                                            padding: 2px 0 !important;
+                                            height: 28px !important;
+                                        }}
+                                    </style>
+                                    """, unsafe_allow_html=True)
+                                    with st.container(key=sug_box_key):
                                         s2_custom_txt = st.text_input(
-                                            "Đề xuất xử lý",
+                                            "› Đề xuất xử lý (có thể sửa lại):",
                                             value=st.session_state.get(f"instr_s2_{selected_file}_{s2_iss['id']}", s2_iss["suggested_fix"]),
-                                            label_visibility="collapsed",
                                             key=f"instr_s2_{selected_file}_{s2_iss['id']}"
                                         )
                                         s2_custom_instrs[s2_iss["id"]] = s2_custom_txt
