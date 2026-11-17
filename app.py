@@ -1324,14 +1324,14 @@ try:
                     st.rerun()
         else:
             st.markdown("""
-            <div style="margin-bottom:1.5rem; background:linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-left:6px solid #2563eb; padding:1.2rem 1.6rem; border-radius:14px; box-shadow:0 6px 20px rgba(37,99,235,0.08);">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <span style="font-size:1.8rem;">🚀</span>
-                    <h1 style="font-size:2.4rem; font-weight:900; color:#1e3a8a; margin:0; letter-spacing:-0.03em; line-height:1.15;">
+            <div style="margin-bottom:1rem;">
+                <div style="background:linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-left:5px solid #2563eb; padding:0.6rem 1.2rem; border-radius:10px; display:inline-flex; align-items:center; gap:10px; margin-bottom:6px;">
+                    <span style="font-size:1.5rem;">🚀</span>
+                    <span style="font-weight:900; color:#1e3a8a; font-size:1.6rem; letter-spacing:-0.02em;">
                         BƯỚC 1: NHẬP DỮ LIỆU
-                    </h1>
+                    </span>
                 </div>
-                <div style="font-size:1.05rem; color:#3b82f6; font-weight:700; margin-top:6px;">
+                <div style="font-size:0.95rem; color:#475569; margin-top:2px; font-weight:600;">
                     Tải lên tệp CSV / Excel hoặc dán đường dẫn Google Sheet công khai để bắt đầu.
                 </div>
             </div>
