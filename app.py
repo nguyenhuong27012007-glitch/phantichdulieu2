@@ -18,12 +18,220 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from agents.orchestrator import AgentOrchestrator
 from config import COMPANY_NAME, EXPANSION_SLOTS, TOTAL_REGIONS, DEFAULT_CRITERIA, DEFAULT_GEMINI_API_KEY
 from utils.column_mapper import COLUMN_SCHEMA
-from utils.file_handler import (
-    detect_data_issues,
-    apply_data_issue_fixes,
-    get_issue_preview_rows,
-    compute_data_health_metrics,
-)
+
+
+# ============================================================
+# BỘ CÔNG CỤ KIỂM TOÁN & XỬ LÝ LỖI DỮ LIỆU TÍCH HỢP TRỰC TIẾP (ZERO IMPORT ERROR)
+# ============================================================
+def detect_data_issues(df: pd.DataFrame, filename: str = "Tệp dữ liệu") -> list:
+    """Quét và phát hiện toàn diện các lỗi dữ liệu để thông báo và chờ người dùng phê duyệt sửa."""
+    if df is None or df.empty:
+        return []
+    issues = []
+
+    # 1. Dòng hoàn toàn trống
+    empty_rows = int(df.isna().all(axis=1).sum())
+    if empty_rows > 0:
+        issues.append({
+            "id": "empty_rows",
+            "type": "Dòng hoàn toàn trống",
+            "severity": "Cảnh báo",
+            "count": empty_rows,
+            "desc": f"Có {empty_rows:,} dòng không có bất kỳ dữ liệu nào (toàn bộ ô đều trống).",
+            "suggested_fix": f"Xóa bỏ {empty_rows:,} dòng trống này để tránh sai lệch tổng số bản ghi.",
+            "action_label": f"Xóa {empty_rows:,} dòng trống"
+        })
+
+    # 2. Cột hoàn toàn trống
+    empty_cols = int(df.isna().all(axis=0).sum())
+    if empty_cols > 0:
+        issues.append({
+            "id": "empty_cols",
+            "type": "Cột hoàn toàn trống",
+            "severity": "Cảnh báo",
+            "count": empty_cols,
+            "desc": f"Có {empty_cols:,} cột không có bất kỳ giá trị nào.",
+            "suggested_fix": f"Loại bỏ {empty_cols:,} cột trống để bảng dữ liệu gọn gàng.",
+            "action_label": f"Loại bỏ {empty_cols:,} cột trống"
+        })
+
+    # 3. Bản ghi trùng lặp (Duplicates)
+    dup_rows = int(df.duplicated().sum())
+    if dup_rows > 0:
+        issues.append({
+            "id": "duplicate_rows",
+            "type": "Dòng trùng lặp (Duplicates)",
+            "severity": "Quan trọng",
+            "count": dup_rows,
+            "desc": f"Phát hiện {dup_rows:,} dòng trùng lặp 100% dữ liệu với các dòng khác trong tệp.",
+            "suggested_fix": f"Loại bỏ {dup_rows:,} dòng trùng lặp, chỉ giữ lại bản ghi xuất hiện đầu tiên.",
+            "action_label": f"Loại bỏ {dup_rows:,} dòng trùng"
+        })
+
+    # 4. Ô dữ liệu bị khuyết (Missing Values / NaN)
+    null_counts = df.isna().sum()
+    null_cols = [f"`{col}` ({int(cnt):,} ô)" for col, cnt in null_counts.items() if cnt > 0]
+    total_null = int(null_counts.sum())
+    if total_null > 0:
+        col_list_str = ", ".join(null_cols[:4])
+        if len(null_cols) > 4:
+            col_list_str += f" (+{len(null_cols)-4} cột khác)"
+        issues.append({
+            "id": "missing_values",
+            "type": "Ô dữ liệu bị khuyết (Trống/NaN)",
+            "severity": "Quan trọng",
+            "count": total_null,
+            "desc": f"Có {total_null:,} ô bị trống rải rác ở các cột: {col_list_str}.",
+            "suggested_fix": "Điền giá trị mặc định an toàn: Cột số điền 0, cột văn bản điền 'Chưa xác định'.",
+            "action_label": f"Điền giá trị mặc định cho {total_null:,} ô trống"
+        })
+
+    # 5. Khoảng trắng thừa đầu/cuối (Leading/Trailing Spaces)
+    obj_cols = [c for c in df.columns if df[c].dtype == "object" or pd.api.types.is_string_dtype(df[c])]
+    space_issue_count = 0
+    space_cols = []
+    for c in obj_cols:
+        s = df[c].dropna().astype(str)
+        mask = s.str.startswith(" ") | s.str.endswith(" ") | s.str.contains(r"  +")
+        c_cnt = int(mask.sum())
+        if c_cnt > 0:
+            space_issue_count += c_cnt
+            space_cols.append(f"`{c}` ({c_cnt:,} ô)")
+    if space_issue_count > 0:
+        col_space_str = ", ".join(space_cols[:4])
+        issues.append({
+            "id": "extra_whitespace",
+            "type": "Khoảng trắng thừa (Đầu/cuối chữ)",
+            "severity": "Nhẹ",
+            "count": space_issue_count,
+            "desc": f"Có {space_issue_count:,} ô văn bản bị thừa khoảng trắng tại: {col_space_str}.",
+            "suggested_fix": "Cắt tỉa (Trim) khoảng trắng thừa đầu/cuối để dữ liệu văn bản đồng nhất.",
+            "action_label": f"Cắt tỉa khoảng trắng ({space_issue_count:,} ô)"
+        })
+
+    # 6. Giá trị số âm bất thường
+    neg_issue_count = 0
+    neg_cols = []
+    for c in df.select_dtypes(include=["number"]).columns:
+        neg_mask = df[c].dropna() < 0
+        if neg_mask.any():
+            c_neg_cnt = int(neg_mask.sum())
+            neg_issue_count += c_neg_cnt
+            neg_cols.append(f"`{c}` ({c_neg_cnt:,} số âm)")
+    if neg_issue_count > 0:
+        col_neg_str = ", ".join(neg_cols[:3])
+        issues.append({
+            "id": "negative_values",
+            "type": "Giá trị số âm bất thường",
+            "severity": "Cảnh báo",
+            "count": neg_issue_count,
+            "desc": f"Phát hiện {neg_issue_count:,} giá trị số âm tại: {col_neg_str}.",
+            "suggested_fix": "Chuyển các giá trị số âm thành số dương (Lấy giá trị tuyệt đối).",
+            "action_label": f"Đổi số âm thành dương ({neg_issue_count:,} ô)"
+        })
+
+    return issues
+
+
+def apply_data_issue_fixes(df: pd.DataFrame, selected_issue_ids: list):
+    """Áp dụng các biện pháp sửa lỗi dữ liệu do người dùng lựa chọn và phê duyệt."""
+    if df is None or df.empty or not selected_issue_ids:
+        return df, []
+    df_fixed = df.copy()
+    report = []
+
+    if "empty_rows" in selected_issue_ids:
+        before_r = len(df_fixed)
+        df_fixed = df_fixed.dropna(how="all")
+        diff_r = before_r - len(df_fixed)
+        if diff_r > 0:
+            report.append(f"Đã xóa {diff_r:,} dòng hoàn toàn trống.")
+
+    if "empty_cols" in selected_issue_ids:
+        before_c = len(df_fixed.columns)
+        df_fixed = df_fixed.dropna(axis=1, how="all")
+        diff_c = before_c - len(df_fixed.columns)
+        if diff_c > 0:
+            report.append(f"Đã loại bỏ {diff_c:,} cột hoàn toàn trống.")
+
+    if "duplicate_rows" in selected_issue_ids:
+        before_d = len(df_fixed)
+        df_fixed = df_fixed.drop_duplicates(keep="first")
+        diff_d = before_d - len(df_fixed)
+        if diff_d > 0:
+            report.append(f"Đã loại bỏ {diff_d:,} dòng trùng lặp (giữ bản ghi đầu tiên).")
+
+    if "extra_whitespace" in selected_issue_ids:
+        ws_count = 0
+        for col in df_fixed.columns:
+            if df_fixed[col].dtype == "object" or pd.api.types.is_string_dtype(df_fixed[col]):
+                df_fixed[col] = df_fixed[col].apply(lambda x: " ".join(str(x).split()) if pd.notna(x) else x)
+                ws_count += 1
+        if ws_count > 0:
+            report.append(f"Đã cắt tỉa khoảng trắng thừa trên {ws_count} cột văn bản.")
+
+    if "missing_values" in selected_issue_ids:
+        filled_count = 0
+        for col in df_fixed.columns:
+            null_cnt = int(df_fixed[col].isna().sum())
+            if null_cnt > 0:
+                filled_count += null_cnt
+                if pd.api.types.is_numeric_dtype(df_fixed[col]):
+                    df_fixed[col] = df_fixed[col].fillna(0)
+                else:
+                    df_fixed[col] = df_fixed[col].fillna("Chưa xác định")
+        if filled_count > 0:
+            report.append(f"Đã điền giá trị an toàn cho {filled_count:,} ô bị khuyết (Số: 0, Chữ: 'Chưa xác định').")
+
+    if "negative_values" in selected_issue_ids:
+        neg_count = 0
+        for col in df_fixed.select_dtypes(include=["number"]).columns:
+            neg_mask = df_fixed[col] < 0
+            if neg_mask.any():
+                neg_count += int(neg_mask.sum())
+                df_fixed[col] = df_fixed[col].abs()
+        if neg_count > 0:
+            report.append(f"Đã chuyển {neg_count:,} giá trị âm sang số dương.")
+
+    return df_fixed, report
+
+
+def get_issue_preview_rows(df: pd.DataFrame, max_rows: int = 30) -> pd.DataFrame:
+    """Trả về bảng xem trước các dòng có chứa lỗi dữ liệu để người dùng đối chiếu trước khi duyệt."""
+    if df is None or df.empty:
+        return pd.DataFrame()
+    mask_null = df.isna().any(axis=1)
+    mask_dup = df.duplicated(keep=False)
+    mask_neg = pd.Series(False, index=df.index)
+    for c in df.select_dtypes(include=["number"]).columns:
+        mask_neg = mask_neg | (df[c] < 0).fillna(False)
+    mask_ws = pd.Series(False, index=df.index)
+    obj_cols = [c for c in df.columns if df[c].dtype == "object" or pd.api.types.is_string_dtype(df[c])]
+    for c in obj_cols:
+        s = df[c].fillna("").astype(str)
+        mask_ws = mask_ws | s.str.startswith(" ") | s.str.endswith(" ") | s.str.contains(r"  +")
+    combined_mask = mask_null | mask_dup | mask_neg | mask_ws
+    return df[combined_mask].head(max_rows)
+
+
+def compute_data_health_metrics(df: pd.DataFrame) -> dict:
+    """Tính toán chỉ số sức khỏe dữ liệu (Data Health Score) chuẩn xác."""
+    if df is None or df.empty:
+        return {"health_score": 100.0, "completeness_pct": 100.0, "unique_pct": 100.0, "total_cells": 0, "null_cells": 0, "dup_rows": 0}
+    total_cells = max(1, int(df.shape[0] * df.shape[1]))
+    null_cells = int(df.isna().sum().sum())
+    dup_rows = int(df.duplicated().sum())
+    completeness_pct = round(100.0 * (total_cells - null_cells) / total_cells, 1)
+    unique_pct = round(100.0 * (len(df) - dup_rows) / max(1, len(df)), 1)
+    health_score = round(completeness_pct * 0.65 + unique_pct * 0.35, 1)
+    return {
+        "health_score": health_score,
+        "completeness_pct": completeness_pct,
+        "unique_pct": unique_pct,
+        "total_cells": total_cells,
+        "null_cells": null_cells,
+        "dup_rows": dup_rows
+    }
 
 # ============================================================
 # CẤU HÌNH TRANG STREAMLIT
@@ -1262,8 +1470,11 @@ try:
                                     content = up.read()
                                     success, msg = orch.load_file(content, up.name)
                                     st.session_state.file_messages.append({"file": up.name, "success": success, "msg": msg})
-                                    if success and up.name not in st.session_state.files_loaded:
-                                        st.session_state.files_loaded.append(up.name)
+                                    if success:
+                                        if up.name in orch.data_agent.raw_dataframes:
+                                            orch.data_agent.file_infos.setdefault(up.name, {})["original_df"] = orch.data_agent.raw_dataframes[up.name].copy()
+                                        if up.name not in st.session_state.files_loaded:
+                                            st.session_state.files_loaded.append(up.name)
                                 st.session_state.show_step1_uploader = False
                             st.rerun()
 
@@ -1297,9 +1508,13 @@ try:
                         if st.button("Đọc Google Sheet ➔", type="primary", use_container_width=True, key="btn_verify_gsheet"):
                             with st.spinner("Đang kết nối và kiểm tra Google Sheet..."):
                                 success, msg = orch.load_google_sheet(sheet_url)
-                                st.session_state.file_messages.append({"file": "Google Sheet", "success": success, "msg": msg})
+                                g_keys = [k for k in orch.data_agent.raw_dataframes.keys() if k.startswith("GoogleSheet")]
+                                latest_gkey = g_keys[-1] if g_keys else "Google Sheet"
+                                st.session_state.file_messages.append({"file": latest_gkey, "success": success, "msg": msg})
                                 if success:
-                                    st.session_state.files_loaded.append("Google Sheet")
+                                    if latest_gkey in orch.data_agent.raw_dataframes:
+                                        orch.data_agent.file_infos.setdefault(latest_gkey, {})["original_df"] = orch.data_agent.raw_dataframes[latest_gkey].copy()
+                                    st.session_state.files_loaded.append(latest_gkey)
                                 st.session_state.show_step1_uploader = False
                             st.rerun()
 
@@ -2234,7 +2449,9 @@ try:
         import importlib
         import utils.export_helper as _exp_mod
         importlib.reload(_exp_mod)
-        from utils.export_helper import build_unified_report_dashboard_html, build_docx_bytes, build_pdf_bytes
+        from utils.export_helper import build_unified_report_dashboard_html
+        build_docx_bytes = getattr(_exp_mod, "build_docx_bytes", None)
+        build_pdf_bytes = getattr(_exp_mod, "build_pdf_bytes", None)
         import streamlit.components.v1 as components
 
         # ============================================================
