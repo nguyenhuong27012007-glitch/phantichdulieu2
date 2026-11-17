@@ -2076,7 +2076,12 @@ try:
         if st.session_state.file_messages:
             if "step1_ai_summaries" not in st.session_state:
                 st.session_state.step1_ai_summaries = {}
-            st.markdown(f"#### 📋 Chi tiết kiểm tra & Phê duyệt xử lý lỗi ({len(st.session_state.file_messages)} tệp)")
+            _has_any_err_s1 = any(
+                (not it["success"]) or bool(detect_data_issues(orch.data_agent.raw_dataframes.get(it["file"]), it["file"]))
+                for it in st.session_state.file_messages[-6:]
+            )
+            if _has_any_err_s1:
+                st.markdown(f"#### 📋 Chi tiết kiểm tra & Phê duyệt xử lý lỗi ({len(st.session_state.file_messages)} tệp)")
             with st.container():
                 for item in st.session_state.file_messages[-6:]:
                     if item["success"]:
@@ -2098,10 +2103,6 @@ try:
                                     f"{_short_err_lines}"
                                 )
                             else:
-                                st.success(
-                                    f"✅ **Tệp `{item['file']}` đạt chuẩn chất lượng 100% ({len(df_chk):,} dòng × {len(df_chk.columns)} cột):** "
-                                    f"Không có ô trống, không có bản ghi trùng lặp và định dạng hoàn toàn hợp lệ."
-                                )
                                 if has_backup and user_logs_s1:
                                     with st.expander(f"📜 Nhật ký các mục bạn đã duyệt sửa trên `{item['file']}` ({len(user_logs_s1)} thao tác)", expanded=False):
                                         for u_l in user_logs_s1:
