@@ -1579,47 +1579,68 @@ try:
             <div class="relative w-full grid grid-cols-3 gap-4 items-center">
                 
                 <!-- Bước 1 (Thẻ dọc - Cao) -->
-                <div onclick="triggerStart()" class="hover-card cursor-pointer glass-panel p-5 rounded-3xl shadow-lg border border-white flex flex-col justify-between h-64 transform -translate-y-6">
-                    <div class="flex justify-between items-start">
-                        <span class="w-9 h-9 rounded-full bg-blue-100 text-blue-600 font-bold flex items-center justify-center text-base">1</span>
-                        <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                <div onclick="triggerStart()" class="hover-card cursor-pointer glass-panel p-4 rounded-3xl shadow-lg border border-white flex flex-col justify-between h-[236px] transform -translate-y-6">
+                    <div class="flex justify-between items-center">
+                        <span class="w-9 h-9 rounded-full bg-blue-100 text-blue-600 font-extrabold flex items-center justify-center text-base">1</span>
+                        <span class="w-8 h-8 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-500">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                        </span>
+                    </div>
+                    <div class="my-2 p-2.5 rounded-2xl bg-blue-50/70 border border-dashed border-blue-200 flex flex-wrap gap-1.5 justify-center">
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-white text-blue-600 shadow-sm">CSV</span>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-white text-emerald-600 shadow-sm">Excel</span>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-white text-amber-600 shadow-sm">Sheet</span>
                     </div>
                     <div>
-                        <span class="text-[11px] text-slate-400 font-semibold uppercase">Bước 1</span>
-                        <h3 class="text-lg font-bold text-slate-800 mt-0.5 leading-snug">Nhập dữ liệu</h3>
-                        <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">Kết nối đa nguồn nhanh chóng</p>
+                        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Bước 1</span>
+                        <h3 class="text-xl font-extrabold text-slate-800 mt-0.5 leading-tight">Nhập dữ liệu</h3>
+                        <p class="text-[11px] text-slate-500 mt-1 leading-snug">Kết nối đa nguồn nhanh chóng</p>
                     </div>
                 </div>
 
                 <!-- Bước 2 (Thẻ dọc - Thấp so le) -->
-                <div onclick="triggerStart()" class="hover-card cursor-pointer bg-gradient-to-br from-blue-500 to-blue-600 p-5 rounded-3xl shadow-xl text-white flex flex-col justify-between h-64 transform translate-y-6">
-                    <div class="flex justify-between items-start">
-                        <span class="w-9 h-9 rounded-full bg-white/20 text-white font-bold flex items-center justify-center text-base backdrop-blur-sm">2</span>
+                <div onclick="triggerStart()" class="hover-card cursor-pointer bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-3xl shadow-xl text-white flex flex-col justify-between h-[236px] transform translate-y-6">
+                    <div class="flex justify-between items-center">
+                        <span class="w-9 h-9 rounded-full bg-white/20 text-white font-extrabold flex items-center justify-center text-base backdrop-blur-sm">2</span>
+                        <span class="w-8 h-8 rounded-xl bg-white/15 flex items-center justify-center text-yellow-300">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </span>
+                    </div>
+                    <div class="my-2 p-2.5 rounded-2xl bg-white/10 backdrop-blur-sm space-y-1.5">
+                        <div class="flex justify-between text-[10px] font-semibold text-blue-100">
+                            <span>Kiểm tra lỗi</span>
+                            <span class="text-green-300">Sẵn sàng</span>
+                        </div>
+                        <div class="w-full h-1.5 bg-white/20 rounded-full overflow-hidden">
+                            <div class="w-full h-full bg-green-400 rounded-full"></div>
+                        </div>
                     </div>
                     <div>
-                        <span class="text-[11px] text-blue-100 font-semibold uppercase">Bước 2</span>
-                        <h3 class="text-lg font-bold mt-0.5 leading-snug">Làm sạch</h3>
-                        <div class="mt-3 bg-white/10 p-2 rounded-xl backdrop-blur-sm flex items-center space-x-2">
+                        <span class="text-[10px] text-blue-100 font-bold uppercase tracking-wider">Bước 2</span>
+                        <h3 class="text-xl font-extrabold mt-0.5 leading-tight">Làm sạch</h3>
+                        <div class="mt-2 bg-white/15 px-2.5 py-1.5 rounded-xl backdrop-blur-sm flex items-center space-x-2">
                             <div class="w-2 h-2 rounded-full bg-green-400 shrink-0"></div>
-                            <span class="text-[11px] font-medium">100% Chính xác</span>
+                            <span class="text-[11px] font-semibold">100% Chính xác</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Bước 3 (Thẻ dọc - Cao so le) -->
-                <div onclick="triggerStart()" class="hover-card cursor-pointer glass-panel p-5 rounded-3xl shadow-lg border border-white flex flex-col justify-between h-64 transform -translate-y-4">
-                    <div class="flex justify-between items-start">
+                <div onclick="triggerStart()" class="hover-card cursor-pointer glass-panel p-4 rounded-3xl shadow-lg border border-white flex flex-col justify-between h-[236px] transform -translate-y-4">
+                    <div class="flex justify-between items-center">
                         <span class="w-9 h-9 rounded-2xl bg-yellow-400 text-slate-900 font-black flex items-center justify-center text-base shadow-md">3</span>
-                        <div class="flex items-end space-x-1 h-8 p-1.5 bg-blue-50 rounded-lg border border-blue-100">
-                            <div class="w-1.5 bg-blue-300 h-2.5 rounded-t-sm"></div>
-                            <div class="w-1.5 bg-blue-500 h-4 rounded-t-sm"></div>
-                            <div class="w-1.5 bg-yellow-400 h-5 rounded-t-sm"></div>
-                        </div>
+                        <span class="text-[10px] font-bold px-2 py-1 rounded-lg bg-blue-50 text-blue-600 border border-blue-100">4 định dạng</span>
+                    </div>
+                    <div class="my-2 p-2.5 rounded-2xl bg-blue-50/80 border border-blue-100 flex items-end justify-center space-x-2 h-16">
+                        <div class="w-3 bg-blue-300 h-5 rounded-t-md"></div>
+                        <div class="w-3 bg-blue-400 h-8 rounded-t-md"></div>
+                        <div class="w-3 bg-blue-600 h-11 rounded-t-md"></div>
+                        <div class="w-3 bg-yellow-400 h-9 rounded-t-md"></div>
                     </div>
                     <div>
-                        <span class="text-[11px] text-slate-400 font-semibold uppercase">Bước 3</span>
-                        <h3 class="text-lg font-bold text-slate-800 mt-0.5 leading-snug">Tạo báo cáo</h3>
-                        <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">Biểu đồ trực quan &amp; xuất file</p>
+                        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Bước 3</span>
+                        <h3 class="text-xl font-extrabold text-slate-800 mt-0.5 leading-tight">Tạo báo cáo</h3>
+                        <p class="text-[11px] text-slate-500 mt-1 leading-snug">Biểu đồ trực quan &amp; xuất file</p>
                     </div>
                 </div>
 
