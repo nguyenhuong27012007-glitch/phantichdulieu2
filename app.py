@@ -290,172 +290,147 @@ if not st.session_state.api_key_set and DEFAULT_GEMINI_API_KEY:
 step = st.session_state.current_step
 
 # ============================================================
-# HỆ THỐNG THIẾT KẾ UNSLOP (DARK GRAPHITE NEUTRAL RAMP — REFERENCES/TOKENS.MD)
+# CSS XANH DƯƠNG PASTEL (PASTEL BLUE) TRƯỞNG THÀNH, CHUYÊN NGHIỆP
 # ============================================================
-if "unslop_theme" not in st.session_state:
-    st.session_state.unslop_theme = "graphite"  # "graphite" (#141415) | "paper" (#F6F5F2)
+s0_bg = "linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #1d4ed8 100%)" if step == 0 else "#ffffff"
+s0_color = "#ffffff" if step == 0 else "#1e3a8a"
+s0_border = "#ffffff" if step == 0 else "#93c5fd"
 
-_is_dark = (st.session_state.unslop_theme == "graphite")
+s1_icon = "✅" if st.session_state.step1_approved else "1️⃣"
+s2_icon = "✅" if st.session_state.step2_approved else "2️⃣"
+s3_icon = "✅" if st.session_state.step3_approved else "3️⃣"
 
-# Bảng màu chuẩn từ heydamir/unslop/references/tokens.md
-_bg_deep = "#0f0f10" if _is_dark else "#efede8"
-_bg_page = "#141415" if _is_dark else "#f6f5f2"
-_bg_card = "#19191b" if _is_dark else "#ffffff"
-_bg_elev = "#202023" if _is_dark else "#f0efe9"
-_border_hairline = "rgba(255, 255, 255, 0.08)" if _is_dark else "rgba(18, 17, 15, 0.09)"
-_border_hover = "rgba(255, 255, 255, 0.16)" if _is_dark else "rgba(18, 17, 15, 0.18)"
-_text_pri = "#f4f4f6" if _is_dark else "#12110f"
-_text_sec = "#a1a1aa" if _is_dark else "#57534e"
-_text_mut = "#71717a" if _is_dark else "#8c857b"
-_accent = "#3b82f6" if _is_dark else "#2563eb"
-_accent_hover = "#60a5fa" if _is_dark else "#1d4ed8"
-_accent_subtle = "rgba(59, 130, 246, 0.12)" if _is_dark else "rgba(37, 99, 235, 0.08)"
+s1_color = "#047857" if st.session_state.step1_approved else "#1e3a8a"
+s2_color = "#047857" if st.session_state.step2_approved else "#1e3a8a"
+s3_color = "#047857" if st.session_state.step3_approved else "#1e3a8a"
 
-s1_icon = "✓" if st.session_state.step1_approved else "01"
-s2_icon = "✓" if st.session_state.step2_approved else "02"
-s3_icon = "✓" if st.session_state.step3_approved else "03"
+s1_bg = "#ecfdf5" if st.session_state.step1_approved else "#ffffff"
+s2_bg = "#ecfdf5" if st.session_state.step2_approved else "#ffffff"
+s3_bg = "#ecfdf5" if st.session_state.step3_approved else "#ffffff"
+
+s1_border = "#10b981" if st.session_state.step1_approved else "#93c5fd"
+s2_border = "#10b981" if st.session_state.step2_approved else "#93c5fd"
+s3_border = "#10b981" if st.session_state.step3_approved else "#93c5fd"
 
 st.markdown(f"""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
     
-    /* Pass 5 (Typography): Primary UI font + Partner Mono font, weights 400/500/600, no 800-900 shouty weights */
     html, body, [class*="css"], .stMarkdown p, .stMarkdown span, .stMarkdown div, .stMarkdown li, label {{
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
-        font-size: 0.92rem !important;
-        font-weight: 400 !important;
-        line-height: 1.55 !important;
-        color: {_text_pri} !important;
-        -webkit-font-smoothing: antialiased !important;
+        font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif !important;
+        font-size: 0.96rem !important;
+        line-height: 1.58 !important;
+        color: #1e293b !important;
     }}
 
-    /* Tabular numerals & Monospace figures (tokens.md) */
-    [data-testid="stMetricValue"],
-    [data-testid="stDataFrame"],
-    [data-testid="stTable"],
-    table, td, th, .tabular-nums, .mono-meta {{
-        font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace !important;
-        font-variant-numeric: tabular-nums !important;
-    }}
-
-    /* Sentence-case headings, weight 500/600, zero gradient text */
-    .stMarkdown h1, .stMarkdown h2, .stMarkdown h3,
-    [data-testid="stMain"] h2, [data-testid="stMain"] h3, .main h2, .main h3 {{
-        font-family: 'Inter', -apple-system, sans-serif !important;
-        font-size: 1.2rem !important;
-        font-weight: 500 !important;
+    /* Tiêu đề thanh thoát, rõ nét tông Xanh Navy */
+    .stMarkdown h3 {{
+        font-size: 1.28rem !important;
+        font-weight: 700 !important;
         line-height: 1.3 !important;
-        letter-spacing: -0.02em !important;
         margin-top: 0.25rem !important;
         margin-bottom: 0.5rem !important;
-        color: {_text_pri} !important;
-        background: none !important;
-        -webkit-text-fill-color: {_text_pri} !important;
-        border: none !important;
+        color: #1e3a8a !important;
     }}
-    .stMarkdown h4, [data-testid="stMain"] h4, .main h4 {{
-        font-family: 'Inter', -apple-system, sans-serif !important;
-        font-size: 0.96rem !important;
-        font-weight: 500 !important;
-        line-height: 1.4 !important;
-        letter-spacing: -0.01em !important;
-        color: {_text_pri} !important;
-        background: {_bg_card} !important;
-        border: 1px solid {_border_hairline} !important;
-        border-left: 2px solid {_accent} !important;
-        padding: 8px 14px !important;
-        border-radius: 8px !important;
-        margin-top: 0.75rem !important;
-        margin-bottom: 0.65rem !important;
+    .stMarkdown h4 {{
+        font-size: 1.08rem !important;
+        font-weight: 700 !important;
+        line-height: 1.3 !important;
+        margin-top: 0.2rem !important;
+        margin-bottom: 0.35rem !important;
+        color: #1e3a8a !important;
     }}
-    .stMarkdown h5, [data-testid="stMain"] h5, .main h5 {{
-        font-size: 0.9rem !important;
-        font-weight: 500 !important;
-        line-height: 1.4 !important;
-        color: {_text_sec} !important;
-        margin-top: 0.25rem !important;
-        margin-bottom: 0.4rem !important;
+    .stMarkdown h5 {{
+        font-size: 0.98rem !important;
+        font-weight: 600 !important;
+        line-height: 1.35 !important;
+        margin-top: 0.15rem !important;
+        margin-bottom: 0.35rem !important;
+        color: #1e40af !important;
     }}
     div[data-testid="stCaptionContainer"] p,
     div[data-testid="stCaptionContainer"] span {{
-        font-size: 0.82rem !important;
-        font-weight: 400 !important;
+        font-size: 0.88rem !important;
+        font-weight: 500 !important;
         line-height: 1.45 !important;
-        color: {_text_mut} !important;
+        color: #475569 !important;
+    }}
+    div[data-testid="stFileUploader"] small,
+    div[data-testid="stFileUploader"] span,
+    .st-key-step1_gsheet_box input {{
+        font-size: 0.92rem !important;
+        font-weight: 500 !important;
+    }}
+    div[data-testid="stAlert"] p {{
+        font-size: 0.93rem !important;
+        line-height: 1.5 !important;
     }}
 
-    /* Pass 2 (Color): Graphite Neutral Ramp (#0f0f10 / #141415 / #19191b) */
-    html, body, .stApp, header[data-testid="stHeader"] {{
-        background-color: {_bg_page} !important;
-        background: {_bg_page} !important;
+    /* Nền toàn trang web đồng bộ màu xanh pastel giống trang mở đầu (#F4F7FB) */
+    html, body, .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"] {{
+        background-color: #F4F7FB !important;
+        background: radial-gradient(circle at 12% 10%, #dbeafe 0%, transparent 40%),
+                    radial-gradient(circle at 88% 15%, #e0f2fe 0%, transparent 38%),
+                    linear-gradient(180deg, #F4F7FB 0%, #edf3fa 50%, #e6eff9 100%) !important;
+    }}
+    header[data-testid="stHeader"] {{
+        background: transparent !important;
     }}
 
+    /* Hiệu ứng chuyển trang mượt mà */
     @keyframes pageTransitionIn {{
-        0% {{ opacity: 0; transform: translateY(3px); }}
+        0% {{ opacity: 0; transform: translateY(6px); }}
         100% {{ opacity: 1; transform: translateY(0); }}
     }}
 
-    /* Pass 1 (Spacing): 8px / 16px / 24px / 32px strict rhythm */
+    /* Khung chính — Nền xanh pastel mềm mượt không bị hộp trắng bao bọc */
     .main .block-container,
     [data-testid="stMainBlockContainer"] {{
         background: transparent !important;
         border: none !important;
+        border-top: none !important;
         box-shadow: none !important;
-        padding: 1.25rem 2rem 3.5rem 2rem !important;
+        padding: 1.5rem 1.8rem 2.5rem 1.8rem !important;
         margin: 0 auto !important;
-        max-width: 1360px !important;
+        max-width: 98% !important;
     }}
 
-    /* Pass 7 (Details & Nested Radius): Card 14px -> Inner 10px -> Input/Button 8px -> Tag 5px */
-    [data-testid="stVerticalBlockBorderWrapper"],
-    div[data-testid="stExpander"] {{
-        background: {_bg_card} !important;
-        border-radius: 12px !important;
-        border: 1px solid {_border_hairline} !important;
-        box-shadow: none !important;
-        transition: border-color 0.15s ease !important;
-    }}
-    [data-testid="stVerticalBlockBorderWrapper"]:hover,
-    div[data-testid="stExpander"]:hover {{
-        border-color: {_border_hover} !important;
+    /* Khung thẻ con (bordered container) tinh tế */
+    [data-testid="stVerticalBlockBorderWrapper"] {{
+        background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%) !important;
+        border-radius: 16px !important;
+        border: 1px solid #dbeafe !important;
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.04) !important;
     }}
 
-    /* Labels & Inputs (8px radius, elevated surface) */
+    /* Tiêu đề chính (h2, h3) nổi bật với hiệu ứng chuyển sắc xanh dương */
+    [data-testid="stMain"] h2, [data-testid="stMain"] h3, .main h2, .main h3 {{
+        background: linear-gradient(90deg, #1e3a8a 0%, #2563eb 55%, #0284c7 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800 !important;
+        letter-spacing: -0.02em !important;
+        padding-bottom: 4px !important;
+        border-bottom: 2.5px solid #93c5fd !important;
+        display: inline-block !important;
+    }}
+
+    /* Tiêu đề mục con (h4, h5) nổi bật với thanh nhấn màu xanh bên trái */
+    [data-testid="stMain"] h4, [data-testid="stMain"] h5, .main h4, .main h5 {{
+        background: linear-gradient(90deg, #dbeafe 0%, rgba(239, 246, 255, 0.2) 100%) !important;
+        border-left: 5px solid #2563eb !important;
+        padding: 7px 14px !important;
+        border-radius: 0 10px 10px 0 !important;
+        color: #1e3a8a !important;
+        font-weight: 800 !important;
+        margin-bottom: 0.65rem !important;
+    }}
+
+    /* Nhãn của các ô nhập liệu (Lĩnh vực hoạt động, Ghi chú thêm, Mục tiêu...) nổi bật hơn */
     [data-testid="stWidgetLabel"] p {{
-        color: {_text_sec} !important;
-        font-weight: 500 !important;
-        font-size: 0.84rem !important;
-        letter-spacing: 0 !important;
-    }}
-    div[data-baseweb="input"] > div,
-    div[data-baseweb="textarea"] > div,
-    div[data-baseweb="select"] > div {{
-        background-color: {_bg_elev} !important;
-        border: 1px solid {_border_hairline} !important;
-        border-radius: 8px !important;
-        color: {_text_pri} !important;
-    }}
-    div[data-baseweb="input"] input,
-    div[data-baseweb="textarea"] textarea {{
-        color: {_text_pri} !important;
-        font-size: 0.88rem !important;
-    }}
-    div[data-baseweb="input"] input::placeholder,
-    div[data-baseweb="textarea"] textarea::placeholder {{
-        color: {_text_mut} !important;
-    }}
-
-    /* Alerts & Notifications */
-    div[data-testid="stAlert"] {{
-        background-color: {_bg_card} !important;
-        border: 1px solid {_border_hairline} !important;
-        border-radius: 10px !important;
-        color: {_text_pri} !important;
-    }}
-    div[data-testid="stAlert"] p {{
-        font-size: 0.88rem !important;
-        line-height: 1.55 !important;
-        color: {_text_pri} !important;
+        color: #1d4ed8 !important;
+        font-weight: 700 !important;
+        font-size: 0.95rem !important;
     }}
 
     .st-key-landing_stage_container,
@@ -463,210 +438,270 @@ st.markdown(f"""
     .st-key-zone_gsheet_right,
     .st-key-zone_step1_summary,
     .st-key-zone_step2_workspace,
+    .st-key-human_approval_top_card,
     .st-key-zone_step3_preview {{
-        animation: pageTransitionIn 0.16s cubic-bezier(0.16, 1, 0.3, 1) both !important;
+        animation: pageTransitionIn 0.28s ease-out both !important;
     }}
 
-    /* Surface Cards */
+    /* Thẻ khu vực tối giản, không nhảy giật khi di chuột */
+    .st-key-zone_upload_left,
+    .st-key-zone_gsheet_right,
     .st-key-zone_step1_summary,
     .st-key-zone_step2_workspace,
     .st-key-zone_step3_preview,
     .st-key-zone_step2_audit_card,
     div[data-testid="stMetric"] {{
-        background: {_bg_card} !important;
-        border: 1px solid {_border_hairline} !important;
+        background: #f8fbff !important;
+        border: 1px solid #dbeafe !important;
         border-radius: 14px !important;
         padding: 1rem 1.25rem !important;
-        box-shadow: none !important;
-        transition: border-color 0.15s ease !important;
+        transition: border-color 0.2s ease !important;
     }}
+    .st-key-zone_upload_left:hover,
+    .st-key-zone_gsheet_right:hover,
     .st-key-zone_step1_summary:hover,
-    .st-key-zone_step2_workspace:hover,
-    .st-key-zone_step3_preview:hover,
-    div[data-testid="stMetric"]:hover {{
-        border-color: {_border_hover} !important;
-    }}
-    [data-testid="stMetricLabel"] p {{
-        color: {_text_mut} !important;
-        font-size: 0.78rem !important;
-        font-weight: 400 !important;
-    }}
-    [data-testid="stMetricValue"] div {{
-        color: {_text_pri} !important;
-        font-size: 1.35rem !important;
-        font-weight: 500 !important;
-        letter-spacing: -0.02em !important;
+    .st-key-zone_step3_preview:hover {{
+        border-color: #93c5fd !important;
     }}
 
+    /* ============================================================
+       TRANG MỞ ĐẦU (TỐI GIẢN, THOÁNG ĐÃNG, TẬP TRUNG VÀO HÀNH ĐỘNG CHÍNH)
+       ============================================================ */
     .st-key-landing_stage_container {{
         background: transparent !important;
         border: none !important;
+        border-radius: 0 !important;
         padding: 0 !important;
         margin: 0 !important;
         max-width: 100% !important;
         width: 100% !important;
+        box-shadow: none !important;
+    }}
+    .hero-graphic-icon {{
+        display: inline-flex;
+        align-items: flex-end;
+        justify-content: center;
+        gap: 7px;
+        background: #ffffff;
+        padding: 12px 18px;
+        border-radius: 16px;
+        border: 1px solid #dbeafe;
+        margin-bottom: 1rem;
+    }}
+    .hg-bar-1 {{ width: 11px; height: 18px; border-radius: 4px; background: #bfdbfe; }}
+    .hg-bar-2 {{ width: 11px; height: 30px; border-radius: 4px; background: #93c5fd; }}
+    .hg-bar-3 {{ width: 11px; height: 24px; border-radius: 4px; background: #60a5fa; }}
+    .hg-bar-4 {{ width: 11px; height: 38px; border-radius: 4px; background: #2563eb; }}
+
+    .stMarkdown h1.landing-main-title,
+    .stMarkdown .landing-main-title,
+    .stMarkdown .landing-main-title span,
+    div.landing-main-title {{
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-size: 2.9rem !important;
+        font-weight: 800 !important;
+        color: #1e3a8a !important;
+        line-height: 1.2 !important;
+        letter-spacing: -0.6px !important;
+        margin: 0.25rem auto 0.75rem auto !important;
+        text-align: center !important;
+        display: block !important;
+    }}
+    .stMarkdown .landing-main-title .highlight-grad {{
+        font-size: 2.9rem !important;
+        font-weight: 800 !important;
+        color: #1e3a8a !important;
+    }}
+    .stMarkdown p.landing-desc,
+    .stMarkdown div.landing-desc,
+    p.landing-desc,
+    div.landing-desc {{
+        font-size: 1.02rem !important;
+        font-weight: 400 !important;
+        color: #475569 !important;
+        line-height: 1.65 !important;
+        margin: 0 auto 2rem auto !important;
+        max-width: 720px !important;
+        text-align: center !important;
     }}
 
-    /* Buttons: 8px radius, hairline border, restrained accent only on primary CTA */
+    /* Nút Bắt đầu gọn gàng ở giữa */
+    .st-key-btn_hero_start button {{
+        background: #2563eb !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 999px !important;
+        min-height: 52px !important;
+        height: 52px !important;
+        padding: 0.5rem 2rem !important;
+        box-shadow: 0 6px 18px rgba(37, 99, 235, 0.25) !important;
+        transition: all 0.2s ease !important;
+    }}
+    .st-key-btn_hero_start button p,
+    .st-key-btn_hero_start button span {{
+        font-size: 1.05rem !important;
+        font-weight: 600 !important;
+        color: #ffffff !important;
+        white-space: nowrap !important;
+    }}
+    .st-key-btn_hero_start button:hover {{
+        background: #1d4ed8 !important;
+        transform: translateY(-1px) !important;
+    }}
+
+    /* Nút bấm tiêu chuẩn: tinh gọn, rõ ràng, không nhấp nháy */
     .stButton > button,
     .stDownloadButton > button {{
-        border-radius: 8px !important;
-        font-weight: 500 !important;
-        font-size: 0.86rem !important;
-        min-height: 38px !important;
-        padding: 0.4rem 0.95rem !important;
-        border: 1px solid {_border_hairline} !important;
-        background: {_bg_elev} !important;
-        color: {_text_pri} !important;
+        border-radius: 12px !important;
+        font-weight: 600 !important;
+        font-size: 0.92rem !important;
+        min-height: 44px !important;
+        padding: 0.45rem 1rem !important;
+        border: 1px solid #cbd5e1 !important;
+        background: #ffffff !important;
+        color: #1e3a8a !important;
         box-shadow: none !important;
-        transition: border-color 0.14s ease, background-color 0.14s ease !important;
+        transition: all 0.18s ease !important;
     }}
     .stButton > button p,
     .stButton > button span,
     .stDownloadButton > button p,
     .stDownloadButton > button span {{
-        font-size: 0.86rem !important;
-        font-weight: 500 !important;
+        font-size: 0.92rem !important;
+        font-weight: 600 !important;
         line-height: 1.25 !important;
-        color: {_text_pri} !important;
     }}
     .stButton > button:hover,
     .stDownloadButton > button:hover {{
-        border-color: {_border_hover} !important;
-        background: {_bg_card} !important;
+        border-color: #60a5fa !important;
+        background: #eff6ff !important;
     }}
     .stButton > button[kind="primary"],
     .stDownloadButton > button[kind="primary"] {{
-        background: {_accent} !important;
+        background: #2563eb !important;
         color: #ffffff !important;
-        border: 1px solid {_accent} !important;
+        border: 1px solid #2563eb !important;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.18) !important;
     }}
     .stButton > button[kind="primary"] p,
     .stButton > button[kind="primary"] span,
     .stDownloadButton > button[kind="primary"] p,
     .stDownloadButton > button[kind="primary"] span {{
         color: #ffffff !important;
-        font-weight: 500 !important;
     }}
     .stButton > button[kind="primary"]:hover,
     .stDownloadButton > button[kind="primary"]:hover {{
-        background: {_accent_hover} !important;
-        border-color: {_accent_hover} !important;
+        background: #1d4ed8 !important;
+        border-color: #1d4ed8 !important;
     }}
 
-    /* Top Segmented Navigation Bar (Deepest surface #0f0f10, 12px outer radius, 8px inner button radius) */
+    /* THANH ĐIỀU HƯỚNG NGANG PILL CAPSULE BO TRÒN TRÊN ĐẦU (GIỐNG ẢNH MẪU) */
     .st-key-top_wizard_bar {{
-        background: {_bg_deep} !important;
-        border-radius: 12px !important;
-        padding: 5px 6px !important;
-        border: 1px solid {_border_hairline} !important;
+        background: #ffffff !important;
+        border-radius: 9999px !important;
+        padding: 5px 12px !important;
+        border: 1px solid rgba(226, 232, 240, 0.8) !important;
+        box-shadow: 0 4px 18px rgba(37, 99, 235, 0.05) !important;
         margin-bottom: 1.5rem !important;
         position: sticky;
         top: 0.5rem;
         z-index: 999;
     }}
     .st-key-top_wizard_bar .stButton > button {{
-        border-radius: 8px !important;
-        padding: 0.35rem 0.9rem !important;
-        min-height: 34px !important;
-        height: 34px !important;
-        border: 1px solid transparent !important;
+        border-radius: 9999px !important;
+        padding: 0.4rem 1.1rem !important;
+        min-height: 42px !important;
+        height: 42px !important;
+        border: none !important;
         background: transparent !important;
-        color: {_text_sec} !important;
-        font-weight: 500 !important;
-        font-size: 0.84rem !important;
+        color: #475569 !important;
+        font-weight: 600 !important;
+        font-size: 0.92rem !important;
+        transition: all 0.2s ease !important;
     }}
     .st-key-top_wizard_bar .stButton > button p,
     .st-key-top_wizard_bar .stButton > button span {{
-        font-size: 0.84rem !important;
-        font-weight: 500 !important;
+        font-size: 0.92rem !important;
+        font-weight: 600 !important;
         white-space: nowrap !important;
         color: inherit !important;
-        font-variant-numeric: tabular-nums !important;
     }}
+    /* Bước đang chọn (Active Step) dạng capsule nổi bật gradient vàng cam */
     .st-key-top_wizard_bar .stButton > button[kind="primary"] {{
-        background: {_bg_elev} !important;
-        color: {_text_pri} !important;
-        border: 1px solid {_border_hover} !important;
+        background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%) !important;
+        color: #0f172a !important;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25) !important;
     }}
     .st-key-top_wizard_bar .stButton > button[kind="primary"] p,
     .st-key-top_wizard_bar .stButton > button[kind="primary"] span {{
-        color: {_text_pri} !important;
-        font-weight: 500 !important;
+        color: #0f172a !important;
+        font-weight: 700 !important;
     }}
     .st-key-top_wizard_bar .stButton > button[kind="secondary"] {{
-        color: {_text_mut} !important;
+        color: #64748b !important;
         background: transparent !important;
     }}
     .st-key-top_wizard_bar .stButton > button[kind="secondary"]:hover {{
-        background: {_bg_card} !important;
-        color: {_text_pri} !important;
+        background: #f1f5f9 !important;
+        color: #0f172a !important;
     }}
 
     /* ============================================================
-       BƯỚC 1: HAI CỘT ĐỒNG TRỤC — NESTED RADIUS (14px -> 10px -> 8px)
+       THIẾT KẾ BƯỚC 1 CHUẨN XÁC THEO MẪU (THẺ KÍNH TRẮNG, VIỀN NÉT ĐỨT, BADGE HOẶC)
        ============================================================ */
     .st-key-zone_upload_left,
     .st-key-zone_gsheet_right {{
-        background: {_bg_card} !important;
-        border: 1px solid {_border_hairline} !important;
-        border-radius: 14px !important;
-        padding: 1.25rem !important;
-        min-height: 232px !important;
+        background: #ffffff !important;
+        border: 1px solid rgba(226, 232, 240, 0.9) !important;
+        border-radius: 20px !important;
+        padding: 1.5rem !important;
+        box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04) !important;
+        min-height: 250px !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: flex-start !important;
-        transition: border-color 0.15s ease !important;
-    }}
-    .st-key-zone_upload_left:hover,
-    .st-key-zone_gsheet_right:hover {{
-        border-color: {_border_hover} !important;
     }}
 
-    /* Inner Box: 14px outer - 4px gap = 10px inner radius, quiet hairline border */
-    .st-key-step1_file_inner_box,
-    .st-key-step1_gsheet_inner_box {{
-        border: 1px solid {_border_hairline} !important;
-        border-radius: 10px !important;
-        min-height: 124px !important;
-        padding: 1.15rem !important;
-        background: {_bg_elev} !important;
+    /* Khung Viền Nét Đứt Xanh Dương Cho Ô Tải Tệp */
+    .st-key-step1_file_inner_box {{
+        border: 2px dashed #93c5fd !important;
+        border-radius: 16px !important;
+        min-height: 145px !important;
+        padding: 1.5rem 1.2rem !important;
+        background: #ffffff !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: center !important;
         gap: 8px !important;
-        transition: border-color 0.15s ease !important;
-    }}
-    .st-key-step1_file_inner_box:hover,
-    .st-key-step1_gsheet_inner_box:hover {{
-        border-color: {_accent} !important;
     }}
 
-    /* File Uploader Control Matches Google Sheet Input (8px radius) */
+    /* Vùng Upload Kéo Thả Trình Bày Y Hệt Khung Input Google Sheet */
     div[data-testid="stFileUploader"] section {{
-        background: {_bg_page} !important;
-        border: 1px solid {_border_hairline} !important;
-        border-radius: 8px !important;
-        min-height: 40px !important;
-        height: 40px !important;
-        padding: 0 12px !important;
+        background: #ffffff !important;
+        border: 1px solid rgba(203, 213, 225, 0.8) !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05) !important;
+        border-radius: 10px !important;
+        min-height: 44px !important;
+        height: 44px !important;
+        padding: 0 14px !important;
         text-align: left !important;
         display: flex !important;
         flex-direction: row !important;
         align-items: center !important;
         justify-content: flex-start !important;
-        transition: border-color 0.15s ease !important;
+        transition: all 0.25s ease !important;
         box-sizing: border-box !important;
     }}
     div[data-testid="stFileUploader"] section:hover {{
-        border-color: {_accent} !important;
+        border-color: #3b82f6 !important;
+        background: #ffffff !important;
     }}
     div[data-testid="stFileUploader"] section::after {{
         content: "file CSV, Excel" !important;
-        color: {_text_mut} !important;
-        font-family: 'Inter', sans-serif !important;
-        font-size: 0.86rem !important;
-        font-weight: 400 !important;
+        color: #94a3b8 !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-size: 0.92rem !important;
+        font-weight: 500 !important;
         pointer-events: none !important;
     }}
     div[data-testid="stFileUploader"] section [data-testid="stFileUploaderDropzoneInstructions"],
@@ -677,51 +712,62 @@ st.markdown(f"""
         display: none !important;
     }}
 
+    /* Khung Viền Nét Đứt Vàng Cam Cho Ô Google Sheet */
+    .st-key-step1_gsheet_inner_box {{
+        border: 2px dashed #fcd34d !important;
+        border-radius: 16px !important;
+        min-height: 145px !important;
+        padding: 1.5rem 1.2rem !important;
+        background: #ffffff !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        gap: 8px !important;
+    }}
     .st-key-step1_gsheet_box input {{
-        background: {_bg_page} !important;
-        border: 1px solid {_border_hairline} !important;
-        border-radius: 8px !important;
-        height: 40px !important;
-        padding: 0 12px !important;
-        font-size: 0.86rem !important;
-        color: {_text_pri} !important;
-    }}
-    .st-key-step1_gsheet_box input:focus {{
-        border-color: {_accent} !important;
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 10px !important;
+        height: 44px !important;
+        padding: 0 14px !important;
+        font-size: 0.92rem !important;
+        color: #334155 !important;
     }}
 
-    /* Business Context Card */
+    /* Thẻ Bối Cảnh Doanh Nghiệp Viền Trắng Bo Tròn Đẹp */
     .st-key-zone_biz_context {{
-        background: {_bg_card} !important;
-        border: 1px solid {_border_hairline} !important;
-        border-radius: 14px !important;
-        padding: 1.25rem 1.5rem !important;
-        margin-top: 1rem !important;
-        transition: border-color 0.15s ease !important;
-    }}
-    .st-key-zone_biz_context:hover {{
-        border-color: {_border_hover} !important;
+        background: #ffffff !important;
+        border: 1px solid rgba(226, 232, 240, 0.9) !important;
+        border-radius: 20px !important;
+        padding: 1.5rem 1.8rem !important;
+        box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04) !important;
+        margin-top: 1.25rem !important;
     }}
 
-    /* AI Suggest Context Button (Subtle Cobalt tint) */
+    /* Nút AI Gợi Ý Tone Xanh Dương Nhạt Thanh Lịch */
     .st-key-btn_ai_suggest_ctx button {{
-        background: {_accent_subtle} !important;
-        color: {_accent_hover} !important;
-        font-weight: 500 !important;
-        border: 1px solid rgba(59, 130, 246, 0.28) !important;
-        border-radius: 8px !important;
-        padding: 0.4rem 1rem !important;
+        background: #e0f2fe !important;
+        color: #0284c7 !important;
+        font-weight: 700 !important;
+        border: 1.5px solid #bae6fd !important;
+        border-radius: 9999px !important;
+        padding: 0.55rem 1.4rem !important;
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.12) !important;
+        transition: all 0.2s ease !important;
     }}
     .st-key-btn_ai_suggest_ctx button p,
     .st-key-btn_ai_suggest_ctx button span {{
-        color: {_accent_hover} !important;
-        font-weight: 500 !important;
+        color: #0284c7 !important;
+        font-weight: 700 !important;
     }}
     .st-key-btn_ai_suggest_ctx button:hover {{
-        background: rgba(59, 130, 246, 0.2) !important;
-        border-color: {_accent} !important;
+        background: #bae6fd !important;
+        color: #0369a1 !important;
+        border-color: #7dd3fc !important;
+        transform: translateY(-1px) !important;
     }}
 
+    /* Ẩn hoàn toàn văn bản phụ (200MB per file, bullet, v.v.) bên trong ô Upload */
     div[data-testid="stFileUploader"] small,
     div[data-testid="stFileUploader"] [data-testid="stFileUploaderDropzoneInstructions"] > div > small,
     div[data-testid="stFileUploader"] [data-testid="stFileUploaderDropzoneInstructions"] span:last-child {{
@@ -730,31 +776,43 @@ st.markdown(f"""
         visibility: hidden !important;
         opacity: 0 !important;
     }}
+    /* Chữ 'Kéo thả tệp...' bên cột tải tệp đổi sang màu đen */
+    div[data-testid="stFileUploader"] label p,
+    div[data-testid="stFileUploader"] label span,
+    div[data-testid="stFileUploader"] label,
+    div[data-testid="stFileUploader"] [data-testid="stWidgetLabel"] p {{
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-size: 0.95rem !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+        line-height: 1.4 !important;
+        margin: 0 !important;
+    }}
 
-    /* Spinner */
+    /* Hộp thông báo chờ ở giữa màn hình */
     div[data-testid="stSpinner"] {{
         position: fixed !important;
         top: 50% !important;
         left: 50% !important;
         transform: translate(-50%, -50%) !important;
-        background: {_bg_deep} !important;
-        color: {_text_pri} !important;
-        padding: 14px 22px !important;
-        border-radius: 10px !important;
-        border: 1px solid {_border_hover} !important;
-        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4) !important;
+        background: #ffffff !important;
+        color: #1e3a8a !important;
+        padding: 18px 28px !important;
+        border-radius: 16px !important;
+        border: 1px solid #93c5fd !important;
+        box-shadow: 0 12px 32px rgba(30, 58, 138, 0.16) !important;
         z-index: 999999 !important;
         text-align: center !important;
-        min-width: 300px !important;
+        min-width: 340px !important;
     }}
     div[data-testid="stSpinner"] p,
     div[data-testid="stSpinner"] span {{
-        font-size: 0.88rem !important;
-        font-weight: 500 !important;
-        color: {_text_pri} !important;
+        font-size: 0.96rem !important;
+        font-weight: 600 !important;
+        color: #1e3a8a !important;
     }}
 
-    /* Expandable Groups Tag (5px keycap radius) */
+    /* Nút "Xem thêm" thu gọn / mở rộng danh sách nhóm ở Bước 1 & Bước 2 */
     details.inline-groups-details {{
         display: inline;
     }}
@@ -762,32 +820,36 @@ st.markdown(f"""
         display: inline-block;
         list-style: none;
         cursor: pointer;
-        background: {_bg_elev};
-        color: {_text_sec} !important;
-        border: 1px solid {_border_hairline};
-        border-radius: 5px;
-        padding: 1px 7px;
+        background: #eff6ff;
+        color: #2563eb !important;
+        border: 1px solid #93c5fd;
+        border-radius: 999px;
+        padding: 1px 10px;
         margin-left: 6px;
-        font-family: 'JetBrains Mono', monospace !important;
-        font-size: 0.76rem !important;
-        font-weight: 500 !important;
+        font-size: 0.82rem !important;
+        font-weight: 600 !important;
         user-select: none;
+        transition: all 0.15s ease;
     }}
     details.inline-groups-details summary.more-groups-btn::-webkit-details-marker {{
         display: none;
     }}
+    details.inline-groups-details summary.more-groups-btn:hover {{
+        background: #dbeafe;
+        border-color: #3b82f6;
+    }}
     details.inline-groups-details .more-groups-expanded {{
         margin-top: 6px;
         padding: 8px 12px;
-        background: {_bg_elev};
-        border: 1px solid {_border_hairline};
-        border-radius: 8px;
-        font-size: 0.84rem !important;
-        color: {_text_sec} !important;
+        background: #f8fbff;
+        border: 1px solid #dbeafe;
+        border-radius: 10px;
+        font-size: 0.88rem !important;
+        color: #1e3a8a !important;
         line-height: 1.5 !important;
     }}
 
-    /* Floating Action Pill at bottom-right */
+    /* Nút Duyệt & Tải xuống cố định gọn ở góc dưới bên phải (không che nội dung bảng/chữ) */
     .st-key-floating_approve_step1,
     .st-key-floating_approve_step2,
     .st-key-floating_download_step3 {{
@@ -799,42 +861,39 @@ st.markdown(f"""
         z-index: 9999 !important;
         width: auto !important;
         min-width: 215px !important;
-        background: {_bg_deep} !important;
-        padding: 6px 8px !important;
-        border-radius: 10px !important;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35) !important;
-        border: 1px solid {_border_hover} !important;
+        background: rgba(255, 255, 255, 0.96) !important;
+        backdrop-filter: blur(10px) !important;
+        padding: 8px 10px !important;
+        border-radius: 16px !important;
+        box-shadow: 0 10px 28px rgba(37, 99, 235, 0.24) !important;
+        border: 1.5px solid #93c5fd !important;
     }}
 
-    /* Inline code tags (5px keycap radius) */
+    /* Tên cột / mã trong dấu backtick có cỡ chữ bằng chữ thường */
     .main code, [data-testid="stAlert"] code, .stMarkdown code {{
-        font-size: 0.83em !important;
-        font-family: 'JetBrains Mono', ui-monospace, monospace !important;
-        font-weight: 500 !important;
-        background: {_bg_elev} !important;
-        color: {_text_pri} !important;
-        border: 1px solid {_border_hairline} !important;
-        padding: 1px 5px !important;
-        border-radius: 5px !important;
+        font-size: 1em !important;
+        font-family: inherit !important;
+        font-weight: 600 !important;
     }}
 
     /* ============================================================
-       SIDEBAR (#0f0f10 DEEPEST SURFACE FROM TOKENS.MD)
+       SIDEBAR THU GỌN CHỈ HIỂN THỊ ICON DỌC, HOVER DI CHUỘT LÀ TỰ MỞ RA
        ============================================================ */
     section[data-testid="stSidebar"] {{
         position: fixed !important;
         top: 0 !important;
         left: 0 !important;
         height: 100vh !important;
-        width: 58px !important;
-        min-width: 58px !important;
-        max-width: 58px !important;
-        background: {_bg_deep} !important;
-        border-right: 1px solid {_border_hairline} !important;
-        box-shadow: none !important;
-        transition: width 0.18s cubic-bezier(0.16, 1, 0.3, 1),
-                    max-width 0.18s cubic-bezier(0.16, 1, 0.3, 1),
-                    min-width 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        width: 64px !important;
+        min-width: 64px !important;
+        max-width: 64px !important;
+        background: #f8fbff !important;
+        border-right: 1.5px solid #dbeafe !important;
+        box-shadow: 4px 0 20px rgba(37, 99, 235, 0.08) !important;
+        transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                    max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                    min-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                    box-shadow 0.3s ease !important;
         overflow-x: hidden !important;
         overflow-y: hidden !important;
         z-index: 99999 !important;
@@ -842,82 +901,231 @@ st.markdown(f"""
         visibility: visible !important;
     }}
 
+    /* Khi rê chuột vào Sidebar: Tự động trượt mở rộng ra như menu bay */
     section[data-testid="stSidebar"]:hover {{
-        width: 272px !important;
-        min-width: 272px !important;
-        max-width: 272px !important;
-        background: {_bg_deep} !important;
-        box-shadow: 12px 0 32px rgba(0, 0, 0, 0.35) !important;
+        width: 290px !important;
+        min-width: 290px !important;
+        max-width: 290px !important;
+        background: #ffffff !important;
+        box-shadow: 12px 0 35px rgba(30, 58, 138, 0.18) !important;
         overflow-y: auto !important;
     }}
 
+    /* Luôn hiển thị sidebar, không bị ẩn bởi collapse state của Streamlit */
     section[data-testid="stSidebar"][aria-expanded="false"] {{
         margin-left: 0 !important;
         transform: translate3d(0, 0, 0) !important;
         display: block !important;
-        width: 58px !important;
-        min-width: 58px !important;
-        max-width: 58px !important;
+        width: 64px !important;
+        min-width: 64px !important;
+        max-width: 64px !important;
     }}
 
+    /* Bố trí nội dung bên trong sidebar */
     section[data-testid="stSidebar"] > div:first-child {{
-        width: 272px !important;
-        padding: 1.1rem 0.5rem !important;
+        width: 290px !important;
+        padding: 1.2rem 0.4rem !important;
         box-sizing: border-box !important;
     }}
 
+    /* Ẩn nút mũi tên đóng/mở mặc định của Streamlit vì đã có hover tự mở */
     [data-testid="stSidebarCollapseButton"],
     button[data-testid="baseButton-headerNoPadding"],
     [data-testid="collapsedControl"] {{
         display: none !important;
     }}
 
+    /* Nút bấm trong Sidebar: Thu gọn thành Icon khi chưa hover */
     section[data-testid="stSidebar"] .stButton > button {{
         overflow: hidden !important;
         white-space: nowrap !important;
         text-align: left !important;
         justify-content: flex-start !important;
-        border-radius: 8px !important;
-        padding: 0.5rem 0.6rem !important;
+        border-radius: 12px !important;
+        padding: 0.65rem 0.5rem !important;
         border: 1px solid transparent !important;
         background: transparent !important;
-        box-shadow: none !important;
-        transition: all 0.14s ease !important;
-        color: {_text_sec} !important;
-        font-weight: 400 !important;
-        font-size: 0.86rem !important;
+        transition: all 0.2s ease !important;
+        color: #334155 !important;
+        font-weight: 600 !important;
+        font-size: 1.15rem !important;
         width: 100% !important;
     }}
     section[data-testid="stSidebar"] .stButton > button:hover {{
-        background: {_bg_elev} !important;
-        color: {_text_pri} !important;
-        border-color: {_border_hairline} !important;
+        background: #e0f2fe !important;
+        color: #0284c7 !important;
+        border-color: #bae6fd !important;
     }}
 
+    /* Cột biểu tượng dọc nổi bật bo góc capsule giống thiết kế mẫu */
+    .st-sidebar-pill-wrap {{
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }}
+
+    /* Giữ khoảng cách lề trái cho nội dung chính không bị che bởi thanh icon */
     .main, [data-testid="stMain"] {{
-        margin-left: 58px !important;
-        transition: margin-left 0.18s ease !important;
+        margin-left: 64px !important;
+        transition: margin-left 0.3s ease !important;
+    }}
+
+    /* ============================================================
+       HIỆU ỨNG CHUỘT & MÀU SẮC ĐỒNG BỘ TRANG MỞ ĐẦU (ALL PAGES)
+       ============================================================ */
+    .app-cursor-glow {{
+        position: fixed;
+        width: 380px;
+        height: 380px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(59, 130, 246, 0.16) 0%, rgba(99, 102, 241, 0.07) 45%, transparent 70%);
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        z-index: 99998;
+        mix-blend-mode: multiply;
+        transition: width 0.3s ease, height 0.3s ease, background 0.3s ease;
+    }}
+    .app-cursor-dot {{
+        position: fixed;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #2563eb;
+        box-shadow: 0 0 10px rgba(37, 99, 235, 0.6);
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        z-index: 999999;
+        transition: transform 0.12s ease-out, background-color 0.2s ease;
+    }}
+
+    /* Hiệu ứng di chuột vào vùng nào là vùng đó đậm màu & có chiều sâu */
+    .st-key-zone_upload_left,
+    .st-key-zone_gsheet_right,
+    .st-key-zone_biz_context,
+    .st-key-zone_step1_summary,
+    .st-key-zone_step2_workspace,
+    .st-key-zone_step3_preview,
+    [data-testid="stVerticalBlockBorderWrapper"],
+    div[data-testid="stMetric"],
+    .st-key-top_wizard_bar {{
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }}
+    .st-key-zone_upload_left:hover,
+    .st-key-zone_gsheet_right:hover,
+    .st-key-zone_biz_context:hover,
+    .st-key-zone_step1_summary:hover,
+    .st-key-zone_step2_workspace:hover,
+    .st-key-zone_step3_preview:hover,
+    [data-testid="stVerticalBlockBorderWrapper"]:hover {{
+        background: #ffffff !important;
+        box-shadow: 0 14px 34px rgba(30, 58, 138, 0.11) !important;
+        border-color: rgba(59, 130, 246, 0.45) !important;
+        transform: translateY(-2px) !important;
     }}
 </style>
 """, unsafe_allow_html=True)
 
+# Injected mouse glow & cursor script for all pages
 import streamlit.components.v1 as _cursor_comp
 _cursor_comp.html("""
+<style>
+    .app-cursor-glow {
+        position: fixed;
+        width: 380px;
+        height: 380px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(59, 130, 246, 0.16) 0%, rgba(99, 102, 241, 0.07) 45%, transparent 70%);
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        z-index: 999998;
+        mix-blend-mode: multiply;
+        transition: width 0.3s ease, height 0.3s ease, background 0.3s ease;
+    }
+    .app-cursor-dot {
+        position: fixed;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #2563eb;
+        box-shadow: 0 0 10px rgba(37, 99, 235, 0.6);
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        z-index: 999999;
+        transition: transform 0.12s ease-out, background-color 0.2s ease;
+    }
+</style>
+<div id="app-cursor-glow" class="app-cursor-glow"></div>
+<div id="app-cursor-dot" class="app-cursor-dot"></div>
 <script>
     (function() {
-        try {
-            const parentDoc = window.parent.document;
-            const oldGlow = parentDoc.getElementById('app-cursor-glow');
-            const oldDot = parentDoc.getElementById('app-cursor-dot');
-            if (oldGlow) oldGlow.remove();
-            if (oldDot) oldDot.remove();
-        } catch(e) {}
+        const parentDoc = window.parent.document;
+        let glow = parentDoc.getElementById('app-cursor-glow');
+        let dot = parentDoc.getElementById('app-cursor-dot');
+        
+        if (!glow) {
+            glow = document.createElement('div');
+            glow.id = 'app-cursor-glow';
+            glow.className = 'app-cursor-glow';
+            parentDoc.body.appendChild(glow);
+        }
+        if (!dot) {
+            dot = document.createElement('div');
+            dot.id = 'app-cursor-dot';
+            dot.className = 'app-cursor-dot';
+            parentDoc.body.appendChild(dot);
+        }
+
+        let mX = -100, mY = -100, cX = -100, cY = -100;
+        parentDoc.addEventListener('mousemove', function(e) {
+            mX = e.clientX;
+            mY = e.clientY;
+            if (dot) {
+                dot.style.left = mX + 'px';
+                dot.style.top = mY + 'px';
+            }
+        });
+
+        function renderGlow() {
+            cX += (mX - cX) * 0.15;
+            cY += (mY - cY) * 0.15;
+            if (glow) {
+                glow.style.left = cX + 'px';
+                glow.style.top = cY + 'px';
+            }
+            requestAnimationFrame(renderGlow);
+        }
+        renderGlow();
+
+        parentDoc.querySelectorAll('button, a, input, textarea, select, [data-testid="stMetric"], section').forEach(function(el) {
+            el.addEventListener('mouseenter', function() {
+                if (glow) {
+                    glow.style.width = '480px';
+                    glow.style.height = '480px';
+                    glow.style.background = 'radial-gradient(circle, rgba(245, 158, 11, 0.22) 0%, rgba(59, 130, 246, 0.12) 45%, transparent 70%)';
+                }
+                if (dot) {
+                    dot.style.transform = 'translate(-50%, -50%) scale(1.6)';
+                    dot.style.backgroundColor = '#d97706';
+                }
+            });
+            el.addEventListener('mouseleave', function() {
+                if (glow) {
+                    glow.style.width = '380px';
+                    glow.style.height = '380px';
+                    glow.style.background = 'radial-gradient(circle, rgba(59, 130, 246, 0.16) 0%, rgba(99, 102, 241, 0.07) 45%, transparent 70%)';
+                }
+                if (dot) {
+                    dot.style.transform = 'translate(-50%, -50%) scale(1)';
+                    dot.style.backgroundColor = '#2563eb';
+                }
+            });
+        });
     })();
 </script>
 """, height=0)
 
 # ============================================================
-# THANH ĐIỀU HƯỚNG NGANG (CHỈ HIỆN Ở BƯỚC 1, 2, 3)
+# CHỈ HIỂN THỊ THANH ĐIỀU HƯỚNG NGANG KHI ĐÃ VÀO BƯỚC 1, 2, 3 (ẨN Ở TRANG MỞ ĐẦU)
 # ============================================================
 if step != 0:
     with st.container(key="top_wizard_bar"):
@@ -925,20 +1133,20 @@ if step != 0:
 
         with nav_col1:
             is_active_1 = (step == 1)
-            b1_label = f"01 · Bước 1: Nhập dữ liệu" if is_active_1 else f"{s1_icon} · Bước 1: Nhập dữ liệu"
+            b1_label = f"1   Bước 1: Nhập dữ liệu" if is_active_1 else f"{s1_icon} Bước 1: Nhập dữ liệu"
             if st.button(
                 b1_label,
                 key="top_nav_step1",
                 use_container_width=True,
                 type="primary" if is_active_1 else "secondary"
             ):
-                set_spinner_msg("Đang chuyển sang Bước 1: Nhập dữ liệu...")
+                set_spinner_msg("⏳ Đang chuyển sang Bước 1: Nhập dữ liệu...")
                 st.session_state.current_step = 1
                 st.rerun()
 
         with nav_col2:
             is_active_2 = (step == 2)
-            b2_label = f"02 · Bước 2: Làm sạch & Kiểm duyệt" if is_active_2 else f"{s2_icon} · Bước 2: Làm sạch & Kiểm duyệt"
+            b2_label = f"2   Bước 2: Làm sạch" if is_active_2 else f"{s2_icon} Bước 2: Làm sạch"
             if st.button(
                 b2_label,
                 key="top_nav_step2",
@@ -946,15 +1154,15 @@ if step != 0:
                 type="primary" if is_active_2 else "secondary"
             ):
                 if st.session_state.step1_approved:
-                    set_spinner_msg("Đang mở Bước 2: Làm sạch & Kiểm duyệt...")
+                    set_spinner_msg("⏳ Đang mở Bước 2: Làm sạch...")
                     st.session_state.current_step = 2
                     st.rerun()
                 else:
-                    st.toast("Vui lòng nạp file và duyệt Bước 1 trước.")
+                    st.toast("⚠️ Vui lòng nạp file và duyệt Bước 1 trước!", icon="⚠️")
 
         with nav_col3:
             is_active_3 = (step == 3)
-            b3_label = f"03 · Bước 3: Báo cáo & Dashboard" if is_active_3 else f"{s3_icon} · Bước 3: Báo cáo & Dashboard"
+            b3_label = f"3   Bước 3: Tạo báo cáo" if is_active_3 else f"{s3_icon} Bước 3: Tạo báo cáo"
             if st.button(
                 b3_label,
                 key="top_nav_step3",
@@ -962,45 +1170,45 @@ if step != 0:
                 type="primary" if is_active_3 else "secondary"
             ):
                 if st.session_state.step2_approved:
-                    set_spinner_msg("Đang mở Bước 3: Báo cáo & Dashboard...")
+                    set_spinner_msg("⏳ Đang mở Bước 3: Tạo báo cáo...")
                     st.session_state.current_step = 3
                     st.rerun()
                 else:
-                    st.toast("Vui lòng duyệt Bước 2 trước khi sang Bước 3.")
+                    st.toast("⚠️ Vui lòng duyệt Bước 2 trước khi sang Bước 3!", icon="⚠️")
 
 # ============================================================
-# SIDEBAR ĐIỀU HƯỚNG & TUỲ CHỌN GIAO DIỆN UNSLOP
+# SIDEBAR ĐIỀU HƯỚNG NHANH & CÀI ĐẶT ẨN GỌN
 # ============================================================
 with st.sidebar:
-    st.markdown(f"<div style='color:{_text_mut}; font-size:0.74rem; font-weight:500; padding:0 0.5rem; margin-bottom:0.4rem;'>Điều hướng</div>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color:#1e3a8a; font-size:1.1rem; margin-bottom:0.6rem;'>🧭 Điều hướng nhanh</h3>", unsafe_allow_html=True)
 
     if st.button("⊞   Tổng quan", use_container_width=True, key="sb_nav_0"):
-        set_spinner_msg("Đang quay lại Trang Mở Đầu...")
+        set_spinner_msg("⏳ Đang quay lại Trang Mở Đầu...")
         st.session_state.current_step = 0
         st.rerun()
 
-    if st.button("01  Nhập bảng tính", use_container_width=True, key="sb_nav_1"):
-        set_spinner_msg("Đang chuyển sang Bước 1: Nhập dữ liệu...")
+    if st.button("🗂   Nhập bảng tính", use_container_width=True, key="sb_nav_1"):
+        set_spinner_msg("⏳ Đang chuyển sang Bước 1: Nhập Dữ Liệu...")
         st.session_state.current_step = 1
         st.rerun()
 
-    if st.button("02  Làm sạch & Kiểm duyệt", use_container_width=True, key="sb_nav_2"):
+    if st.button("🗄   Xử lý dữ liệu", use_container_width=True, key="sb_nav_2"):
         if st.session_state.step1_approved:
-            set_spinner_msg("Đang mở Bước 2: Làm sạch...")
+            set_spinner_msg("⏳ Đang mở Bước 2: Làm Sạch...")
             st.session_state.current_step = 2
             st.rerun()
         else:
-            st.toast("Vui lòng nạp file và Duyệt Bước 1 trước.")
+            st.toast("⚠️ Vui lòng nạp file và Duyệt Bước 1 trước!", icon="⚠️")
 
-    if st.button("03  Báo cáo & Dashboard", use_container_width=True, key="sb_nav_3"):
+    if st.button("📈   Báo cáo & Dashboard", use_container_width=True, key="sb_nav_3"):
         if st.session_state.step2_approved:
-            set_spinner_msg("Đang mở Bước 3: Báo cáo...")
+            set_spinner_msg("⏳ Đang mở Bước 3: Tạo Báo Cáo...")
             st.session_state.current_step = 3
             st.rerun()
         else:
-            st.toast("Vui lòng Duyệt Bước 2 trước.")
+            st.toast("⚠️ Vui lòng Duyệt Bước 2 trước!", icon="⚠️")
 
-    if st.button("↺   Làm mới phiên", use_container_width=True, key="sb_reset_session"):
+    if st.button("🔄   Làm mới phiên", use_container_width=True, key="sb_reset_session"):
         for k in ["files_loaded", "file_messages", "analysis_results", "editable_report", "editable_plan", "dashboard_scores_df"]:
             if k in st.session_state:
                 st.session_state[k] = [] if k in ["files_loaded", "file_messages"] else None
@@ -1011,35 +1219,17 @@ with st.sidebar:
         st.session_state.show_step2_editor = False
         st.session_state.current_step = 0
         orch.data_agent.raw_dataframes.clear()
-        set_spinner_msg("Đang làm mới toàn bộ phiên làm việc...")
+        set_spinner_msg("⏳ Đang làm mới toàn bộ phiên làm việc...")
         st.rerun()
 
     st.divider()
 
-    st.markdown(f"<div style='color:{_text_mut}; font-size:0.74rem; font-weight:500; padding:0 0.5rem; margin-bottom:0.4rem;'>Giao diện Unslop</div>", unsafe_allow_html=True)
-    theme_opts = {
-        "graphite": "Unslop Graphite (#141415)",
-        "paper": "Unslop Paper (#F6F5F2)"
-    }
-    picked_theme = st.selectbox(
-        "Chế độ màu (tokens.md):",
-        options=["graphite", "paper"],
-        index=0 if st.session_state.unslop_theme == "graphite" else 1,
-        format_func=lambda k: theme_opts[k],
-        key="sb_theme_selector"
-    )
-    if picked_theme != st.session_state.unslop_theme:
-        st.session_state.unslop_theme = picked_theme
-        st.rerun()
-
-    st.divider()
-
-    st.markdown(f"<div style='color:{_text_mut}; font-size:0.74rem; font-weight:500; padding:0 0.5rem; margin-bottom:0.4rem;'>Mô hình phân tích</div>", unsafe_allow_html=True)
+    st.markdown("#### 🤖 Chọn Phiên Bản Model AI")
     ai_model_options = {
-        "gemini-2.5-pro": "Gemini 2.5 Pro",
-        "gemini-2.5-flash": "Gemini 2.5 Flash",
-        "gemini-2.0-flash": "Gemini 2.0 Flash",
-        "gemini-1.5-pro": "Gemini 1.5 Pro"
+        "gemini-2.5-pro": "🧠 Gemini 2.5 Pro",
+        "gemini-2.5-flash": "⚡ Gemini 2.5 Flash",
+        "gemini-2.0-flash": "🔹 Gemini 2.0 Flash",
+        "gemini-1.5-pro": "💎 Gemini 1.5 Pro"
     }
     if st.session_state.selected_ai_model not in ai_model_options:
         st.session_state.selected_ai_model = "gemini-2.5-pro"
@@ -1052,16 +1242,18 @@ with st.sidebar:
         format_func=lambda k: ai_model_options[k],
         key="sidebar_model_selector"
     )
-    st.caption(f"Đang kích hoạt: **{ai_model_options[st.session_state.selected_ai_model]}**")
+    st.caption(f"🟢 Đang kích hoạt: **{ai_model_options[st.session_state.selected_ai_model]}**")
 
-    with st.expander("Cài đặt API Key", expanded=False):
+    # Khu vực Cài Đặt API Key được ẩn gọn, bấm vào mới hiện
+    with st.expander("⚙️ Cài Đặt API", expanded=False):
+        st.markdown("#### 🔑 Kết nối AI Agent")
         api_key_input = st.text_input(
             "Gemini API Key",
             type="password",
             value=DEFAULT_GEMINI_API_KEY,
             help="Đã tích hợp sẵn API Key tự động"
         )
-        if st.button("Cập nhật API Key", use_container_width=True):
+        if st.button("✨ Cập nhật API Key", use_container_width=True):
             if api_key_input:
                 try:
                     success, msg = orch.initialize_ai(api_key_input, model_name=st.session_state.selected_ai_model)
@@ -1069,18 +1261,18 @@ with st.sidebar:
                     success, msg = orch.initialize_ai(api_key_input)
                 if success:
                     st.session_state.api_key_set = True
-                    st.success(f"Kết nối thành công ({st.session_state.selected_ai_model}).")
+                    st.success(f"✅ Kết nối thành công ({st.session_state.selected_ai_model})!")
                 else:
                     st.error(msg)
 
     if chosen_model != st.session_state.selected_ai_model:
-        with st.spinner(f"Đang chuyển đổi sang mô hình {ai_model_options[chosen_model]}..."):
+        with st.spinner(f"⏳ Đang chuyển đổi sang mô hình {ai_model_options[chosen_model]}..."):
             st.session_state.selected_ai_model = chosen_model
             try:
                 orch.initialize_ai(api_key_input or DEFAULT_GEMINI_API_KEY, model_name=chosen_model)
             except TypeError:
                 orch.initialize_ai(api_key_input or DEFAULT_GEMINI_API_KEY)
-            st.toast(f"Đã chuyển sang {ai_model_options[chosen_model]}")
+            st.toast(f"✅ Đã chuyển sang {ai_model_options[chosen_model]}", icon="🤖")
         st.rerun()
 
 # ============================================================
@@ -1182,18 +1374,18 @@ try:
             st.session_state.pending_spinner_msg = ""
 
         with st.container(key="landing_stage_container"):
-            st.markdown(f"""
+            st.markdown("""
             <style>
-                header[data-testid="stHeader"] {{
+                header[data-testid="stHeader"] {
                     background: transparent !important;
-                }}
-                .main, [data-testid="stMain"] {{
+                }
+                .main, [data-testid="stMain"] {
                     margin-left: 0 !important;
-                }}
-                section[data-testid="stSidebar"] {{
+                }
+                section[data-testid="stSidebar"] {
                     display: none !important;
-                }}
-                .main .block-container, [data-testid="stMainBlockContainer"] {{
+                }
+                .main .block-container, [data-testid="stMainBlockContainer"] {
                     padding: 2.2rem 0 0 0 !important;
                     margin: 0 !important;
                     max-width: 100% !important;
@@ -1202,22 +1394,23 @@ try:
                     border: none !important;
                     border-radius: 0 !important;
                     box-shadow: none !important;
-                    background: {_bg_page} !important;
-                }}
-                .st-key-landing_stage_container div[data-testid="stVerticalBlock"] {{
+                    background: #F4F7FB !important;
+                }
+                .st-key-landing_stage_container div[data-testid="stVerticalBlock"] {
                     gap: 0 !important;
-                }}
-                .st-key-btn_hero_start {{
+                }
+                /* Ẩn nút Streamlit gốc nhưng giữ trong DOM để JS bên trong trang Landing kích hoạt */
+                .st-key-btn_hero_start {
                     position: fixed !important;
                     left: -9999px !important;
                     top: -9999px !important;
                     opacity: 0 !important;
                     pointer-events: none !important;
-                }}
-                iframe[title="streamlit_components_v1.html_v1"] {{
+                }
+                iframe[title="streamlit_components_v1.html_v1"] {
                     display: block !important;
                     border: none !important;
-                }}
+                }
             </style>
             """, unsafe_allow_html=True)
 
@@ -1227,260 +1420,210 @@ try:
                 st.rerun()
 
             import streamlit.components.v1 as _landing_comp
-            _landing_html = f"""<!DOCTYPE html>
+            _landing_html = """<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
     <style>
-        :root {{
-            --bg-deep: {_bg_deep};
-            --bg-page: {_bg_page};
-            --bg-card: {_bg_card};
-            --bg-elev: {_bg_elev};
-            --border-hairline: {_border_hairline};
-            --border-hover: {_border_hover};
-            --text-pri: {_text_pri};
-            --text-sec: {_text_sec};
-            --text-mut: {_text_mut};
-            --accent: {_accent};
-        }}
-        * {{ box-sizing: border-box; }}
-        body {{ 
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
-            margin: 0;
-            background-color: var(--bg-page);
-            color: var(--text-pri);
-            -webkit-font-smoothing: antialiased;
-        }}
-        .mono {{
-            font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
-            font-variant-numeric: tabular-nums;
-        }}
-        .unslop-card {{
-            background: var(--bg-card);
-            border: 1px solid var(--border-hairline);
-            border-radius: 14px;
-            transition: border-color 0.14s ease, background-color 0.14s ease;
-        }}
-        .unslop-card:hover {{
-            border-color: var(--border-hover);
-        }}
-        .unslop-inner {{
-            background: var(--bg-elev);
-            border: 1px solid var(--border-hairline);
-            border-radius: 8px;
-        }}
-        .unslop-tag {{
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            font-weight: 500;
-            padding: 2px 7px;
-            border-radius: 5px;
-            background: var(--bg-elev);
-            color: var(--text-sec);
-            border: 1px solid var(--border-hairline);
-        }}
-        .btn-primary {{
-            background: var(--accent);
-            color: #ffffff;
-            border: 1px solid var(--accent);
-            border-radius: 8px;
-            padding: 9px 18px;
-            font-size: 13.5px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: opacity 0.14s ease;
-        }}
-        .btn-primary:hover {{
-            opacity: 0.92;
-        }}
-        .btn-secondary {{
-            background: var(--bg-card);
-            color: var(--text-pri);
-            border: 1px solid var(--border-hairline);
-            border-radius: 8px;
-            padding: 9px 16px;
-            font-size: 13.5px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: border-color 0.14s ease, background-color 0.14s ease;
-        }}
-        .btn-secondary:hover {{
-            border-color: var(--border-hover);
-            background: var(--bg-elev);
-        }}
+        body { font-family: 'Be Vietnam Pro', sans-serif; margin: 0; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+        }
+        #cursor-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 340px;
+            height: 340px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.22) 0%, rgba(250, 204, 21, 0.14) 45%, rgba(255, 255, 255, 0) 70%);
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+            transition: width 0.25s ease, height 0.25s ease, opacity 0.25s ease;
+        }
+        #cursor-dot {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #2563eb;
+            box-shadow: 0 0 12px rgba(37, 99, 235, 0.8);
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            transition: transform 0.12s ease, background-color 0.2s ease;
+        }
+        .hover-card {
+            transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.28s ease;
+        }
+        .hover-card:hover {
+            transform: translateY(-6px) scale(1.015);
+            box-shadow: 0 18px 36px -10px rgba(37, 99, 235, 0.18);
+        }
     </style>
     <script>
-        function triggerStart() {{
-            try {{
+        function triggerStart() {
+            try {
                 const parentDoc = window.parent.document;
                 const btn = parentDoc.querySelector('.st-key-btn_hero_start button') || parentDoc.querySelector('button[kind="primary"]');
                 if (btn) btn.click();
-            }} catch (e) {{
+            } catch (e) {
                 console.error(e);
-            }}
-        }}
+            }
+        }
+        document.addEventListener('mousemove', function(e) {
+            const glow = document.getElementById('cursor-glow');
+            const dot = document.getElementById('cursor-dot');
+            if (glow) {
+                glow.style.left = e.clientX + 'px';
+                glow.style.top = e.clientY + 'px';
+            }
+            if (dot) {
+                dot.style.left = e.clientX + 'px';
+                dot.style.top = e.clientY + 'px';
+            }
+        });
     </script>
 </head>
-<body class="h-screen max-h-[660px] flex flex-col justify-between relative overflow-hidden">
+<body class="bg-[#F4F7FB] text-slate-800 h-screen max-h-[660px] flex flex-col justify-between relative overflow-hidden">
 
-    <!-- 1. TOP BAR (QUIET CHROME — #0f0f10 DEEPEST SURFACE) -->
-    <header style="background: var(--bg-deep); border-bottom: 1px solid var(--border-hairline);" class="relative z-10 px-8 py-3.5 flex justify-between items-center">
-        <div class="flex items-center gap-3">
-            <span class="mono" style="background: var(--bg-elev); border: 1px solid var(--border-hairline); color: var(--text-pri); font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 5px;">
-                unslop · data
-            </span>
-            <span style="color: var(--text-sec); font-size: 13px; font-weight: 400;">
-                Hệ thống kiểm toán &amp; phân tích dữ liệu đa tiêu chí
+    <div id="cursor-glow"></div>
+    <div id="cursor-dot"></div>
+
+    <!-- Các ngôi sao trang trí nền -->
+    <div class="absolute top-20 left-[45%] text-slate-800 pointer-events-none">
+        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z"/></svg>
+    </div>
+    <div class="absolute bottom-28 left-[40%] text-slate-800 pointer-events-none">
+        <svg class="w-8 h-8" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z"/></svg>
+    </div>
+    <div class="absolute top-32 right-8 text-slate-800 pointer-events-none">
+        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z"/></svg>
+    </div>
+
+    <!-- 1. THANH ĐIỀU HƯỚNG (HEADER) -->
+    <header class="relative z-10 px-8 py-4 flex justify-between items-center max-w-7xl mx-auto w-full">
+        <div class="flex items-center">
+            <span class="bg-yellow-400 text-slate-900 text-xs font-extrabold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-sm">
+                Phân tích dữ liệu
             </span>
         </div>
         
-        <nav style="background: var(--bg-card); border: 1px solid var(--border-hairline); border-radius: 8px; padding: 3px;" class="hidden md:flex items-center gap-1 text-xs">
-            <a href="javascript:void(0)" style="background: var(--bg-elev); color: var(--text-pri); border: 1px solid var(--border-hairline); border-radius: 5px;" class="px-3 py-1 font-medium">01 · Tổng quan</a>
-            <a href="javascript:void(0)" onclick="triggerStart()" style="color: var(--text-sec);" class="px-3 py-1 hover:opacity-80 transition">02 · Nhập bảng tính</a>
-            <a href="javascript:void(0)" onclick="triggerStart()" style="color: var(--text-sec);" class="px-3 py-1 hover:opacity-80 transition">03 · Kiểm duyệt lỗi</a>
-            <a href="javascript:void(0)" onclick="triggerStart()" style="color: var(--text-sec);" class="px-3 py-1 hover:opacity-80 transition">04 · Báo cáo &amp; Dashboard</a>
+        <nav class="hidden md:flex items-center space-x-1 glass-panel px-2 py-1.5 rounded-full shadow-sm text-xs font-medium text-slate-600">
+            <a href="javascript:void(0)" class="bg-slate-900 text-white px-4 py-1.5 rounded-full transition">1. Giới thiệu</a>
+            <a href="javascript:void(0)" onclick="triggerStart()" class="px-4 py-1.5 hover:text-slate-900 transition">2. Quy trình</a>
+            <a href="javascript:void(0)" onclick="triggerStart()" class="px-4 py-1.5 hover:text-slate-900 transition">3. Xử lý Dữ liệu</a>
+            <a href="javascript:void(0)" onclick="triggerStart()" class="px-4 py-1.5 hover:text-slate-900 transition">4. Báo cáo &amp; Dashboard</a>
         </nav>
 
-        <div class="flex items-center gap-2">
-            <span style="width: 6px; height: 6px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
-            <span class="mono" style="color: var(--text-mut); font-size: 11.5px;">csv · xlsx · gsheet</span>
-        </div>
+        <div class="w-24 hidden md:block"></div>
     </header>
 
-    <!-- 2. MAIN WORKSPACE HERO (2 COLUMNS: SENTENCE-CASE HEADLINE + REDLINE AUDIT TERMINAL) -->
-    <main class="relative z-10 flex-1 max-w-7xl w-full mx-auto flex flex-col md:flex-row items-center justify-between px-8 py-6 gap-12">
+    <!-- 2. NỘI DUNG CHÍNH (MAIN CONTENT) -->
+    <main class="relative z-10 flex-1 max-w-7xl w-full mx-auto px-8 flex flex-col md:flex-row items-center justify-between gap-8 my-auto">
         
-        <!-- LEFT COLUMN -->
-        <div class="w-full md:w-[45%] flex flex-col items-start gap-5">
-            <div class="flex items-center gap-2">
-                <span class="unslop-tag">human-in-the-loop</span>
-                <span class="unslop-tag">zero auto-mutation</span>
-            </div>
+        <!-- CỘT TRÁI -->
+        <div class="w-full md:w-[45%] flex flex-col items-start space-y-5">
+            <span class="bg-blue-100 text-blue-700 font-semibold text-xs px-3.5 py-1.5 rounded-full">
+                Nền tảng Quản trị Dữ liệu
+            </span>
 
-            <h1 style="font-size: 2.55rem; font-weight: 500; letter-spacing: -0.03em; line-height: 1.12; color: var(--text-pri); margin: 0;">
-                Kiểm duyệt dữ liệu.<br>
-                <span style="color: var(--text-sec);">Phân tích và xuất báo cáo chuẩn xác.</span>
+            <h1 class="text-4xl md:text-[2.75rem] font-extrabold text-slate-900 leading-[1.18] tracking-tight">
+                Dữ liệu thông minh<br>
+                <span class="text-blue-600">Báo cáo tức thì</span>
             </h1>
 
-            <p style="font-size: 14px; color: var(--text-sec); line-height: 1.65; margin: 0; max-width: 440px;">
-                Quét tự động 6 lớp lỗi cấu trúc từ tệp CSV, Excel và Google Sheet. Mọi đề xuất làm sạch đều được liệt kê rõ ràng để bạn chọn và phê duyệt trước khi thực thi.
-            </p>
-
-            <div class="flex items-center gap-3 pt-1">
-                <button onclick="triggerStart()" class="btn-primary flex items-center gap-2">
-                    <span>Mở không gian làm việc</span>
-                    <span class="mono">→</span>
+            <div class="flex items-center space-x-3 pt-1">
+                <button onclick="triggerStart()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm px-7 py-3.5 rounded-full shadow-lg shadow-blue-500/30 transition transform hover:-translate-y-0.5 cursor-pointer">
+                    BẮT ĐẦU
                 </button>
-                <button onclick="triggerStart()" class="btn-secondary">
-                    Tải tệp lên ngay
+                <button onclick="triggerStart()" class="bg-yellow-400 hover:bg-yellow-500 text-slate-900 p-3.5 rounded-full shadow-md transition transform hover:rotate-45 cursor-pointer">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 17L17 7M17 7H7M17 7V17"></path></svg>
                 </button>
             </div>
 
-            <!-- METRICS STRIP (JETBRAINS MONO TABULAR) -->
-            <div style="border-top: 1px solid var(--border-hairline);" class="grid grid-cols-3 gap-6 pt-4 w-full max-w-md">
-                <div>
-                    <div class="mono" style="font-size: 18px; font-weight: 500; color: var(--text-pri);">100.0%</div>
-                    <div style="font-size: 12px; color: var(--text-mut); margin-top: 2px;">Do người dùng duyệt</div>
-                </div>
-                <div>
-                    <div class="mono" style="font-size: 18px; font-weight: 500; color: var(--text-pri);">06 lớp</div>
-                    <div style="font-size: 12px; color: var(--text-mut); margin-top: 2px;">Kiểm toán dữ liệu</div>
-                </div>
-                <div>
-                    <div class="mono" style="font-size: 18px; font-weight: 500; color: var(--text-pri);">04 chuẩn</div>
-                    <div style="font-size: 12px; color: var(--text-mut); margin-top: 2px;">HTML · DOCX · PDF · CSV</div>
-                </div>
+            <div class="glass-panel p-4 rounded-2xl max-w-md shadow-sm mt-2">
+                <p class="text-xs text-slate-600 leading-relaxed m-0">
+                    Tự động hóa quy trình thu thập, xử lý lỗi và trực quan hóa dữ liệu phức tạp. Biến những con số khô khan thành quyết định kinh doanh chiến lược chỉ trong vài cú nhấp chuột.
+                </p>
             </div>
         </div>
 
-        <!-- RIGHT COLUMN: RICH PRODUCT ARTIFACT (REDLINE AUDIT CONSOLE + 3 WORKFLOW CARDS) -->
-        <div class="w-full md:w-[55%] flex flex-col gap-3.5">
+        <!-- CỘT PHẢI: 3 BƯỚC QUY TRÌNH -->
+        <div class="w-full md:w-[55%] relative h-[390px] flex items-center justify-center">
+            <div class="absolute w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-2xl opacity-60 animate-pulse"></div>
             
-            <!-- REDLINE AUDIT TERMINAL CARD (14px outer -> 8px inner) -->
-            <div onclick="triggerStart()" class="unslop-card p-4 cursor-pointer">
-                <div style="border-bottom: 1px solid var(--border-hairline);" class="flex items-center justify-between pb-3 mb-3">
-                    <div class="flex items-center gap-2">
-                        <span class="mono" style="font-size: 11.5px; color: var(--text-pri); font-weight: 500;">redline_audit_pipeline.py</span>
-                        <span class="unslop-tag" style="color: #10b981;">active</span>
+            <div class="relative w-full h-full grid grid-cols-2 gap-4 items-center">
+                
+                <!-- Bước 1 -->
+                <div onclick="triggerStart()" class="hover-card cursor-pointer glass-panel p-5 rounded-3xl shadow-lg border border-white flex flex-col justify-between h-44 transform -translate-y-4">
+                    <div class="flex justify-between items-start">
+                        <span class="w-9 h-9 rounded-full bg-blue-100 text-blue-600 font-bold flex items-center justify-center text-base">1</span>
+                        <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                     </div>
-                    <span class="mono" style="font-size: 11px; color: var(--text-mut);">pass 01 — 06</span>
+                    <div>
+                        <span class="text-[11px] text-slate-400 font-semibold uppercase">Bước 1</span>
+                        <h3 class="text-lg font-bold text-slate-800 mt-0.5">Nhập dữ liệu</h3>
+                        <p class="text-[11px] text-slate-500 mt-0.5">Kết nối đa nguồn nhanh chóng</p>
+                    </div>
                 </div>
 
-                <div class="flex flex-col gap-2 mono" style="font-size: 12px;">
-                    <div class="unslop-inner px-3 py-2 flex items-center justify-between">
-                        <span style="color: var(--text-sec);">01 · empty_rows &amp; empty_cols</span>
-                        <span style="color: #10b981;">Phát hiện &amp; chờ duyệt xóa</span>
+                <!-- Bước 2 -->
+                <div onclick="triggerStart()" class="hover-card cursor-pointer bg-gradient-to-br from-blue-500 to-blue-600 p-5 rounded-3xl shadow-xl text-white flex flex-col justify-between h-48 transform translate-y-6">
+                    <div class="flex justify-between items-start">
+                        <span class="w-9 h-9 rounded-full bg-white/20 text-white font-bold flex items-center justify-center text-base backdrop-blur-sm">2</span>
+                        <span class="bg-yellow-400 text-slate-900 text-[11px] font-bold px-2.5 py-1 rounded-full">Tự động AI</span>
                     </div>
-                    <div class="unslop-inner px-3 py-2 flex items-center justify-between">
-                        <span style="color: var(--text-sec);">02 · duplicate_records</span>
-                        <span style="color: #f59e0b;">Lọc bản ghi trùng 100%</span>
-                    </div>
-                    <div class="unslop-inner px-3 py-2 flex items-center justify-between">
-                        <span style="color: var(--text-sec);">03 · missing_values &amp; negative_nums</span>
-                        <span style="color: var(--accent);">Điền mặc định &amp; chuẩn hóa dấu</span>
+                    <div>
+                        <span class="text-[11px] text-blue-100 font-semibold uppercase">Bước 2</span>
+                        <h3 class="text-xl font-bold mt-0.5">Làm sạch</h3>
+                        <div class="mt-2 bg-white/10 p-2 rounded-xl backdrop-blur-sm flex items-center space-x-2">
+                            <div class="w-2 h-2 rounded-full bg-green-400"></div>
+                            <span class="text-[11px] font-medium">100% Chính xác</span>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Bước 3 -->
+                <div onclick="triggerStart()" class="hover-card cursor-pointer col-span-2 glass-panel p-5 rounded-3xl shadow-lg border border-white flex items-center justify-between h-32 w-11/12 mx-auto transform -translate-y-1">
+                    <div class="flex items-center space-x-4">
+                        <span class="w-11 h-11 rounded-2xl bg-yellow-400 text-slate-900 font-black flex items-center justify-center text-lg shadow-md">3</span>
+                        <div>
+                            <span class="text-[11px] text-slate-400 font-semibold uppercase">Bước 3</span>
+                            <h3 class="text-lg font-bold text-slate-800">Tạo báo cáo</h3>
+                            <p class="text-[11px] text-slate-500">Biểu đồ trực quan &amp; xuất file dễ dàng</p>
+                        </div>
+                    </div>
+                    <div class="hidden sm:flex items-end space-x-1.5 h-14 p-2 bg-blue-50 rounded-xl border border-blue-100">
+                        <div class="w-2.5 bg-blue-300 h-5 rounded-t-sm"></div>
+                        <div class="w-2.5 bg-blue-400 h-8 rounded-t-sm"></div>
+                        <div class="w-2.5 bg-blue-600 h-11 rounded-t-sm"></div>
+                        <div class="w-2.5 bg-yellow-400 h-9 rounded-t-sm"></div>
+                        <span class="text-[11px] font-bold text-blue-700 ml-2 self-center px-1.5">Xuất báo cáo</span>
+                    </div>
+                </div>
+
             </div>
-
-            <!-- 3 WORKFLOW STEP CARDS -->
-            <div class="grid grid-cols-3 gap-3">
-                <div onclick="triggerStart()" class="unslop-card p-4 cursor-pointer flex flex-col justify-between">
-                    <div>
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="unslop-tag">01</span>
-                            <span class="mono" style="font-size: 11px; color: var(--text-mut);">ingest</span>
-                        </div>
-                        <div style="font-size: 13.5px; font-weight: 500; color: var(--text-pri); margin-bottom: 4px;">Nhập dữ liệu</div>
-                        <div style="font-size: 12px; color: var(--text-mut); line-height: 1.45;">Tải tệp CSV, Excel hoặc liên kết Google Sheet.</div>
-                    </div>
-                    <div style="border-top: 1px solid var(--border-hairline); color: var(--text-sec); font-size: 11.5px;" class="mt-3 pt-2 flex justify-between items-center mono">
-                        <span>Bước 1</span>
-                        <span>→</span>
-                    </div>
-                </div>
-
-                <div onclick="triggerStart()" class="unslop-card p-4 cursor-pointer flex flex-col justify-between" style="border-color: var(--border-hover);">
-                    <div>
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="unslop-tag" style="color: var(--accent);">02</span>
-                            <span class="mono" style="font-size: 11px; color: var(--text-mut);">redline</span>
-                        </div>
-                        <div style="font-size: 13.5px; font-weight: 500; color: var(--text-pri); margin-bottom: 4px;">Làm sạch &amp; Duyệt</div>
-                        <div style="font-size: 12px; color: var(--text-mut); line-height: 1.45;">Thông báo lỗi, tích chọn mục cần sửa và phê duyệt.</div>
-                    </div>
-                    <div style="border-top: 1px solid var(--border-hairline); color: var(--accent); font-size: 11.5px;" class="mt-3 pt-2 flex justify-between items-center mono">
-                        <span>Bước 2</span>
-                        <span>→</span>
-                    </div>
-                </div>
-
-                <div onclick="triggerStart()" class="unslop-card p-4 cursor-pointer flex flex-col justify-between">
-                    <div>
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="unslop-tag">03</span>
-                            <span class="mono" style="font-size: 11px; color: var(--text-mut);">report</span>
-                        </div>
-                        <div style="font-size: 13.5px; font-weight: 500; color: var(--text-pri); margin-bottom: 4px;">Báo cáo &amp; Điểm</div>
-                        <div style="font-size: 12px; color: var(--text-mut); line-height: 1.45;">Chấm điểm đa tiêu chí, Dashboard &amp; xuất 4 định dạng.</div>
-                    </div>
-                    <div style="border-top: 1px solid var(--border-hairline); color: var(--text-sec); font-size: 11.5px;" class="mt-3 pt-2 flex justify-between items-center mono">
-                        <span>Bước 3</span>
-                        <span>→</span>
-                    </div>
-                </div>
-            </div>
-
         </div>
     </main>
 
-    <!-- 3. FOOTER (QUIET CHROME) -->
-    <footer style="background: var(--bg-deep); border-top: 1px solid var(--border-hairline); color: var(--text-mut);" class="relative z-10 w-full px-8 py-2.5 text-xs flex justify-between items-center">
-        <span>Thiết kế theo hệ thống chuẩn heydamir/unslop · Quiet chrome, rich content</span>
-        <span class="mono">graphite · tabular-nums</span>
+    <!-- 3. DẢI Băng CHỮ CHẠY DƯỚI CÙNG (FOOTER) -->
+    <footer class="relative z-10 bg-slate-900 text-white py-2.5 overflow-hidden w-full">
+        <div class="flex whitespace-nowrap items-center justify-around text-[11px] font-semibold tracking-wider uppercase text-slate-300">
+            <span class="flex items-center"><span class="text-yellow-400 mr-2">✦</span> XỬ LÝ DỮ LIỆU THÔNG MINH</span>
+            <span class="flex items-center"><span class="text-yellow-400 mr-2">✦</span> BÁO CÁO TRỰC QUAN</span>
+            <span class="flex items-center"><span class="text-yellow-400 mr-2">✦</span> PHÂN TÍCH CHUYÊN SÂU</span>
+            <span class="hidden md:flex items-center"><span class="text-yellow-400 mr-2">✦</span> TIẾT KIỆM THỜI GIAN</span>
+            <span class="hidden lg:flex items-center"><span class="text-yellow-400 mr-2">✦</span> TỐI ƯU HÓA QUY TRÌNH</span>
+        </div>
     </footer>
 
 </body>
@@ -1504,32 +1647,30 @@ try:
         if has_loaded_files:
             col_s1_h1, col_s1_h2 = st.columns([2.7, 1.3])
             with col_s1_h1:
-                st.markdown(f"""
+                st.markdown("""
                 <div style="margin-bottom:0.5rem;">
-                    <div style="background:{_bg_card}; border:1px solid {_border_hairline}; border-left:2px solid {_accent}; padding:0.45rem 0.95rem; border-radius:8px; display:inline-flex; align-items:center; gap:10px;">
-                        <span class="mono-meta" style="font-size:0.76rem; color:{_accent}; background:{_bg_elev}; padding:2px 6px; border-radius:4px; border:1px solid {_border_hairline};">01</span>
-                        <span style="font-weight:500; color:{_text_pri}; font-size:1.1rem; letter-spacing:-0.01em;">
-                            Bước 1 · Nhập và kiểm tra dữ liệu
+                    <div style="background:linear-gradient(90deg, #eff6ff 0%, #dbeafe 100%); border-left:5px solid #2563eb; padding:0.45rem 0.95rem; border-radius:10px; display:inline-block; box-shadow:0 2px 6px rgba(37,99,235,0.08);">
+                        <span style="font-weight:800; color:#1e3a8a; font-size:1.15rem; letter-spacing:0.2px;">
+                            🚀 BƯỚC 1: NHẬP & KIỂM TRA DỮ LIỆU
                         </span>
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
             with col_s1_h2:
-                btn_lbl = "Đóng khung nạp thêm" if st.session_state.show_step1_uploader else "+ Nạp thêm tệp dữ liệu"
+                btn_lbl = "✖ Đóng khung nạp thêm dữ liệu" if st.session_state.show_step1_uploader else "➕ Nạp thêm tệp / Google Sheet"
                 if st.button(btn_lbl, use_container_width=True, key="btn_toggle_s1_uploader"):
                     st.session_state.show_step1_uploader = not st.session_state.show_step1_uploader
                     st.rerun()
         else:
-            st.markdown(f"""
-            <div style="margin-bottom:1rem;">
-                <div style="background:{_bg_card}; border:1px solid {_border_hairline}; border-left:2px solid {_accent}; padding:0.5rem 1rem; border-radius:8px; display:inline-flex; align-items:center; gap:10px; margin-bottom:6px;">
-                    <span class="mono-meta" style="font-size:0.78rem; color:{_accent}; background:{_bg_elev}; padding:2px 7px; border-radius:4px; border:1px solid {_border_hairline};">01</span>
-                    <span style="font-weight:500; color:{_text_pri}; font-size:1.25rem; letter-spacing:-0.02em;">
-                        Bước 1 · Nhập dữ liệu
+            st.markdown("""
+            <div style="margin-bottom:0.75rem;">
+                <div style="background:linear-gradient(90deg, #eff6ff 0%, #dbeafe 100%); border-left:5px solid #2563eb; padding:0.5rem 1rem; border-radius:10px; display:inline-block; margin-bottom:4px; box-shadow:0 2px 6px rgba(37,99,235,0.08);">
+                    <span style="font-weight:800; color:#1e3a8a; font-size:1.25rem; letter-spacing:0.3px;">
+                        🚀 BƯỚC 1: NHẬP DỮ LIỆU
                     </span>
                 </div>
-                <div style="font-size:0.88rem; color:{_text_sec}; margin-top:2px; font-weight:400;">
-                    Tải lên tệp CSV, Excel hoặc dán đường dẫn Google Sheet công khai để hệ thống quét lỗi cấu trúc.
+                <div style="font-size:0.9rem; color:#0f172a; margin-top:4px; font-weight:700;">
+                    Tải lên tệp CSV, Excel hoặc dán đường dẫn Google Sheet công khai để bắt đầu phân tích.
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -1539,12 +1680,12 @@ try:
     
             with col_up1:
                 with st.container(key="zone_upload_left"):
-                    st.markdown(f"""
-                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
-                        <span style="font-weight:500; color:{_accent}; font-size:0.95rem;">Tải tệp</span>
-                        <span class="mono-meta" style="font-size:0.72rem; color:{_text_mut}; background:{_bg_elev}; padding:1px 6px; border-radius:4px; border:1px solid {_border_hairline};">csv · xlsx</span>
+                    st.markdown("""
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                        <span style="font-size:1.1rem;">📄</span>
+                        <span style="font-weight:800; color:#2563eb; font-size:1.05rem;">Tải tệp</span>
                     </div>
-                    <div class="gsheet-hint-text" style="font-size:0.86rem; font-weight:400; color:{_text_sec}; margin-bottom:10px; line-height:1.45;">
+                    <div class="gsheet-hint-text" style="font-size:0.95rem; font-weight:800; color:#0f172a; margin-bottom:8px; line-height:1.4;">
                         Kéo thả tệp CSV, Excel vào đây hoặc Nhấn để tải lên
                     </div>
                     """, unsafe_allow_html=True)
@@ -1557,7 +1698,7 @@ try:
                             key="s1_file_uploader"
                         )
                     if uploaded_files:
-                        if st.button("Nạp tệp đã chọn →", type="primary", use_container_width=True, key="btn_verify_upload"):
+                        if st.button("✅ Xác nhận & Kiểm tra tệp đã tải lên", type="primary", use_container_width=True, key="btn_verify_upload"):
                             with st.spinner("Đang đọc và kiểm tra chất lượng dữ liệu..."):
                                 for up in uploaded_files:
                                     content = up.read()
@@ -1572,22 +1713,22 @@ try:
                             st.rerun()
 
             with col_divider:
-                st.markdown(f"""
+                st.markdown("""
                 <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; min-height:220px;">
-                    <div style="width:1px; height:44px; background:{_border_hairline};"></div>
-                    <div class="mono-meta" style="background:{_bg_elev}; color:{_text_mut}; font-size:0.7rem; padding:2px 6px; border-radius:5px; border:1px solid {_border_hairline}; margin:6px 0;">hoặc</div>
-                    <div style="width:1px; height:44px; background:{_border_hairline};"></div>
+                    <div style="width:1.5px; height:40px; background:linear-gradient(to bottom, transparent, #cbd5e1);"></div>
+                    <div style="background:#f1f5f9; color:#475569; font-weight:800; font-size:0.72rem; padding:5px 8px; border-radius:999px; border:1px solid #cbd5e1; margin:6px 0; letter-spacing:0.5px;">HOẶC</div>
+                    <div style="width:1.5px; height:40px; background:linear-gradient(to top, transparent, #cbd5e1);"></div>
                 </div>
                 """, unsafe_allow_html=True)
 
             with col_up2:
                 with st.container(key="zone_gsheet_right"):
-                    st.markdown(f"""
-                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
-                        <span style="font-weight:500; color:{_accent}; font-size:0.95rem;">Đường dẫn Google Sheet</span>
-                        <span class="mono-meta" style="font-size:0.72rem; color:{_text_mut}; background:{_bg_elev}; padding:1px 6px; border-radius:4px; border:1px solid {_border_hairline};">public url</span>
+                    st.markdown("""
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                        <span style="font-size:1.1rem;">🔗</span>
+                        <span style="font-weight:800; color:#2563eb; font-size:1.05rem;">Đường dẫn Google Sheet</span>
                     </div>
-                    <div class="gsheet-hint-text" style="font-size:0.86rem; font-weight:400; color:{_text_sec}; margin-bottom:10px; line-height:1.45;">
+                    <div class="gsheet-hint-text" style="font-size:0.95rem; font-weight:800; color:#0f172a; margin-bottom:8px; line-height:1.4;">
                         Đảm bảo liên kết đang ở chế độ xem công khai.
                     </div>
                     """, unsafe_allow_html=True)
@@ -1599,7 +1740,7 @@ try:
                                 label_visibility="collapsed"
                             )
                     if sheet_url:
-                        if st.button("Đọc Google Sheet →", type="primary", use_container_width=True, key="btn_verify_gsheet"):
+                        if st.button("✅ Kết nối & Kiểm tra Google Sheet", type="primary", use_container_width=True, key="btn_verify_gsheet"):
                             with st.spinner("Đang kết nối và kiểm tra Google Sheet..."):
                                 success, msg = orch.load_google_sheet(sheet_url)
                                 g_keys = [k for k in orch.data_agent.raw_dataframes.keys() if k.startswith("GoogleSheet")]
@@ -1618,24 +1759,23 @@ try:
             st.session_state["biz_questions"] = st.session_state.pop("_pending_biz_questions")
 
         # ============================================================
-        # BỐI CẢNH DOANH NGHIỆP (CHUẨN UNSLOP SENTENCE CASE)
+        # BỐI CẢNH DOANH NGHIỆP (NẰM NGAY DƯỚI KHUNG NẠP TỆP)
         # ============================================================
         with st.container(key="zone_biz_context"):
             col_b_head, col_b_btn = st.columns([2.4, 1.6])
             with col_b_head:
-                st.markdown(f"""
-                <div style="background:{_bg_elev}; border:1px solid {_border_hairline}; border-left:2px solid #10b981; padding:0.45rem 0.95rem; border-radius:8px; display:inline-flex; align-items:center; gap:10px; margin-bottom:6px;">
-                    <span class="mono-meta" style="font-size:0.75rem; color:#10b981;">context</span>
-                    <span style="font-weight:500; color:{_text_pri}; font-size:1.15rem; letter-spacing:-0.015em;">
-                        Bối cảnh doanh nghiệp
+                st.markdown("""
+                <div style="background:linear-gradient(90deg, #ecfdf5 0%, #d1fae5 100%); border-left:5px solid #10b981; padding:0.45rem 0.95rem; border-radius:10px; display:inline-block; margin-bottom:4px; box-shadow:0 2px 6px rgba(16,185,129,0.08);">
+                    <span style="font-weight:800; color:#065f46; font-size:1.18rem; letter-spacing:0.3px;">
+                        📄 BỐI CẢNH DOANH NGHIỆP
                     </span>
                 </div>
-                <div style="font-size:0.86rem; color:{_text_sec}; margin-top:2px; margin-bottom:12px; font-weight:400;">
-                    Mô tả ngắn gọn về mô hình kinh doanh và mục tiêu phân tích để hệ thống chấm điểm sát thực tế.
+                <div style="font-size:0.86rem; color:#0f172a; margin-top:2px; margin-bottom:10px; font-weight:700;">
+                    Mô tả ngắn gọn về mô hình hoạt động và câu hỏi bạn muốn giải đáp để hệ thống phân tích sát thực tế hơn.
                 </div>
                 """, unsafe_allow_html=True)
             with col_b_btn:
-                if st.button("AI gợi ý bối cảnh & câu hỏi theo tệp đã nạp", key="btn_ai_suggest_ctx", use_container_width=True):
+                if st.button("✨ AI gợi ý bối cảnh & câu hỏi theo tệp đã nạp", key="btn_ai_suggest_ctx", use_container_width=True):
                     if has_loaded_files:
                         first_fname = list(orch.data_agent.raw_dataframes.keys())[0]
                         first_df = orch.data_agent.raw_dataframes[first_fname]
@@ -1669,10 +1809,10 @@ try:
                         q_list.append(f"{len(q_list)+1}. Đề xuất 2 nhóm ưu tiên hàng đầu cần tập trung cải thiện hoặc mở rộng là gì?")
                         st.session_state["_pending_biz_type"] = sug_type
                         st.session_state["_pending_biz_questions"] = "\n".join(q_list)
-                        st.session_state["_ai_ctx_done_msg"] = f"Đã gợi ý bối cảnh & câu hỏi dựa trên tệp `{first_fname}`."
+                        st.session_state["_ai_ctx_done_msg"] = f"✅ Đã tự động điền gợi ý Lĩnh vực và {len(q_list)} câu hỏi phân tích sát với tệp `{first_fname}`!"
                         st.rerun()
                     else:
-                        st.warning("Bạn chưa nạp tệp dữ liệu nào. Vui lòng tải tệp CSV/Excel hoặc dán link Google Sheet ở khung phía trên trước.")
+                        st.warning("⚠️ Bạn chưa nạp tệp dữ liệu nào! Vui lòng tải tệp CSV/Excel hoặc dán link Google Sheet ở khung phía trên trước khi bấm gợi ý AI.")
 
             col_ctx1, col_ctx2 = st.columns([1, 1])
             with col_ctx1:
@@ -1713,10 +1853,10 @@ try:
                 sum_c3.metric("Nhóm phân tích", len(detected_groups))
                 sum_c4.metric("Chất lượng dữ liệu", f"{avg_health}%")
                 with sum_c5:
-                    st.markdown(f"<div style='margin-top:0.35rem; font-size:0.86rem; color:{_text_sec};'><b>Nhóm phát hiện:</b> {_format_groups_preview(detected_groups, 3)}</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div style='margin-top:0.35rem; font-size:0.86rem; color:#334155;'><b>Nhóm phát hiện:</b> {_format_groups_preview(detected_groups, 3)}</div>", unsafe_allow_html=True)
             with st.container(key="floating_approve_step1"):
-                if st.button("Duyệt & Sang Bước 2 →", type="primary", use_container_width=True, key="btn_approve_step1"):
-                    set_spinner_msg("Đang chuyển sang Bước 2: Làm sạch & Kiểm duyệt...")
+                if st.button("✅ Duyệt & Sang Bước 2 ➔", type="primary", use_container_width=True, key="btn_approve_step1"):
+                    set_spinner_msg("Đang chuyển sang Bước 2: Làm sạch & Kiểm tra dữ liệu...")
                     st.session_state.step1_approved = True
                     st.session_state.current_step = 2
                     st.rerun()
@@ -1724,7 +1864,7 @@ try:
         if st.session_state.file_messages:
             if "step1_ai_summaries" not in st.session_state:
                 st.session_state.step1_ai_summaries = {}
-            st.markdown(f"#### Báo cáo kiểm toán & Phê duyệt xử lý lỗi ({len(st.session_state.file_messages)} tệp)")
+            st.markdown(f"#### 📋 Chi tiết kiểm tra & Phê duyệt xử lý lỗi ({len(st.session_state.file_messages)} tệp)")
             with st.container():
                 for item in st.session_state.file_messages[-6:]:
                     if item["success"]:
@@ -1738,7 +1878,7 @@ try:
 
                             if detected_issues:
                                 st.warning(
-                                    f"**Phát hiện {len(detected_issues)} loại lỗi trong tệp `{item['file']}`** "
+                                    f"⚠️ **Phát hiện {len(detected_issues)} loại lỗi trong tệp `{item['file']}`** "
                                     f"(Điểm chất lượng hiện tại: **{health_info['health_score']}%** · Độ đầy đủ: **{health_info['completeness_pct']}%**). "
                                     f"Vui lòng tích chọn các hạng mục bạn cho phép hệ thống sửa và bấm **Duyệt & Sửa ngay**:"
                                 )
@@ -1751,18 +1891,19 @@ try:
                                 for idx_iss, iss in enumerate(detected_issues):
                                     with cols_iss[idx_iss % min(len(detected_issues), 3)]:
                                         with st.container(border=True):
-                                            sev_fg = "#ef4444" if iss["severity"] == "Quan trọng" else ("#f59e0b" if iss["severity"] == "Cảnh báo" else _text_sec)
+                                            sev_bg = "#fee2e2" if iss["severity"] == "Quan trọng" else ("#fef3c7" if iss["severity"] == "Cảnh báo" else "#e0f2fe")
+                                            sev_fg = "#991b1b" if iss["severity"] == "Quan trọng" else ("#92400e" if iss["severity"] == "Cảnh báo" else "#075985")
                                             st.markdown(
-                                                f"<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;'>"
-                                                f"<span style='font-weight:500; color:{_text_pri}; font-size:0.88rem;'>{iss['type']}</span>"
-                                                f"<span class='mono-meta' style='background:{_bg_elev}; color:{sev_fg}; border:1px solid {_border_hairline}; font-size:0.7rem; font-weight:500; padding:1px 6px; border-radius:4px;'>{iss['severity']}</span>"
+                                                f"<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;'>"
+                                                f"<span style='font-weight:800; color:#0f172a; font-size:0.9rem;'>{iss['icon']} {iss['type']}</span>"
+                                                f"<span style='background:{sev_bg}; color:{sev_fg}; font-size:0.7rem; font-weight:800; padding:2px 7px; border-radius:999px;'>{iss['severity']}</span>"
                                                 f"</div>",
                                                 unsafe_allow_html=True
                                             )
-                                            st.markdown(f"<div style='font-size:0.83rem; color:{_text_sec}; margin-bottom:6px;'>{iss['desc']}</div>", unsafe_allow_html=True)
-                                            st.markdown(f"<div style='font-size:0.8rem; color:{_text_pri}; background:{_bg_elev}; border:1px solid {_border_hairline}; padding:6px 8px; border-radius:6px; margin-bottom:8px;'><span style='color:{_accent}; font-weight:500;'>Đề xuất:</span> {iss['suggested_fix']}</div>", unsafe_allow_html=True)
+                                            st.markdown(f"<div style='font-size:0.83rem; color:#334155; margin-bottom:4px;'><b>Chi tiết lỗi:</b> {iss['desc']}</div>", unsafe_allow_html=True)
+                                            st.markdown(f"<div style='font-size:0.8rem; color:#1e40af; background:#eff6ff; padding:5px 8px; border-radius:6px; margin-bottom:6px;'>💡 <b>Cách sửa:</b> {iss['suggested_fix']}</div>", unsafe_allow_html=True)
                                             is_chk = st.checkbox(
-                                                f"Cho phép: {iss['action_label']}",
+                                                f"✅ Cho phép: {iss['action_label']}",
                                                 value=(iss["id"] in st.session_state[f"{issue_key_prefix}_selected"]),
                                                 key=f"chk_s1_{item['file']}_{iss['id']}"
                                             )
@@ -1774,7 +1915,7 @@ try:
                                 col_btn_fix, col_btn_all, col_btn_undo = st.columns([1.8, 1.1, 1.1])
                                 with col_btn_fix:
                                     chosen_fixes = st.session_state.get(f"{issue_key_prefix}_selected", [])
-                                    btn_fix_label = f"Duyệt & Sửa ngay ({len(chosen_fixes)} mục đã chọn)" if chosen_fixes else "Chưa chọn mục nào để sửa"
+                                    btn_fix_label = f"🛠️ Duyệt & Sửa ngay ({len(chosen_fixes)} mục đã chọn)" if chosen_fixes else "⚠️ Chưa chọn mục nào để sửa"
                                     if st.button(btn_fix_label, type="primary", use_container_width=True, key=f"btn_apply_fixes_{item['file']}", disabled=(not chosen_fixes)):
                                         with st.spinner(f"Đang thực thi các mục sửa lỗi đã được bạn phê duyệt trên {item['file']}..."):
                                             fixed_df, fix_reports = apply_data_issue_fixes(df_chk, chosen_fixes)
@@ -1791,46 +1932,46 @@ try:
                                             orch.data_agent.file_infos[item["file"]]["missing_cells_count"] = int(fixed_df.isna().sum().sum())
                                             orch.data_agent.file_infos.setdefault(item["file"], {}).setdefault("user_action_log", []).extend(fix_reports)
                                             st.session_state[f"{issue_key_prefix}_selected"] = []
-                                            st.toast(f"Đã sửa thành công {len(fix_reports)} hạng mục trên {item['file']}!")
+                                            st.toast(f"✅ Đã sửa thành công {len(fix_reports)} hạng mục trên {item['file']}!")
                                         st.rerun()
                                 with col_btn_all:
                                     all_ids_s1 = [iss["id"] for iss in detected_issues]
                                     if len(chosen_fixes) < len(all_ids_s1):
-                                        if st.button("Chọn tất cả lỗi", use_container_width=True, key=f"btn_sel_all_s1_{item['file']}"):
+                                        if st.button("☑️ Chọn tất cả lỗi", use_container_width=True, key=f"btn_sel_all_s1_{item['file']}"):
                                             st.session_state[f"{issue_key_prefix}_selected"] = list(all_ids_s1)
                                             for iid in all_ids_s1:
                                                 st.session_state[f"chk_s1_{item['file']}_{iid}"] = True
                                             st.rerun()
                                     else:
-                                        if st.button("Bỏ chọn tất cả", use_container_width=True, key=f"btn_unsel_all_s1_{item['file']}"):
+                                        if st.button("⬜ Bỏ chọn tất cả", use_container_width=True, key=f"btn_unsel_all_s1_{item['file']}"):
                                             st.session_state[f"{issue_key_prefix}_selected"] = []
                                             for iid in all_ids_s1:
                                                 st.session_state[f"chk_s1_{item['file']}_{iid}"] = False
                                             st.rerun()
                                 with col_btn_undo:
                                     if has_backup and user_logs_s1:
-                                        if st.button("↺ Khôi phục bản gốc", use_container_width=True, key=f"btn_undo_s1_{item['file']}"):
+                                        if st.button("↩️ Khôi phục bản gốc", use_container_width=True, key=f"btn_undo_s1_{item['file']}"):
                                             orig_copy = f_info_item["original_df"].copy()
                                             orch.data_agent.raw_dataframes[item["file"]] = orig_copy
                                             f_info_item["rows"] = len(orig_copy)
                                             f_info_item["user_action_log"] = []
-                                            st.toast(f"Đã khôi phục tệp {item['file']} về trạng thái gốc ban đầu.")
+                                            st.toast(f"↩️ Đã khôi phục tệp {item['file']} về trạng thái gốc ban đầu.")
                                             st.rerun()
 
                                 err_preview_df = get_issue_preview_rows(df_chk, max_rows=25)
                                 if not err_preview_df.empty:
-                                    with st.expander(f"Xem trước các dòng đang chứa lỗi trong `{item['file']}` ({len(err_preview_df)} dòng mẫu)", expanded=False):
+                                    with st.expander(f"🔎 Xem trước các dòng đang chứa lỗi trong `{item['file']}` ({len(err_preview_df)} dòng mẫu)", expanded=False):
                                         st.dataframe(err_preview_df, use_container_width=True, height=220)
                             else:
                                 st.success(
-                                    f"**Tệp `{item['file']}` đạt chuẩn chất lượng 100% ({len(df_chk):,} dòng × {len(df_chk.columns)} cột):** "
+                                    f"✅ **Tệp `{item['file']}` đạt chuẩn chất lượng 100% ({len(df_chk):,} dòng × {len(df_chk.columns)} cột):** "
                                     f"Không có ô trống, không có bản ghi trùng lặp và định dạng hoàn toàn hợp lệ."
                                 )
                                 if has_backup and user_logs_s1:
-                                    with st.expander(f"Nhật ký các mục bạn đã duyệt sửa trên `{item['file']}` ({len(user_logs_s1)} thao tác)", expanded=False):
+                                    with st.expander(f"📜 Nhật ký các mục bạn đã duyệt sửa trên `{item['file']}` ({len(user_logs_s1)} thao tác)", expanded=False):
                                         for u_l in user_logs_s1:
-                                            st.markdown(f"- ✓ {u_l}")
-                                        if st.button("↺ Hoàn tác & Khôi phục dữ liệu gốc ban đầu", key=f"btn_undo_clean_s1_{item['file']}"):
+                                            st.markdown(f"- ✅ {u_l}")
+                                        if st.button("↩️ Hoàn tác & Khôi phục dữ liệu gốc ban đầu", key=f"btn_undo_clean_s1_{item['file']}"):
                                             orig_copy = f_info_item["original_df"].copy()
                                             orch.data_agent.raw_dataframes[item["file"]] = orig_copy
                                             f_info_item["rows"] = len(orig_copy)
@@ -1882,7 +2023,7 @@ try:
                                             issues_parts.append(f"- **Trùng lặp bản ghi:** Phát hiện **{dup_cnt:,} dòng trùng lặp** cần rà soát.")
                                         if neg_cols:
                                             issues_parts.append(f"- **Giá trị bất thường:** Cột `{', '.join(neg_cols[:4])}` có chứa số âm.")
-                                        issues_parts.append("- **Đề xuất:** Tích chọn các mục sửa lỗi bên trên và bấm **Duyệt & Sửa ngay**, hoặc chỉnh sửa trực tiếp từng ô trong bảng bên dưới.")
+                                        issues_parts.append("- **Gợi ý xử lý:** Tích chọn các mục sửa lỗi bên trên và bấm **Duyệt & Sửa ngay**, hoặc sửa trực tiếp tại bảng bên dưới.")
                                         ai_text = "\n".join(issues_parts)
                                     else:
                                         rev_cols = [c for c in df_chk.columns if any(k in str(c).lower() for k in ["revenue", "doanh_thu", "doanhthu", "sales", "amount", "profit", "loi_nhuan"])]
@@ -1895,17 +2036,17 @@ try:
                                         biz_parts.append("- **Đánh giá chung:** Dữ liệu phản ánh hoạt động vận hành ổn định, đủ điều kiện tổng hợp báo cáo và Dashboard ở Bước 3.")
                                         ai_text = "\n".join(biz_parts)
                                 st.session_state.step1_ai_summaries[cache_key] = ai_text
-                            st.info(f"**Nhận xét chuyên môn từ AI ({item['file']}):**\n\n{st.session_state.step1_ai_summaries[cache_key]}")
+                            st.info(f"🤖 **Nhận xét nhanh về `{item['file']}`:**\n\n{st.session_state.step1_ai_summaries[cache_key]}")
                     else:
-                        st.error(f"**Lỗi đọc tệp '{item['file']}':** {item['msg']}\n\n*Hướng dẫn khắc phục: Kiểm tra xem tệp có đang mở hoặc bị khóa bởi phần mềm khác không, hoặc lưu lại tệp dưới định dạng chuẩn CSV (UTF-8) / Excel (.xlsx).*")
+                        st.error(f"❌ **Lỗi đọc tệp '{item['file']}':** {item['msg']}\n\n*💡 Hướng dẫn khắc phục: Kiểm tra xem tệp có đang mở hoặc bị khóa bởi phần mềm khác không, hoặc lưu lại tệp dưới định dạng chuẩn CSV (UTF-8) / Excel (.xlsx).*")
 
         if orch.data_agent.raw_dataframes:
-            st.markdown("#### Bảng dữ liệu chi tiết & Chỉnh sửa trực tiếp tại Bước 1")
+            st.markdown("#### ✏️ Sửa nhanh dữ liệu ngay tại Bước 1")
             with st.container():
                 s1_file_list = list(orch.data_agent.raw_dataframes.keys())
                 col_s1_sel, col_s1_info = st.columns([1.5, 2.5])
                 with col_s1_sel:
-                    s1_chosen_file = st.selectbox("Chọn tệp đang làm việc:", s1_file_list, key="s1_file_selector")
+                    s1_chosen_file = st.selectbox("Chọn tệp cần xem / sửa:", s1_file_list, key="s1_file_selector")
                 with col_s1_info:
                     s1_df_cur = orch.data_agent.raw_dataframes[s1_chosen_file]
                     st.caption(f"Nhấp đúp vào ô bất kỳ để sửa trực tiếp ({len(s1_df_cur):,} dòng × {len(s1_df_cur.columns)} cột)")
@@ -1923,7 +2064,7 @@ try:
 
                 col_s1_save, col_s1_apply_filter, _ = st.columns([1.3, 1.5, 2.2])
                 with col_s1_save:
-                    if st.button("Lưu chỉnh sửa bảng", type="primary", use_container_width=True, key="btn_save_step1"):
+                    if st.button("💾 Lưu sửa nhanh", type="primary", use_container_width=True, key="btn_save_step1"):
                         try:
                             with st.spinner("Đang lưu thay đổi..."):
                                 if not s1_is_filtered and not s1_has_show_cols and len(s1_df_cur) <= 1000:
@@ -1945,12 +2086,12 @@ try:
                                 orch.data_agent.file_infos.setdefault(s1_chosen_file, {}).setdefault("user_action_log", []).append(f"Đã sửa trực tiếp trên bảng tại Bước 1 ({len(new_df):,} dòng).")
                             st.rerun()
                         except Exception:
-                            st.error("Không thể lưu thay đổi. Vui lòng kiểm tra định dạng dữ liệu vừa nhập.")
+                            st.error("⚠️ Không thể lưu thay đổi. Vui lòng kiểm tra định dạng dữ liệu vừa nhập.")
                 with col_s1_apply_filter:
                     if s1_is_filtered:
-                        if st.button("Chỉ giữ lại các dòng đang lọc", use_container_width=True, key="btn_keep_filtered_step1"):
+                        if st.button("✂️ Chỉ giữ các dòng đang lọc", use_container_width=True, key="btn_keep_filtered_step1"):
                             orch.data_agent.raw_dataframes[s1_chosen_file] = s1_view_df.reset_index(drop=True)
-                            st.toast(f"Đã lọc giữ lại {len(s1_view_df):,} dòng.")
+                            st.toast(f"✅ Đã lọc giữ lại {len(s1_view_df):,} dòng!")
                             st.rerun()
 
     # ============================================================
@@ -1964,26 +2105,17 @@ try:
             st.session_state.pending_spinner_msg = ""
 
         if not orch.data_agent.raw_dataframes:
-            st.warning("Chưa có dữ liệu. Vui lòng quay lại Bước 1 để tải tệp.")
-            if st.button("Quay lại Bước 1", type="primary"):
+            st.warning("⚠️ Chưa có dữ liệu. Vui lòng quay lại Bước 1 để tải tệp.")
+            if st.button("⬅ Quay lại Bước 1", type="primary"):
                 st.session_state.current_step = 1
                 st.rerun()
         else:
             file_list = list(orch.data_agent.raw_dataframes.keys())
-            st.markdown(f"""
-            <div style="margin-bottom:0.75rem;">
-                <div style="background:{_bg_card}; border:1px solid {_border_hairline}; border-left:2px solid {_accent}; padding:0.45rem 0.95rem; border-radius:8px; display:inline-flex; align-items:center; gap:10px;">
-                    <span class="mono-meta" style="font-size:0.76rem; color:{_accent}; background:{_bg_elev}; padding:2px 6px; border-radius:4px; border:1px solid {_border_hairline};">02</span>
-                    <span style="font-weight:500; color:{_text_pri}; font-size:1.15rem; letter-spacing:-0.015em;">
-                        Bước 2 · Làm sạch và kiểm duyệt chất lượng dữ liệu
-                    </span>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
+            st.markdown("### Bước 2: Làm sạch & kiểm tra dữ liệu")
 
             top_bar_c1, top_bar_c2, top_bar_c3 = st.columns([1.8, 2.4, 1.8])
             with top_bar_c1:
-                selected_file = st.selectbox("Tệp đang kiểm duyệt:", file_list)
+                selected_file = st.selectbox("Tệp đang xem:", file_list)
             df_current = orch.data_agent.raw_dataframes[selected_file]
             total_rows = len(df_current)
             file_info_cur = orch.data_agent.file_infos.get(selected_file, {})
@@ -1993,13 +2125,13 @@ try:
 
             with top_bar_c2:
                 total_records = sum(len(df) for df in orch.data_agent.raw_dataframes.values())
-                st.markdown(f"<div style='margin-top:0.35rem; color:{_text_pri};'><b class='mono-meta'>{total_rows:,} dòng × {len(df_current.columns)} cột</b> · {len(detected_groups)} nhóm phân tích</div>", unsafe_allow_html=True)
-                st.markdown(f"<div style='font-size:0.84rem; color:{_text_sec};'>Phân nhóm chính: {_format_groups_preview(detected_groups, 3)}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='margin-top:0.35rem;'><b>{total_rows:,} dòng × {len(df_current.columns)} cột</b> · {len(detected_groups)} nhóm</div>", unsafe_allow_html=True)
+                st.caption(f"Nhóm chính: {_format_groups_preview(detected_groups, 3)}")
 
             with top_bar_c3:
                 csv_clean_bytes = df_current.to_csv(index=False).encode("utf-8-sig")
                 st.download_button(
-                    label=f"Tải dữ liệu sạch ({selected_file}).csv",
+                    label=f"📥 Tải dữ liệu sạch ({selected_file}).csv",
                     data=csv_clean_bytes,
                     file_name=f"Cleaned_{selected_file}.csv",
                     mime="text/csv",
@@ -2015,7 +2147,7 @@ try:
 
             if total_records > 0:
                 with st.container(key="floating_approve_step2"):
-                    if st.button("Duyệt & Sang Bước 3 →", type="primary", use_container_width=True, key="btn_approve_step2"):
+                    if st.button("✅ Duyệt & Sang Bước 3 ➔", type="primary", use_container_width=True, key="btn_approve_step2"):
                         set_spinner_msg("Đang phân tích dữ liệu và tạo Báo cáo & Dashboard...")
                         st.session_state.step2_approved = True
                         st.session_state.current_step = 3
@@ -2032,7 +2164,7 @@ try:
                 st.session_state._last_step2_selected_file = selected_file
 
             st.write("")
-            lbl_s2_btn = "Đóng bảng chỉnh sửa trực tiếp" if st.session_state.show_step2_editor else "Mở bảng chỉnh sửa từng ô dữ liệu"
+            lbl_s2_btn = "✖ Đóng bảng sửa dữ liệu" if st.session_state.show_step2_editor else "✏️ Bấm vào đây nếu muốn sửa dữ liệu"
             if st.button(lbl_s2_btn, use_container_width=True, key="btn_toggle_s2_editor"):
                 st.session_state.show_step2_editor = not st.session_state.show_step2_editor
                 st.rerun()
@@ -2057,7 +2189,7 @@ try:
 
                     if not s2_issues and not user_edits:
                         st.success(
-                            f"**Tệp `{selected_file}` đã đạt chuẩn 100%!**\n\n"
+                            f"✅ **Tệp `{selected_file}` đã đạt chuẩn 100%!**\n\n"
                             f"- **Cấu trúc bảng:** Giữ nguyên toàn bộ **{total_rows:,} dòng × {len(df_current.columns)} cột**, không có dòng/cột trống thừa hay dòng trùng lặp.\n"
                             f"- **Độ đầy đủ dữ liệu:** 100% các ô đều có giá trị (0 ô trống).\n"
                             f"- **Các cột số đã chuẩn hóa ({len(num_cols)} cột):** {num_cols_str if num_cols else 'Không có'}.\n"
@@ -2066,7 +2198,7 @@ try:
                         )
                     else:
                         if s2_issues:
-                            st.warning(f"**Phát hiện {len(s2_issues)} vấn đề trong tệp `{selected_file}`. Vui lòng chọn phương án xử lý và bấm phê duyệt:**")
+                            st.warning(f"⚠️ **Phát hiện {len(s2_issues)} vấn đề trong tệp `{selected_file}`. Vui lòng chọn phương án xử lý và bấm phê duyệt:**")
                             s2_issue_key_prefix = f"s2_fix_{selected_file}"
                             if f"{s2_issue_key_prefix}_selected" not in st.session_state:
                                 st.session_state[f"{s2_issue_key_prefix}_selected"] = [iss["id"] for iss in s2_issues]
@@ -2075,18 +2207,19 @@ try:
                             for idx_s2i, s2_iss in enumerate(s2_issues):
                                 with cols_s2_iss[idx_s2i % min(len(s2_issues), 3)]:
                                     with st.container(border=True):
-                                        sev_fg = "#ef4444" if s2_iss["severity"] == "Quan trọng" else ("#f59e0b" if s2_iss["severity"] == "Cảnh báo" else _text_sec)
+                                        sev_bg = "#fee2e2" if s2_iss["severity"] == "Quan trọng" else ("#fef3c7" if s2_iss["severity"] == "Cảnh báo" else "#e0f2fe")
+                                        sev_fg = "#991b1b" if s2_iss["severity"] == "Quan trọng" else ("#92400e" if s2_iss["severity"] == "Cảnh báo" else "#075985")
                                         st.markdown(
-                                            f"<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;'>"
-                                            f"<span style='font-weight:500; color:{_text_pri}; font-size:0.88rem;'>{s2_iss['type']}</span>"
-                                            f"<span class='mono-meta' style='background:{_bg_elev}; color:{sev_fg}; border:1px solid {_border_hairline}; font-size:0.7rem; font-weight:500; padding:1px 6px; border-radius:4px;'>{s2_iss['severity']}</span>"
+                                            f"<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;'>"
+                                            f"<span style='font-weight:800; color:#0f172a; font-size:0.9rem;'>{s2_iss['icon']} {s2_iss['type']}</span>"
+                                            f"<span style='background:{sev_bg}; color:{sev_fg}; font-size:0.7rem; font-weight:800; padding:2px 7px; border-radius:999px;'>{s2_iss['severity']}</span>"
                                             f"</div>",
                                             unsafe_allow_html=True
                                         )
-                                        st.markdown(f"<div style='font-size:0.83rem; color:{_text_sec}; margin-bottom:6px;'>{s2_iss['desc']}</div>", unsafe_allow_html=True)
-                                        st.markdown(f"<div style='font-size:0.8rem; color:{_text_pri}; background:{_bg_elev}; border:1px solid {_border_hairline}; padding:6px 8px; border-radius:6px; margin-bottom:8px;'><span style='color:{_accent}; font-weight:500;'>Đề xuất:</span> {s2_iss['suggested_fix']}</div>", unsafe_allow_html=True)
+                                        st.markdown(f"<div style='font-size:0.83rem; color:#334155; margin-bottom:4px;'><b>Chi tiết lỗi:</b> {s2_iss['desc']}</div>", unsafe_allow_html=True)
+                                        st.markdown(f"<div style='font-size:0.8rem; color:#1e40af; background:#eff6ff; padding:5px 8px; border-radius:6px; margin-bottom:6px;'>💡 <b>Cách sửa:</b> {s2_iss['suggested_fix']}</div>", unsafe_allow_html=True)
                                         is_checked = st.checkbox(
-                                            f"Cho phép: {s2_iss['action_label']}",
+                                            f"✅ Cho phép: {s2_iss['action_label']}",
                                             value=(s2_iss["id"] in st.session_state[f"{s2_issue_key_prefix}_selected"]),
                                             key=f"chk_s2_{selected_file}_{s2_iss['id']}"
                                         )
@@ -2098,7 +2231,7 @@ try:
                             s2_chosen_fixes = st.session_state.get(f"{s2_issue_key_prefix}_selected", [])
                             col_s2_btn_apply, col_s2_btn_all, col_s2_btn_undo = st.columns([1.8, 1.1, 1.1])
                             with col_s2_btn_apply:
-                                btn_s2_fix_label = f"Duyệt & Sửa ngay ({len(s2_chosen_fixes)} mục đã chọn)" if s2_chosen_fixes else "Chưa chọn mục nào để sửa"
+                                btn_s2_fix_label = f"🛠️ Duyệt & Sửa ngay ({len(s2_chosen_fixes)} mục đã chọn)" if s2_chosen_fixes else "⚠️ Chưa chọn mục nào để sửa"
                                 if st.button(btn_s2_fix_label, type="primary", use_container_width=True, key=f"btn_apply_fixes_s2_{selected_file}", disabled=(not s2_chosen_fixes)):
                                     with st.spinner(f"Đang áp dụng các sửa đổi do bạn duyệt trên tệp {selected_file}..."):
                                         fixed_df, fix_reps = apply_data_issue_fixes(df_current, s2_chosen_fixes)
@@ -2114,47 +2247,47 @@ try:
                                         orch.data_agent.file_infos[selected_file]["missing_cells_count"] = int(fixed_df.isna().sum().sum())
                                         orch.data_agent.file_infos.setdefault(selected_file, {}).setdefault("user_action_log", []).extend(fix_reps)
                                         st.session_state[f"{s2_issue_key_prefix}_selected"] = []
-                                        st.toast(f"Đã xử lý xong các lỗi trên {selected_file}!")
+                                        st.toast(f"✅ Đã xử lý xong các lỗi trên {selected_file}!")
                                     st.rerun()
                             with col_s2_btn_all:
                                 all_s2_ids = [iss["id"] for iss in s2_issues]
                                 if len(s2_chosen_fixes) < len(all_s2_ids):
-                                    if st.button("Chọn tất cả lỗi", use_container_width=True, key=f"btn_sel_all_s2_{selected_file}"):
+                                    if st.button("☑️ Chọn tất cả lỗi", use_container_width=True, key=f"btn_sel_all_s2_{selected_file}"):
                                         st.session_state[f"{s2_issue_key_prefix}_selected"] = list(all_s2_ids)
                                         for iid in all_s2_ids:
                                             st.session_state[f"chk_s2_{selected_file}_{iid}"] = True
                                         st.rerun()
                                 else:
-                                    if st.button("Bỏ chọn tất cả", use_container_width=True, key=f"btn_unsel_all_s2_{selected_file}"):
+                                    if st.button("⬜ Bỏ chọn tất cả", use_container_width=True, key=f"btn_unsel_all_s2_{selected_file}"):
                                         st.session_state[f"{s2_issue_key_prefix}_selected"] = []
                                         for iid in all_s2_ids:
                                             st.session_state[f"chk_s2_{selected_file}_{iid}"] = False
                                         st.rerun()
                             with col_s2_btn_undo:
                                 if has_s2_backup and user_edits:
-                                    if st.button("↺ Khôi phục bản gốc", use_container_width=True, key=f"btn_undo_s2_{selected_file}"):
+                                    if st.button("↩️ Khôi phục bản gốc", use_container_width=True, key=f"btn_undo_s2_{selected_file}"):
                                         orig_copy = file_info_cur["original_df"].copy()
                                         orch.data_agent.raw_dataframes[selected_file] = orig_copy
                                         file_info_cur["rows"] = len(orig_copy)
                                         file_info_cur["user_action_log"] = []
-                                        st.toast(f"Đã khôi phục tệp {selected_file} về dữ liệu gốc ban đầu.")
+                                        st.toast(f"↩️ Đã khôi phục tệp {selected_file} về dữ liệu gốc ban đầu.")
                                         st.rerun()
 
                             s2_err_preview = get_issue_preview_rows(df_current, max_rows=25)
                             if not s2_err_preview.empty:
-                                with st.expander(f"Xem trước các dòng đang có lỗi trong `{selected_file}` ({len(s2_err_preview)} dòng mẫu)", expanded=False):
+                                with st.expander(f"🔎 Xem trước các dòng đang có lỗi trong `{selected_file}` ({len(s2_err_preview)} dòng mẫu)", expanded=False):
                                     st.dataframe(s2_err_preview, use_container_width=True, height=220)
 
-                        details = [f"**Nhật ký kiểm toán & cấu trúc tệp `{selected_file}`:**"]
-                        details.append(f"- **Quy mô hiện tại:** **{len(df_current):,} dòng × {len(df_current.columns)} cột**.")
-                        details.append(f"- **Cột số ({len(num_cols)} cột):** {num_cols_str if num_cols else 'Không có'}.")
-                        details.append(f"- **Cột phân loại / văn bản ({len(txt_cols)} cột):** {txt_cols_str if txt_cols else 'Không có'}.")
-                        details.append(f"- **Ánh xạ trường ({len(mapped_dict)} trường):** {mapped_str if mapped_dict else 'Tự động nhận diện'}.")
+                        details = [f"📋 **Nhật ký kiểm tra & cấu trúc tệp `{selected_file}`:**"]
+                        details.append(f"- 📊 **Quy mô hiện tại:** **{len(df_current):,} dòng × {len(df_current.columns)} cột**.")
+                        details.append(f"- 🔢 **Cột số ({len(num_cols)} cột):** {num_cols_str if num_cols else 'Không có'}.")
+                        details.append(f"- 🏷️ **Cột phân loại / văn bản ({len(txt_cols)} cột):** {txt_cols_str if txt_cols else 'Không có'}.")
+                        details.append(f"- 🔗 **Ánh xạ trường ({len(mapped_dict)} trường):** {mapped_str if mapped_dict else 'Tự động nhận diện'}.")
                         for u_log in user_edits:
-                            details.append(f"- **Đã phê duyệt & thực thi:** {u_log}")
+                            details.append(f"- ✅ **Đã phê duyệt & thực thi:** {u_log}")
                         st.info("\n".join(details))
                         if not s2_issues and has_s2_backup and user_edits:
-                            if st.button("↺ Hoàn tác & Khôi phục dữ liệu gốc ban đầu", key=f"btn_undo_clean_s2_{selected_file}"):
+                            if st.button("↩️ Hoàn tác & Khôi phục dữ liệu gốc ban đầu", key=f"btn_undo_clean_s2_{selected_file}"):
                                 orig_copy = file_info_cur["original_df"].copy()
                                 orch.data_agent.raw_dataframes[selected_file] = orig_copy
                                 file_info_cur["rows"] = len(orig_copy)
@@ -2176,7 +2309,7 @@ try:
                             key=f"editor_{selected_file}_large"
                         )
                     else:
-                        st.caption("Nhấp đúp vào ô bất kỳ để sửa trực tiếp, sau đó bấm nút **Lưu Dữ Liệu Đã Sửa** hoặc **Chuẩn Hóa Định Dạng** bên dưới:")
+                        st.caption("Nhấp đúp vào ô bất kỳ để sửa trực tiếp, sau đó bấm nút **Lưu Dữ Liệu Đã Sửa** hoặc **Làm Sạch & Chuẩn Hóa** bên dưới:")
                         edited_slice = st.data_editor(
                             s2_view_df[s2_display_cols],
                             use_container_width=True,
@@ -2187,7 +2320,7 @@ try:
 
                     col_save, col_clean = st.columns([1, 1])
                     with col_save:
-                        if st.button("Lưu Dữ Liệu Đã Sửa", type="primary", use_container_width=True, key="btn_save_step2"):
+                        if st.button("💾 Lưu Dữ Liệu Đã Sửa", type="primary", use_container_width=True, key="btn_save_step2"):
                             try:
                                 with st.spinner("Đang lưu dữ liệu đã chỉnh sửa vào hệ thống..."):
                                     if total_rows > 1000 and not (search_kw.strip() if 'search_kw' in locals() else False) and page_size < total_rows:
@@ -2213,14 +2346,14 @@ try:
                                         orch.data_agent.file_infos[selected_file]["aggregation_note"] = agg_note
                                         orch.data_agent.file_infos[selected_file]["rows"] = len(new_df)
                                     orch.data_agent.file_infos.setdefault(selected_file, {}).setdefault("user_action_log", []).append(f"Đã lưu chỉnh sửa trực tiếp ({len(new_df):,} dòng).")
-                                    st.success(f"Đã lưu cập nhật thành công cho tệp {selected_file} ({len(new_df):,} dòng).")
+                                    st.success(f"✅ Đã lưu cập nhật thành công cho tệp {selected_file} ({len(new_df):,} dòng)!")
                                 set_spinner_msg(f"Đang cập nhật lại bảng dữ liệu {selected_file} sau khi lưu...")
                                 st.rerun()
                             except Exception:
-                                st.error("Đã xảy ra lỗi khi lưu dữ liệu chỉnh sửa. Vui lòng kiểm tra lại định dạng các ô vừa nhập.")
+                                st.error("⚠️ Đã xảy ra lỗi khi lưu dữ liệu chỉnh sửa. Vui lòng kiểm tra lại định dạng các ô vừa nhập.")
                     
                     with col_clean:
-                        if st.button("Chuẩn Hóa Định Dạng Số & Chuỗi", type="primary", use_container_width=True, key="btn_clean_step2"):
+                        if st.button("✨ Làm Sạch & Chuẩn Hóa", type="primary", use_container_width=True, key="btn_clean_step2"):
                             try:
                                 with st.spinner(f"Đang làm sạch và chuẩn hóa toàn bộ {len(df_current):,} dòng dữ liệu..."):
                                     cleaned_df = df_current.dropna(how="all").copy()
@@ -2243,13 +2376,13 @@ try:
                                         orch.data_agent.file_infos[selected_file]["aggregated_df"] = agg_df
                                     removed_manual = max(0, len(df_current) - len(cleaned_df))
                                     orch.data_agent.file_infos.setdefault(selected_file, {}).setdefault("user_action_log", []).append(
-                                        f"Đã chạy Chuẩn hóa định dạng (xóa {removed_manual} dòng trống, chuẩn hóa định dạng số & khoảng trắng)."
+                                        f"Đã chạy Làm sạch & Chuẩn hóa tự động (xóa {removed_manual} dòng trống, chuẩn hóa định dạng số & khoảng trắng)."
                                     )
-                                st.success(f"Đã chuẩn hóa tự động toàn bộ {len(cleaned_df):,} dòng.")
+                                st.success(f"✨ Đã làm sạch và chuẩn hóa tự động toàn bộ {len(cleaned_df):,} dòng!")
                                 set_spinner_msg(f"Đang hiển thị bảng dữ liệu {selected_file} sau khi làm sạch...")
                                 st.rerun()
                             except Exception:
-                                st.error("Không thể chuẩn hóa tự động một số cột đặc biệt trong tệp này. Dữ liệu gốc vẫn được giữ nguyên an toàn.")
+                                st.error("⚠️ Không thể chuẩn hóa tự động một số cột đặc biệt trong tệp này. Dữ liệu gốc vẫn được giữ nguyên an toàn.")
 
     # ============================================================
     # BƯỚC 3: BÁO CÁO TỔNG HỢP & DASHBOARD (TÍNH TOÁN THỰC TẾ TỪ DỮ LIỆU)
@@ -2536,597 +2669,20 @@ try:
         df_scores = st.session_state.dashboard_scores_df.copy()
 
         import importlib
-        import re as _re_mod
         import utils.export_helper as _exp_mod
         importlib.reload(_exp_mod)
+        build_unified_report_dashboard_html = _exp_mod.build_unified_report_dashboard_html
         build_docx_bytes = getattr(_exp_mod, "build_docx_bytes", None)
         build_pdf_bytes = getattr(_exp_mod, "build_pdf_bytes", None)
         import streamlit.components.v1 as components
 
-        def _md_to_unslop_html(md_text: str) -> str:
-            lines = str(md_text or "").split("\n")
-            out = []
-            for line in lines:
-                s = line.strip()
-                if not s:
-                    continue
-                if s.startswith("### "):
-                    out.append(f"<h3>{s[4:]}</h3>")
-                elif s.startswith("## "):
-                    out.append(f"<h2>{s[3:]}</h2>")
-                elif s.startswith("# "):
-                    out.append(f"<h1>{s[2:]}</h1>")
-                elif s.startswith("- "):
-                    content_li = _re_mod.sub(r"\*\*(.*?)\*\*", r"<strong>\1</strong>", s[2:])
-                    out.append(f"<li>{content_li}</li>")
-                else:
-                    content_p = _re_mod.sub(r"\*\*(.*?)\*\*", r"<strong>\1</strong>", line)
-                    out.append(f"<p>{content_p}</p>")
-            return "\n".join(out)
-
-        def _render_unslop_dashboard_html(title: str, df_sc: pd.DataFrame, report_md: str, plan_md: str, total_records: int = 0) -> str:
-            clean_title = _re_mod.sub(r"^[📊🏢📈📋\s]+", "", str(title)).strip() or "Báo cáo phân tích dữ liệu & Dashboard"
-            top2_list = df_sc["Địa bàn"].astype(str).head(2).tolist()
-            best_region = str(df_sc.iloc[0]["Địa bàn"]) if len(df_sc) > 0 else "N/A"
-            best_score = float(df_sc.iloc[0]["Điểm tổng hợp"]) if len(df_sc) > 0 else 0.0
-            avg_score = round(float(df_sc["Điểm tổng hợp"].mean()), 2) if len(df_sc) > 0 else 0.0
-            second_region = str(df_sc.iloc[1]["Địa bàn"]) if len(df_sc) > 1 else best_region
-            second_score = float(df_sc.iloc[1]["Điểm tổng hợp"]) if len(df_sc) > 1 else best_score
-            lead_gap = round(best_score - avg_score, 2)
-            records_label = f"{total_records:,} bản ghi" if total_records > 0 else f"{len(df_sc)} nhóm"
-
-            df_chart = df_sc.head(7).copy()
-            palette = ["#3b82f6", "#60a5fa", "#10b981", "#f59e0b", "#8b5cf6", "#06b6d4", "#ec4899"]
-
-            vbars_items = ""
-            for idx, row in df_chart.iterrows():
-                r_name = str(row["Địa bàn"])
-                sc = float(row["Điểm tổng hợp"])
-                bar_h = max(18, min(168, int(round((sc / 10.0) * 168))))
-                bar_c = _accent if idx == 0 else (palette[1] if idx == 1 else (_text_mut if _is_dark else "#94a3b8"))
-                vbars_items += f"""
-                <div class="vbar-col">
-                    <div class="vbar-score">{sc:.2f}</div>
-                    <div class="vbar-track">
-                        <div class="vbar-fill" style="height:{bar_h}px; background:{bar_c};"></div>
-                    </div>
-                    <div class="vbar-label">{r_name}</div>
-                </div>
-                """
-
-            total_sc_sum = float(df_chart["Điểm tổng hợp"].sum()) or 1.0
-            conic_parts = []
-            legend_items = ""
-            acc_pct = 0.0
-            for idx, row in df_chart.iterrows():
-                r_name = str(row["Địa bàn"])
-                sc = float(row["Điểm tổng hợp"])
-                share = (sc / total_sc_sum) * 100.0
-                next_pct = min(100.0, acc_pct + share)
-                c = palette[idx % len(palette)]
-                conic_parts.append(f"{c} {acc_pct:.2f}% {next_pct:.2f}%")
-                acc_pct = next_pct
-                legend_items += f"""
-                <div class="donut-leg-item">
-                    <span class="donut-dot" style="background:{c};"></span>
-                    <span>{r_name}</span>
-                    <span class="donut-pct">{share:.1f}%</span>
-                </div>
-                """
-            conic_str = ", ".join(conic_parts) if conic_parts else f"{_accent} 0% 100%"
-
-            crit_cols = [c for c in ["Quy mô (25%)", "Nhu cầu WMS (25%)", "Khả thi On-site (25%)", "Cạnh tranh (15%)", "Tăng trưởng (10%)"] if c in df_sc.columns]
-            crit_display_names = {
-                "Quy mô (25%)": "Quy mô dữ liệu (25%)",
-                "Nhu cầu WMS (25%)": "Hiệu suất / Nhu cầu (25%)",
-                "Khả thi On-site (25%)": "Độ đầy đủ & Khả thi (25%)",
-                "Cạnh tranh (15%)": "Dư địa cạnh tranh (15%)",
-                "Tăng trưởng (10%)": "Tiềm năng tăng trưởng (10%)"
-            }
-            hbar_items = ""
-            crit_averages = []
-            for idx, col_c in enumerate(crit_cols):
-                c_val = round(float(df_sc[col_c].astype(float).mean()), 2) if len(df_sc) > 0 else 0.0
-                crit_averages.append((crit_display_names.get(col_c, col_c), c_val))
-                c_pct = max(8, min(100, round(c_val * 10, 1)))
-                c_label = crit_display_names.get(col_c, col_c)
-                hbar_items += f"""
-                <div class="hbar-row">
-                    <div class="hbar-head">
-                        <span>{c_label}</span>
-                        <span class="hbar-val">{c_val:.2f} / 10</span>
-                    </div>
-                    <div class="hbar-track">
-                        <div class="hbar-fill" style="width:{c_pct}%; background:{_accent};"></div>
-                    </div>
-                </div>
-                """
-
-            strongest_crit = max(crit_averages, key=lambda x: x[1]) if crit_averages else ("Chỉ số tổng hợp", avg_score)
-            weakest_crit = min(crit_averages, key=lambda x: x[1]) if crit_averages else ("Chỉ số phụ", avg_score)
-
-            ranking_bars_html = ""
-            for idx, row in df_sc.head(8).iterrows():
-                reg_name = str(row["Địa bàn"])
-                sc = float(row["Điểm tổng hợp"])
-                pct = min(100, max(5, round(sc * 10, 1)))
-                b_txt = f"0{idx+1}" if idx < 9 else f"{idx+1}"
-                ranking_bars_html += f"""
-                <div class="rank-row">
-                    <div class="rank-top">
-                        <span><span class="rank-tag">{b_txt}</span>{reg_name}</span>
-                        <span class="rank-val">{sc:.2f} / 10</span>
-                    </div>
-                    <div class="rank-track"><div class="rank-fill" style="width:{pct}%;"></div></div>
-                </div>
-                """
-
-            df_display = df_sc.rename(columns={"Nhu cầu WMS (25%)": "Hiệu suất (25%)", "Khả thi On-site (25%)": "Khả thi (25%)"})
-            scores_html_table = df_display.to_html(index=False, classes="styled-table")
-            report_body = _md_to_unslop_html(report_md)
-            plan_body = _md_to_unslop_html(plan_md)
-
-            return f"""<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <title>{clean_title}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        * {{ box-sizing: border-box; }}
-        body {{
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: {_bg_page};
-            color: {_text_pri};
-            padding: 18px;
-            margin: 0;
-            font-size: 13.5px;
-            line-height: 1.65;
-            -webkit-font-smoothing: antialiased;
-        }}
-        .mono, .kpi-val, .vbar-score, .donut-big, .donut-pct, .hbar-val, .rank-val, .rank-tag, .styled-table td {{
-            font-family: 'JetBrains Mono', ui-monospace, monospace;
-            font-variant-numeric: tabular-nums;
-        }}
-        .exec-wrap {{
-            max-width: 1220px;
-            margin: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }}
-        .exec-header {{
-            background: {_bg_deep};
-            border: 1px solid {_border_hairline};
-            border-radius: 14px;
-            padding: 18px 22px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }}
-        .exec-header h1 {{
-            margin: 0;
-            font-size: 1.15rem;
-            color: {_text_pri};
-            font-weight: 500;
-            letter-spacing: -0.02em;
-        }}
-        .exec-header .sub {{
-            font-size: 0.82rem;
-            color: {_text_sec};
-            margin-top: 3px;
-        }}
-        .pill {{
-            font-family: 'JetBrains Mono', monospace;
-            background: {_bg_elev};
-            color: {_text_sec};
-            border: 1px solid {_border_hairline};
-            border-radius: 5px;
-            padding: 2px 8px;
-            font-size: 0.72rem;
-            font-weight: 500;
-        }}
-        .kpi-grid {{
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 14px;
-        }}
-        .kpi-card {{
-            background: {_bg_card};
-            border: 1px solid {_border_hairline};
-            border-radius: 14px;
-            padding: 15px 18px;
-        }}
-        .kpi-label {{
-            font-size: 0.76rem;
-            color: {_text_mut};
-            font-weight: 400;
-        }}
-        .kpi-val {{
-            font-size: 1.25rem;
-            color: {_text_pri};
-            font-weight: 500;
-            margin-top: 6px;
-            letter-spacing: -0.02em;
-        }}
-        .kpi-sub {{
-            font-size: 0.75rem;
-            color: {_accent};
-            margin-top: 4px;
-        }}
-        .grid-main-top {{
-            display: grid;
-            grid-template-columns: 1.35fr 1fr;
-            gap: 14px;
-        }}
-        .grid-two {{
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
-        }}
-        .card {{
-            background: {_bg_card};
-            border: 1px solid {_border_hairline};
-            border-radius: 14px;
-            padding: 18px 20px;
-        }}
-        .card-title {{
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: {_text_pri};
-            margin: 0 0 14px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }}
-        .vbar-chart {{
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-around;
-            gap: 10px;
-            padding: 16px 10px 10px 10px;
-            min-height: 225px;
-            background: {_bg_elev};
-            border: 1px solid {_border_hairline};
-            border-radius: 10px;
-        }}
-        .vbar-col {{
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            flex: 1;
-            min-width: 44px;
-        }}
-        .vbar-score {{
-            font-size: 0.75rem;
-            color: {_text_pri};
-            margin-bottom: 6px;
-        }}
-        .vbar-track {{
-            height: 168px;
-            width: 100%;
-            max-width: 36px;
-            background: {_bg_deep};
-            border-radius: 5px;
-            display: flex;
-            align-items: flex-end;
-            overflow: hidden;
-        }}
-        .vbar-fill {{
-            width: 100%;
-            border-radius: 5px 5px 0 0;
-        }}
-        .vbar-label {{
-            margin-top: 8px;
-            font-size: 0.75rem;
-            color: {_text_sec};
-            text-align: center;
-        }}
-        .donut-wrap {{
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 14px;
-            min-height: 225px;
-        }}
-        .donut-ring {{
-            width: 140px;
-            height: 140px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }}
-        .donut-hole {{
-            width: 94px;
-            height: 94px;
-            border-radius: 50%;
-            background: {_bg_card};
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }}
-        .donut-big {{
-            font-size: 1rem;
-            font-weight: 500;
-            color: {_text_pri};
-        }}
-        .donut-small {{
-            font-size: 0.7rem;
-            color: {_text_mut};
-        }}
-        .donut-legend {{
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 6px 12px;
-        }}
-        .donut-leg-item {{
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.75rem;
-            color: {_text_sec};
-        }}
-        .donut-dot {{
-            width: 8px;
-            height: 8px;
-            border-radius: 2px;
-            display: inline-block;
-        }}
-        .donut-pct {{
-            color: {_text_pri};
-            font-weight: 500;
-        }}
-        .hbar-list {{
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }}
-        .hbar-head {{
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.8rem;
-            color: {_text_sec};
-            margin-bottom: 4px;
-        }}
-        .hbar-val {{
-            color: {_text_pri};
-        }}
-        .hbar-track {{
-            width: 100%;
-            height: 6px;
-            background: {_bg_elev};
-            border-radius: 3px;
-            overflow: hidden;
-        }}
-        .hbar-fill {{
-            height: 100%;
-            border-radius: 3px;
-        }}
-        .insight-strip {{
-            background: {_bg_card};
-            border: 1px solid {_border_hairline};
-            border-left: 2px solid {_accent};
-            border-radius: 10px;
-            padding: 12px 16px;
-            font-size: 0.85rem;
-            color: {_text_sec};
-        }}
-        .insight-strip strong {{ color: {_text_pri}; font-weight: 500; }}
-        .rank-row {{ margin-bottom: 10px; }}
-        .rank-top {{
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.82rem;
-            color: {_text_pri};
-            margin-bottom: 4px;
-        }}
-        .rank-tag {{
-            display: inline-block;
-            background: {_bg_elev};
-            color: {_accent};
-            border: 1px solid {_border_hairline};
-            font-size: 0.68rem;
-            padding: 1px 5px;
-            border-radius: 4px;
-            margin-right: 8px;
-        }}
-        .rank-track {{
-            width: 100%;
-            height: 6px;
-            background: {_bg_elev};
-            border-radius: 3px;
-            overflow: hidden;
-        }}
-        .rank-fill {{
-            height: 100%;
-            background: {_accent};
-            border-radius: 3px;
-        }}
-        .insights-3col {{
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-        }}
-        .insight-box {{
-            background: {_bg_elev};
-            border: 1px solid {_border_hairline};
-            border-radius: 10px;
-            padding: 14px;
-        }}
-        .insight-box .tag {{
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.68rem;
-            color: {_accent};
-            margin-bottom: 4px;
-        }}
-        .insight-box h4 {{
-            margin: 0 0 5px 0;
-            font-size: 0.88rem;
-            font-weight: 500;
-            color: {_text_pri};
-        }}
-        .insight-box p {{
-            margin: 0;
-            font-size: 0.8rem;
-            color: {_text_sec};
-        }}
-        .styled-table {{
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.78rem;
-        }}
-        .styled-table th, .styled-table td {{
-            border-bottom: 1px solid {_border_hairline};
-            padding: 8px 10px;
-            text-align: left;
-        }}
-        .styled-table th {{
-            background: {_bg_elev};
-            color: {_text_sec};
-            font-weight: 500;
-        }}
-        .report-detail {{
-            background: {_bg_elev};
-            border: 1px solid {_border_hairline};
-            border-radius: 10px;
-            padding: 16px 20px;
-            font-size: 0.86rem;
-            color: {_text_sec};
-        }}
-        .report-detail h1, .report-detail h2, .report-detail h3 {{
-            color: {_text_pri};
-            font-size: 0.96rem;
-            font-weight: 500;
-            margin-top: 12px;
-            margin-bottom: 6px;
-        }}
-        .report-detail strong {{ color: {_text_pri}; font-weight: 500; }}
-        @media (max-width: 900px) {{
-            .kpi-grid, .grid-main-top, .grid-two, .insights-3col {{ grid-template-columns: 1fr; }}
-        }}
-    </style>
-</head>
-<body>
-    <div class="exec-wrap">
-        <div class="exec-header">
-            <div>
-                <h1>{clean_title}</h1>
-                <div class="sub">Tổng hợp phân tích đa chiều &amp; nhận xét trực tiếp từ dữ liệu ({records_label})</div>
-            </div>
-            <span class="pill">unslop · report</span>
-        </div>
-
-        <div class="kpi-grid">
-            <div class="kpi-card">
-                <div class="kpi-label">Số nhóm đánh giá</div>
-                <div class="kpi-val">{len(df_sc)}</div>
-                <div class="kpi-sub">Chuẩn hóa từ dữ liệu gốc</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-label">Dẫn đầu bảng điểm</div>
-                <div class="kpi-val">{best_region}</div>
-                <div class="kpi-sub">{best_score:.2f} / 10 điểm</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-label">Top ưu tiên</div>
-                <div class="kpi-val">{", ".join(top2_list)}</div>
-                <div class="kpi-sub">Nhóm đề xuất trọng tâm</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-label">Điểm trung bình</div>
-                <div class="kpi-val">{avg_score:.2f} / 10</div>
-                <div class="kpi-sub">Mặt bằng chung toàn tệp</div>
-            </div>
-        </div>
-
-        <div class="grid-main-top">
-            <div class="card">
-                <div class="card-title"><span>Xếp hạng điểm tổng hợp</span><span class="pill">scale 10</span></div>
-                <div class="vbar-chart">{vbars_items}</div>
-            </div>
-            <div class="card">
-                <div class="card-title"><span>Tỷ trọng điểm số</span><span class="pill">share</span></div>
-                <div class="donut-wrap">
-                    <div class="donut-ring" style="background: conic-gradient({conic_str});">
-                        <div class="donut-hole">
-                            <div class="donut-big">100%</div>
-                            <div class="donut-small">{len(df_sc)} nhóm</div>
-                        </div>
-                    </div>
-                    <div class="donut-legend">{legend_items}</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="insight-strip">
-            <strong>Điểm nhấn phân tích:</strong> Nhóm <strong>{best_region}</strong> dẫn đầu với <strong>{best_score:.2f}/10 điểm</strong> (vượt trung bình <strong>+{lead_gap:.2f}</strong> điểm), xếp tiếp theo là <strong>{second_region}</strong> ({second_score:.2f}/10 điểm).
-        </div>
-
-        <div class="grid-two">
-            <div class="card">
-                <div class="card-title"><span>Điểm trung bình 5 tiêu chí</span><span class="pill">criteria</span></div>
-                <div class="hbar-list">{hbar_items}</div>
-            </div>
-            <div class="card">
-                <div class="card-title"><span>Bảng xếp hạng nổi bật</span><span class="pill">top {min(len(df_sc), 8)}</span></div>
-                {ranking_bars_html}
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-title"><span>Bảng điểm định lượng chi tiết</span><span class="pill">tabular-nums</span></div>
-            <div style="overflow-x:auto;">{scores_html_table}</div>
-        </div>
-
-        <div class="card">
-            <div class="card-title"><span>Nhận xét &amp; đề xuất trọng tâm</span><span class="pill">insights</span></div>
-            <div class="insights-3col">
-                <div class="insight-box">
-                    <div class="tag">01 · lead group</div>
-                    <h4>Ưu tiên trọng tâm {best_region}</h4>
-                    <p>Đạt {best_score:.2f}/10 điểm — cao hơn trung bình {lead_gap:.2f} điểm nhờ các chỉ số định lượng vượt trội.</p>
-                </div>
-                <div class="insight-box">
-                    <div class="tag">02 · key strength</div>
-                    <h4>Nổi bật ở {strongest_crit[0]}</h4>
-                    <p>Đạt trung bình {strongest_crit[1]:.2f}/10 trên toàn bộ dữ liệu; nên tiếp tục duy trì tại {second_region}.</p>
-                </div>
-                <div class="insight-box">
-                    <div class="tag">03 · bottleneck</div>
-                    <h4>Lưu ý {weakest_crit[0]}</h4>
-                    <p>Trung bình {weakest_crit[1]:.2f}/10 — là điểm nghẽn cần theo dõi thêm trong kế hoạch thực thi.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-title"><span>Nội dung phân tích &amp; kế hoạch hành động</span><span class="pill">narrative</span></div>
-            <div class="report-detail">
-                {report_body}
-                <hr style="border:none; border-top:1px solid {_border_hairline}; margin:14px 0;">
-                {plan_body}
-            </div>
-        </div>
-    </div>
-</body>
-</html>"""
-
         # ============================================================
-        # BÁO CÁO TỔNG HỢP & DASHBOARD TRỰC QUAN
+        # MÀN HÌNH CHÍNH: BÁO CÁO TỔNG HỢP & DASHBOARD NHẬN XÉT TRỰC TIẾP
         # ============================================================
-        st.markdown(f"""
-        <div style="margin-bottom:0.75rem;">
-            <div style="background:{_bg_card}; border:1px solid {_border_hairline}; border-left:2px solid {_accent}; padding:0.45rem 0.95rem; border-radius:8px; display:inline-flex; align-items:center; gap:10px;">
-                <span class="mono-meta" style="font-size:0.76rem; color:{_accent}; background:{_bg_elev}; padding:2px 6px; border-radius:4px; border:1px solid {_border_hairline};">03</span>
-                <span style="font-weight:500; color:{_text_pri}; font-size:1.15rem; letter-spacing:-0.015em;">
-                    Bước 3 · Báo cáo tổng hợp và Dashboard đa chiều
-                </span>
+        st.markdown("""
+        <div style="margin-bottom:0.4rem;">
+            <div style="font-size:1.35rem; font-weight:800; color:#1e3a8a; letter-spacing:0.2px;">
+                Báo Cáo Tổng Hợp & Dashboard Nhận Xét
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -3135,8 +2691,7 @@ try:
         st.session_state.pending_spinner_msg = ""
         _total_rec = sum(len(df) for df in orch.data_agent.raw_dataframes.values())
         _uni_cache_key = (
-            "v6_unslop_graphite",
-            st.session_state.unslop_theme,
+            "v5_detailed_report",
             st.session_state.dashboard_title,
             st.session_state.editable_report,
             st.session_state.editable_plan,
@@ -3145,9 +2700,9 @@ try:
         )
         if st.session_state.get("_uni_export_key") != _uni_cache_key:
             with st.spinner(_msg_uni):
-                st.session_state._uni_html_cached = _render_unslop_dashboard_html(
+                st.session_state._uni_html_cached = build_unified_report_dashboard_html(
                     title=st.session_state.dashboard_title,
-                    df_sc=df_scores,
+                    df_scores=df_scores,
                     report_md=st.session_state.editable_report,
                     plan_md=st.session_state.editable_plan,
                     total_records=_total_rec
@@ -3182,7 +2737,7 @@ try:
         exp_c1, exp_c2, exp_c3, exp_c4 = st.columns(4)
         with exp_c1:
             st.download_button(
-                label="Tải Báo cáo Web (.html)",
+                label="🌐 Tải Báo cáo Web (.html)",
                 data=unified_html.encode("utf-8"),
                 file_name="Bao_Cao_Dashboard_Phan_Tich.html",
                 mime="text/html",
@@ -3193,7 +2748,7 @@ try:
         with exp_c2:
             if st.session_state.get("_uni_docx_cached"):
                 st.download_button(
-                    label="Tải Báo cáo Word (.docx)",
+                    label="📄 Tải Báo cáo Word (.docx)",
                     data=st.session_state._uni_docx_cached,
                     file_name="Bao_Cao_Phan_Tich.docx",
                     mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -3203,7 +2758,7 @@ try:
         with exp_c3:
             if st.session_state.get("_uni_pdf_cached"):
                 st.download_button(
-                    label="Tải Báo cáo In ấn (.pdf)",
+                    label="📑 Tải Báo cáo In ấn (.pdf)",
                     data=st.session_state._uni_pdf_cached,
                     file_name="Bao_Cao_Phan_Tich.pdf",
                     mime="application/pdf",
@@ -3212,7 +2767,7 @@ try:
                 )
         with exp_c4:
             st.download_button(
-                label="Tải Bảng điểm (.csv)",
+                label="📊 Tải Bảng điểm (.csv)",
                 data=df_scores.to_csv(index=False).encode("utf-8-sig"),
                 file_name="Bang_Xep_Hang_Diem.csv",
                 mime="text/csv",
@@ -3225,7 +2780,7 @@ try:
 
         with st.container(key="floating_download_step3"):
             st.download_button(
-                label="Tải xuống Báo Cáo (.html)",
+                label="🌐 Tải xuống Báo Cáo (.html)",
                 data=unified_html.encode("utf-8"),
                 file_name="Bao_Cao_Dashboard_Phan_Tich.html",
                 mime="text/html",
@@ -3240,27 +2795,27 @@ try:
         st.write("")
         btn_ed_col1, btn_ed_col2 = st.columns(2)
         with btn_ed_col1:
-            label_rep_btn = "Đóng khung sửa báo cáo" if st.session_state.show_edit_report else "Chỉnh sửa nội dung báo cáo & kế hoạch"
+            label_rep_btn = "✖ Đóng khung sửa báo cáo" if st.session_state.show_edit_report else "✏️ Chỉnh sửa nội dung báo cáo"
             if st.button(label_rep_btn, use_container_width=True, key="toggle_edit_report_btn"):
                 st.session_state.show_edit_report = not st.session_state.show_edit_report
                 st.rerun()
 
         with btn_ed_col2:
-            label_dash_btn = "Đóng khung sửa bảng điểm" if st.session_state.show_edit_dashboard else "Chỉnh sửa điểm số trên Dashboard"
+            label_dash_btn = "✖ Đóng khung sửa điểm số" if st.session_state.show_edit_dashboard else "📊 Chỉnh sửa điểm số Dashboard"
             if st.button(label_dash_btn, use_container_width=True, key="toggle_edit_dashboard_btn"):
                 st.session_state.show_edit_dashboard = not st.session_state.show_edit_dashboard
                 st.rerun()
 
         if st.session_state.show_edit_report:
-            st.markdown("##### Chỉnh sửa tiêu đề & nội dung báo cáo")
+            st.markdown("##### ✏️ Chỉnh sửa nội dung báo cáo")
             new_title = st.text_input("Tiêu đề báo cáo:", value=st.session_state.dashboard_title, key="rep_title_input")
             col_ed1, col_ed2 = st.columns(2)
             with col_ed1:
                 new_report = st.text_area("Nội dung tóm tắt & nhận xét:", value=st.session_state.editable_report, height=220)
             with col_ed2:
-                new_plan = st.text_area("Kế hoạch hành động đề xuất:", value=st.session_state.editable_plan, height=220)
+                new_plan = st.text_area("Kế hoạch triển khai đề xuất:", value=st.session_state.editable_plan, height=220)
 
-            if st.button("Lưu thay đổi báo cáo", type="primary", use_container_width=True):
+            if st.button("💾 Lưu thay đổi báo cáo", type="primary", use_container_width=True):
                 st.session_state.dashboard_title = new_title
                 st.session_state.editable_report = new_report
                 st.session_state.editable_plan = new_plan
@@ -3270,7 +2825,7 @@ try:
                 st.rerun()
 
         if st.session_state.show_edit_dashboard:
-            st.markdown("##### Chỉnh sửa điểm số trên Dashboard")
+            st.markdown("##### 📊 Chỉnh sửa điểm số trên Dashboard")
             edited_dash_df = st.data_editor(
                 st.session_state.dashboard_scores_df,
                 use_container_width=True,
@@ -3289,7 +2844,7 @@ try:
 
             col_btn_dash1, col_btn_dash2 = st.columns([1, 1])
             with col_btn_dash1:
-                if st.button("Lưu điểm & cập nhật Dashboard", type="primary", use_container_width=True):
+                if st.button("💾 Lưu điểm & cập nhật Dashboard", type="primary", use_container_width=True):
                     new_df = edited_dash_df.copy()
                     for col_num in ["Quy mô (25%)", "Nhu cầu WMS (25%)", "Khả thi On-site (25%)", "Cạnh tranh (15%)", "Tăng trưởng (10%)"]:
                         new_df[col_num] = pd.to_numeric(new_df[col_num], errors="coerce").fillna(0.0)
@@ -3304,14 +2859,14 @@ try:
 
                     new_df = new_df.sort_values(by="Điểm tổng hợp", ascending=False).reset_index(drop=True)
                     new_df["Xếp hạng"] = [f"Hạng {i+1}" for i in range(len(new_df))]
-                    new_df["Trạng thái"] = ["Ưu tiên trọng tâm" if i < 2 else "Nhóm theo dõi" for i in range(len(new_df))]
+                    new_df["Trạng thái"] = ["✅ Ưu tiên" if i < 2 else "📌 Theo dõi" for i in range(len(new_df))]
                     st.session_state.dashboard_scores_df = new_df
                     st.session_state.show_edit_dashboard = False
                     st.rerun()
 
             with col_btn_dash2:
-                if st.button("Phân tích lại bằng AI Agent", use_container_width=True):
-                    with st.spinner("AI Agent đang phân tích sâu dữ liệu..."):
+                if st.button("🤖 Phân tích lại bằng AI", use_container_width=True):
+                    with st.spinner("AI đang phân tích sâu dữ liệu..."):
                         ai_res = orch.run_full_analysis()
                         st.session_state.analysis_results = ai_res
                         if ai_res.get("report"):
