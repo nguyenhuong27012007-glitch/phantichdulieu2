@@ -26,7 +26,7 @@ st.set_page_config(
     page_title="📊 Phân Tích Dữ Liệu | Quy Trình 3 Bước Thông Minh",
     page_icon="📊",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="expanded"
 )
 
 # ============================================================
@@ -552,19 +552,16 @@ st.markdown(f"""
         top: 0 !important;
         left: 0 !important;
         height: 100vh !important;
-        width: 68px !important;
-        min-width: 68px !important;
-        max-width: 68px !important;
-        background: rgba(240, 246, 255, 0.85) !important;
-        backdrop-filter: blur(16px) !important;
-        -webkit-backdrop-filter: blur(16px) !important;
-        border-right: 1.5px solid rgba(191, 219, 254, 0.8) !important;
-        box-shadow: 4px 0 24px rgba(37, 99, 235, 0.06) !important;
-        transition: width 0.32s cubic-bezier(0.4, 0, 0.2, 1),
-                    max-width 0.32s cubic-bezier(0.4, 0, 0.2, 1),
-                    min-width 0.32s cubic-bezier(0.4, 0, 0.2, 1),
-                    box-shadow 0.32s ease,
-                    background 0.32s ease !important;
+        width: 72px !important;
+        min-width: 72px !important;
+        max-width: 72px !important;
+        background: #ffffff !important;
+        border-right: 1.5px solid #dbeafe !important;
+        box-shadow: 4px 0 20px rgba(37, 99, 235, 0.08) !important;
+        transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                    max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                    min-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                    box-shadow 0.3s ease !important;
         overflow-x: hidden !important;
         overflow-y: hidden !important;
         z-index: 99999 !important;
@@ -577,15 +574,23 @@ st.markdown(f"""
         width: 290px !important;
         min-width: 290px !important;
         max-width: 290px !important;
-        background: rgba(255, 255, 255, 0.98) !important;
-        box-shadow: 12px 0 40px rgba(30, 58, 138, 0.16) !important;
+        background: #ffffff !important;
+        box-shadow: 12px 0 35px rgba(30, 58, 138, 0.18) !important;
         overflow-y: auto !important;
+    }}
+
+    /* Luôn hiển thị sidebar, không bị ẩn bởi collapse state của Streamlit */
+    section[data-testid="stSidebar"][aria-expanded="false"] {{
+        margin-left: 0 !important;
+        transform: none !important;
+        display: block !important;
+        width: 72px !important;
     }}
 
     /* Bố trí nội dung bên trong sidebar */
     section[data-testid="stSidebar"] > div:first-child {{
         width: 290px !important;
-        padding: 1.2rem 0.75rem !important;
+        padding: 1.2rem 0.5rem !important;
         box-sizing: border-box !important;
     }}
 
@@ -603,7 +608,7 @@ st.markdown(f"""
         text-align: left !important;
         justify-content: flex-start !important;
         border-radius: 12px !important;
-        padding: 0.65rem 0.85rem !important;
+        padding: 0.65rem 0.6rem !important;
         border: 1px solid transparent !important;
         background: transparent !important;
         transition: all 0.2s ease !important;
@@ -618,31 +623,11 @@ st.markdown(f"""
         border-color: #bae6fd !important;
     }}
 
-    /* Hiệu ứng hiển thị chữ mượt mà khi sidebar mở rộng */
-    section[data-testid="stSidebar"] h3,
-    section[data-testid="stSidebar"] h4,
-    section[data-testid="stSidebar"] hr,
-    section[data-testid="stSidebar"] [data-testid="stSelectbox"],
-    section[data-testid="stSidebar"] [data-testid="stExpander"],
-    section[data-testid="stSidebar"] [data-testid="stCaptionContainer"] {{
-        opacity: 0 !important;
-        transition: opacity 0.2s ease !important;
-        pointer-events: none !important;
-    }}
-    section[data-testid="stSidebar"]:hover h3,
-    section[data-testid="stSidebar"]:hover h4,
-    section[data-testid="stSidebar"]:hover hr,
-    section[data-testid="stSidebar"]:hover [data-testid="stSelectbox"],
-    section[data-testid="stSidebar"]:hover [data-testid="stExpander"],
-    section[data-testid="stSidebar"]:hover [data-testid="stCaptionContainer"] {{
-        opacity: 1 !important;
-        pointer-events: auto !important;
-    }}
-
-    /* Giữ khoảng cách lề trái cho nội dung chính không bị che bởi thanh icon 68px */
+    /* Giữ khoảng cách lề trái cho nội dung chính không bị che bởi thanh icon 72px */
     .main, [data-testid="stMain"] {{
-        margin-left: 68px !important;
-        transition: margin-left 0.32s ease !important;
+        margin-left: 72px !important;
+        transition: margin-left 0.3s ease !important;
+    }}
     }}
 </style>
 """, unsafe_allow_html=True)
