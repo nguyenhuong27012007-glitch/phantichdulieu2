@@ -1257,11 +1257,11 @@ if st.session_state.current_step != 0:
             width: 40px !important;
             height: 40px !important;
             min-height: 40px !important;
-            padding: 0 0 0 12px !important;
+            padding: 0 !important;
             border-radius: 50% !important;
             display: flex !important;
             align-items: center !important;
-            justify-content: flex-start !important;
+            justify-content: center !important;
             font-size: 0.9rem !important;
             font-weight: 600 !important;
             white-space: nowrap !important;
@@ -1272,10 +1272,22 @@ if st.session_state.current_step != 0:
             box-shadow: none !important;
             transition: all 0.2s ease !important;
         }
+        .st-key-floating_left_dock button p {
+            font-size: 0 !important;
+            line-height: 1 !important;
+            margin: 0 !important;
+        }
+        .st-key-floating_left_dock button p::first-letter {
+            font-size: 1.08rem !important;
+        }
         .st-key-floating_left_dock:hover button {
             width: 100% !important;
             border-radius: 12px !important;
+            justify-content: flex-start !important;
             padding: 0 12px !important;
+        }
+        .st-key-floating_left_dock:hover button p {
+            font-size: 0.9rem !important;
         }
         .st-key-floating_left_dock button:hover {
             background: rgba(239, 246, 255, 0.95) !important;
@@ -1344,9 +1356,6 @@ if st.session_state.current_step != 0:
             orch.data_agent.raw_dataframes.clear()
             set_spinner_msg("⏳ Đang làm mới toàn bộ phiên làm việc...")
             st.rerun()
-
-        if st.button("?   Hướng dẫn", key="sb_help_btn"):
-            st.toast("💡 Quy trình 3 bước: Nhập dữ liệu ➔ Làm sạch & Duyệt lỗi ➔ Xuất Báo cáo & Dashboard.", icon="💡")
 
 with st.sidebar:
 
