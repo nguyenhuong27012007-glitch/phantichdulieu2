@@ -1854,94 +1854,149 @@ try:
         has_pending_s1_errors = bool(pending_error_items)
         if has_pending_s1_errors:
             for _err_fname, _err_df, _err_issues in pending_error_items:
-                _err_health = compute_data_health_metrics(_err_df)
-                with st.container(border=True):
-                    st.warning(
-                        f"⚠️ **Phát hiện {len(_err_issues)} loại lỗi trong tệp `{_err_fname}`**.\n\n"
-                        f"Vui lòng kiểm tra, **chỉnh sửa văn bản hướng sửa theo ý bạn** (nếu cần), tích chọn các mục cho phép và bấm **Duyệt & Sửa ngay** để tiếp tục:"
-                    )
-                    issue_key_prefix = f"s1_fix_{_err_fname}"
-                    if f"{issue_key_prefix}_selected" not in st.session_state:
-                        st.session_state[f"{issue_key_prefix}_selected"] = [iss["id"] for iss in _err_issues]
+                issue_key_prefix = f"s1_fix_{_err_fname}"
+                if f"{issue_key_prefix}_selected" not in st.session_state:
+                    st.session_state[f"{issue_key_prefix}_selected"] = [iss["id"] for iss in _err_issues]
 
-                    custom_instrs = {}
-                    cols_iss = st.columns(min(len(_err_issues), 3))
-                    for idx_iss, iss in enumerate(_err_issues):
-                        with cols_iss[idx_iss % min(len(_err_issues), 3)]:
-                            with st.container(border=True):
-                                sev_bg = "#fee2e2" if iss["severity"] == "Quan trọng" else ("#fef3c7" if iss["severity"] == "Cảnh báo" else "#e0f2fe")
-                                sev_fg = "#991b1b" if iss["severity"] == "Quan trọng" else ("#92400e" if iss["severity"] == "Cảnh báo" else "#075985")
-                                clean_desc = str(iss['desc']).replace("`", "")
-                                st.markdown(
-                                    f"<div style='display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px;'>"
-                                    f"<span style='font-weight:700; color:#111827; font-size:0.92rem; line-height:1.3;'>{iss['type']}</span>"
-                                    f"<span style='background:{sev_bg}; color:{sev_fg}; font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:999px; white-space:nowrap; flex-shrink:0;'>{iss['severity']}</span>"
-                                    f"</div>",
-                                    unsafe_allow_html=True
-                                )
-                                st.markdown(f"<div style='font-size:0.83rem; color:#374151; line-height:1.45; margin-bottom:8px;'>{clean_desc}</div>", unsafe_allow_html=True)
-                                custom_txt = st.text_area(
-                                    "Cách xử lý (có thể sửa lại):",
-                                    value=st.session_state.get(f"instr_s1_{_err_fname}_{iss['id']}", iss["suggested_fix"]),
-                                    height=68,
-                                    key=f"instr_s1_{_err_fname}_{iss['id']}"
-                                )
-                                custom_instrs[iss["id"]] = custom_txt
-                                is_chk = st.checkbox(
-                                    f"Áp dụng: {iss['action_label']}",
-                                    value=(iss["id"] in st.session_state[f"{issue_key_prefix}_selected"]),
-                                    key=f"chk_s1_{_err_fname}_{iss['id']}"
-                                )
-                                if is_chk and iss["id"] not in st.session_state[f"{issue_key_prefix}_selected"]:
-                                    st.session_state[f"{issue_key_prefix}_selected"].append(iss["id"])
-                                elif not is_chk and iss["id"] in st.session_state[f"{issue_key_prefix}_selected"]:
-                                    st.session_state[f"{issue_key_prefix}_selected"].remove(iss["id"])
+                chosen_fixes_now = st.session_state.get(f"{issue_key_prefix}_selected", [])
+                all_ids_s1 = [iss["id"] for iss in _err_issues]
 
-                    col_btn_fix, col_btn_all, col_btn_skip = st.columns([1.8, 1.1, 1.1])
-                    with col_btn_fix:
-                        chosen_fixes = st.session_state.get(f"{issue_key_prefix}_selected", [])
-                        btn_fix_label = f"🛠️ Duyệt & Sửa ngay ({len(chosen_fixes)} mục đã chọn)" if chosen_fixes else "⚠️ Chưa chọn mục nào để sửa"
-                        if st.button(btn_fix_label, type="primary", use_container_width=True, key=f"btn_apply_fixes_{_err_fname}", disabled=(not chosen_fixes)):
-                            with st.spinner(f"Đang thực thi các mục sửa lỗi theo hướng dẫn của bạn trên {_err_fname}..."):
-                                fixed_df, fix_reports = apply_data_issue_fixes(_err_df, chosen_fixes, custom_instructions=custom_instrs)
-                                orch.data_agent.raw_dataframes[_err_fname] = fixed_df
-                                from utils.column_mapper import map_columns
-                                from utils.file_handler import _auto_aggregate
-                                orch.data_agent.column_mappings[_err_fname] = map_columns(list(fixed_df.columns))
-                                if len(fixed_df) > 1000:
-                                    agg_df, agg_note = _auto_aggregate(fixed_df, _err_fname)
-                                    orch.data_agent.file_infos[_err_fname]["aggregated_df"] = agg_df
-                                    orch.data_agent.file_infos[_err_fname]["aggregation_note"] = agg_note
-                                orch.data_agent.file_infos[_err_fname]["rows"] = len(fixed_df)
-                                orch.data_agent.file_infos[_err_fname]["missing_cells_count"] = int(fixed_df.isna().sum().sum())
-                                orch.data_agent.file_infos.setdefault(_err_fname, {}).setdefault("user_action_log", []).extend(fix_reports)
-                                st.session_state[f"{issue_key_prefix}_selected"] = []
-                                st.session_state.s1_issues_dismissed.add(_err_fname)
-                                st.toast(f"✅ Đã sửa thành công {len(fix_reports)} hạng mục trên {_err_fname}!")
+                # Header giống hệt mẫu: Pill vàng + Tiêu đề lớn + Mô tả + Nút Chọn tất cả bên phải
+                col_hdr_l, col_hdr_r = st.columns([3.4, 1.0])
+                with col_hdr_l:
+                    st.markdown(f"""
+                    <div style="margin-bottom:4px;">
+                        <span style="display:inline-flex; align-items:center; gap:6px; background:#fef3c7; color:#92400e; border:1px solid #fde68a; border-radius:999px; padding:3px 12px; font-size:0.76rem; font-weight:700;">
+                            <span style="width:7px; height:7px; border-radius:50%; background:#f59e0b; display:inline-block;"></span>
+                            Cần phê duyệt trước khi phân tích
+                        </span>
+                    </div>
+                    <div style="font-size:1.45rem; font-weight:800; color:#0f172a; letter-spacing:-0.02em; margin-bottom:2px;">
+                        Kiểm tra &amp; Xử lý lỗi dữ liệu
+                    </div>
+                    <div style="font-size:0.88rem; color:#475569; line-height:1.45; margin-bottom:10px;">
+                        Hệ thống phát hiện <b>{len(_err_issues)} nhóm vấn đề</b> ảnh hưởng đến độ chính xác của tập dữ liệu <b>{_err_fname}</b>.<br>
+                        Chọn các đề xuất bên dưới để tự động làm sạch (bạn có thể sửa lại nội dung đề xuất xử lý).
+                    </div>
+                    """, unsafe_allow_html=True)
+                with col_hdr_r:
+                    st.markdown("<div style='height:34px;'></div>", unsafe_allow_html=True)
+                    if len(chosen_fixes_now) < len(all_ids_s1):
+                        if st.button(f"☑️ Chọn tất cả ({len(all_ids_s1)})", use_container_width=True, key=f"btn_sel_all_s1_{_err_fname}"):
+                            st.session_state[f"{issue_key_prefix}_selected"] = list(all_ids_s1)
+                            for iid in all_ids_s1:
+                                st.session_state[f"chk_s1_{_err_fname}_{iid}"] = True
                             st.rerun()
-                    with col_btn_all:
-                        all_ids_s1 = [iss["id"] for iss in _err_issues]
-                        if len(chosen_fixes) < len(all_ids_s1):
-                            if st.button("☑️ Chọn tất cả lỗi", use_container_width=True, key=f"btn_sel_all_s1_{_err_fname}"):
-                                st.session_state[f"{issue_key_prefix}_selected"] = list(all_ids_s1)
-                                for iid in all_ids_s1:
-                                    st.session_state[f"chk_s1_{_err_fname}_{iid}"] = True
-                                st.rerun()
-                        else:
-                            if st.button("⬜ Bỏ chọn tất cả", use_container_width=True, key=f"btn_unsel_all_s1_{_err_fname}"):
-                                st.session_state[f"{issue_key_prefix}_selected"] = []
-                                for iid in all_ids_s1:
-                                    st.session_state[f"chk_s1_{_err_fname}_{iid}"] = False
-                                st.rerun()
-                    with col_btn_skip:
-                        if st.button("⏭️ Bỏ qua & Tiếp tục", use_container_width=True, key=f"btn_skip_s1_{_err_fname}"):
+                    else:
+                        if st.button(f"⬜ Bỏ chọn tất cả ({len(all_ids_s1)})", use_container_width=True, key=f"btn_unsel_all_s1_{_err_fname}"):
+                            st.session_state[f"{issue_key_prefix}_selected"] = []
+                            for iid in all_ids_s1:
+                                st.session_state[f"chk_s1_{_err_fname}_{iid}"] = False
+                            st.rerun()
+
+                # Danh sách từng thẻ lỗi xếp dọc 1 cột y hệt mẫu
+                custom_instrs = {}
+                for idx_iss, iss in enumerate(_err_issues):
+                    is_selected_card = iss["id"] in st.session_state[f"{issue_key_prefix}_selected"]
+                    sev_raw = iss["severity"]
+                    sev_label = "Nghiêm trọng" if sev_raw == "Quan trọng" else sev_raw
+                    if sev_label == "Nghiêm trọng":
+                        sev_bg, sev_fg, sev_dot, sev_bd = "#fee2e2", "#dc2626", "#ef4444", "#fecaca"
+                    elif sev_label == "Cảnh báo":
+                        sev_bg, sev_fg, sev_dot, sev_bd = "#fef3c7", "#b45309", "#f59e0b", "#fde68a"
+                    else:
+                        sev_bg, sev_fg, sev_dot, sev_bd = "#e0f2fe", "#0284c7", "#38bdf8", "#bae6fd"
+
+                    card_bg = "#fffbeb" if (sev_label == "Cảnh báo" and not is_selected_card) else "#ffffff"
+                    card_border = "2px solid #2563eb" if is_selected_card else ("1px solid #fde68a" if sev_label == "Cảnh báo" else "1px solid #e2e8f0")
+                    sug_bg = "#fef9c3" if (is_selected_card or sev_label == "Cảnh báo") else ("#ecfeff" if sev_label == "Nhẹ" else "#f1f5f9")
+                    clean_desc = str(iss["desc"]).replace("`", "")
+                    unit_lbl = "dòng" if "trùng" in iss["type"].lower() or "dòng" in iss["type"].lower() else "ô"
+
+                    with st.container(border=True):
+                        c_top_chk, c_top_title, c_top_badge = st.columns([0.45, 5.2, 1.35])
+                        with c_top_chk:
+                            is_chk = st.checkbox(
+                                "Chọn",
+                                value=is_selected_card,
+                                label_visibility="collapsed",
+                                key=f"chk_s1_{_err_fname}_{iss['id']}"
+                            )
+                            if is_chk and iss["id"] not in st.session_state[f"{issue_key_prefix}_selected"]:
+                                st.session_state[f"{issue_key_prefix}_selected"].append(iss["id"])
+                            elif not is_chk and iss["id"] in st.session_state[f"{issue_key_prefix}_selected"]:
+                                st.session_state[f"{issue_key_prefix}_selected"].remove(iss["id"])
+                        with c_top_title:
+                            st.markdown(
+                                f"<div style='padding-top:2px; font-size:0.95rem; color:#0f172a;'>"
+                                f"<b>{iss['type']}</b> <span style='color:#64748b; font-weight:500; font-size:0.86rem;'>· {iss['count']:,} {unit_lbl}</span>"
+                                f"</div>",
+                                unsafe_allow_html=True
+                            )
+                        with c_top_badge:
+                            st.markdown(
+                                f"<div style='display:flex; justify-content:flex-end;'>"
+                                f"<span style='display:inline-flex; align-items:center; gap:5px; background:{sev_bg}; color:{sev_fg}; border:1px solid {sev_bd}; font-size:0.74rem; font-weight:700; padding:2px 10px; border-radius:999px; white-space:nowrap;'>"
+                                f"<span style='width:6px; height:6px; border-radius:50%; background:{sev_dot}; display:inline-block;'></span>{sev_label}</span></div>",
+                                unsafe_allow_html=True
+                            )
+
+                        # Khung mô tả lỗi
+                        st.markdown(
+                            f"<div style='background:rgba(255,255,255,0.85); border:1px solid #e2e8f0; border-radius:10px; padding:9px 14px; margin:4px 0 8px 0; font-size:0.84rem; color:#334155;'>"
+                            f"{clean_desc}</div>",
+                            unsafe_allow_html=True
+                        )
+
+                        # Khung Đề xuất xử lý cho phép người dùng tự sửa
+                        c_sug_lbl, c_sug_inp = st.columns([1.25, 4.75])
+                        with c_sug_lbl:
+                            st.markdown(
+                                f"<div style='background:{sug_bg}; border:1px solid #e2e8f0; border-radius:8px; padding:7px 10px; font-size:0.8rem; font-weight:700; color:#0f172a; white-space:nowrap;'>"
+                                f"› Đề xuất xử lý:</div>",
+                                unsafe_allow_html=True
+                            )
+                        with c_sug_inp:
+                            custom_txt = st.text_input(
+                                "Đề xuất xử lý",
+                                value=st.session_state.get(f"instr_s1_{_err_fname}_{iss['id']}", iss["suggested_fix"]),
+                                label_visibility="collapsed",
+                                key=f"instr_s1_{_err_fname}_{iss['id']}"
+                            )
+                            custom_instrs[iss["id"]] = custom_txt
+
+                err_preview_df = get_issue_preview_rows(_err_df, max_rows=25)
+                if not err_preview_df.empty:
+                    with st.expander(f"📋 Xem trước các dòng dữ liệu có lỗi · {len(err_preview_df)} dòng mẫu (Mở bảng)", expanded=False):
+                        st.dataframe(err_preview_df, use_container_width=True, height=220)
+
+                st.write("")
+                col_btn_fix, col_btn_skip = st.columns([2.5, 1.0])
+                with col_btn_fix:
+                    chosen_fixes = st.session_state.get(f"{issue_key_prefix}_selected", [])
+                    btn_fix_label = f"🛠️ Duyệt & Sửa ngay ({len(chosen_fixes)} mục đã chọn)" if chosen_fixes else "⚠️ Chưa chọn mục nào để sửa"
+                    if st.button(btn_fix_label, type="primary", use_container_width=True, key=f"btn_apply_fixes_{_err_fname}", disabled=(not chosen_fixes)):
+                        with st.spinner(f"Đang thực thi các mục sửa lỗi theo hướng dẫn của bạn trên {_err_fname}..."):
+                            fixed_df, fix_reports = apply_data_issue_fixes(_err_df, chosen_fixes, custom_instructions=custom_instrs)
+                            orch.data_agent.raw_dataframes[_err_fname] = fixed_df
+                            from utils.column_mapper import map_columns
+                            from utils.file_handler import _auto_aggregate
+                            orch.data_agent.column_mappings[_err_fname] = map_columns(list(fixed_df.columns))
+                            if len(fixed_df) > 1000:
+                                agg_df, agg_note = _auto_aggregate(fixed_df, _err_fname)
+                                orch.data_agent.file_infos[_err_fname]["aggregated_df"] = agg_df
+                                orch.data_agent.file_infos[_err_fname]["aggregation_note"] = agg_note
+                            orch.data_agent.file_infos[_err_fname]["rows"] = len(fixed_df)
+                            orch.data_agent.file_infos[_err_fname]["missing_cells_count"] = int(fixed_df.isna().sum().sum())
+                            orch.data_agent.file_infos.setdefault(_err_fname, {}).setdefault("user_action_log", []).extend(fix_reports)
+                            st.session_state[f"{issue_key_prefix}_selected"] = []
                             st.session_state.s1_issues_dismissed.add(_err_fname)
-                            st.rerun()
-
-                    err_preview_df = get_issue_preview_rows(_err_df, max_rows=25)
-                    if not err_preview_df.empty:
-                        with st.expander(f"🔎 Xem trước các dòng đang chứa lỗi trong `{_err_fname}` ({len(err_preview_df)} dòng mẫu)", expanded=False):
-                            st.dataframe(err_preview_df, use_container_width=True, height=220)
+                            st.toast(f"✅ Đã sửa thành công {len(fix_reports)} hạng mục trên {_err_fname}!")
+                        st.rerun()
+                with col_btn_skip:
+                    if st.button("⏭️ Bỏ qua & Tiếp tục", use_container_width=True, key=f"btn_skip_s1_{_err_fname}"):
+                        st.session_state.s1_issues_dismissed.add(_err_fname)
+                        st.rerun()
             st.stop()
 
         # ============================================================
