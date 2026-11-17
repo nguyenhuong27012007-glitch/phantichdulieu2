@@ -378,71 +378,146 @@ st.markdown(f"""
         border-color: #1d4ed8 !important;
     }}
 
-    /* THANH ĐIỀU HƯỚNG NGANG DUY NHẤT TRÊN ĐẦU (GỌN, SẠCH, DỄ NHÌN) */
+    /* THANH ĐIỀU HƯỚNG NGANG PILL CAPSULE BO TRÒN TRÊN ĐẦU (GIỐNG ẢNH MẪU) */
     .st-key-top_wizard_bar {{
-        background: #f8fbff;
-        border-radius: 16px;
-        padding: 8px 10px;
-        border: 1px solid #dbeafe;
-        margin-bottom: 1.25rem;
+        background: #ffffff !important;
+        border-radius: 9999px !important;
+        padding: 5px 12px !important;
+        border: 1px solid rgba(226, 232, 240, 0.8) !important;
+        box-shadow: 0 4px 18px rgba(37, 99, 235, 0.05) !important;
+        margin-bottom: 1.5rem !important;
         position: sticky;
         top: 0.5rem;
         z-index: 999;
     }}
     .st-key-top_wizard_bar .stButton > button {{
-        border-radius: 10px !important;
-        padding: 0.4rem 0.6rem !important;
-        min-height: 44px !important;
-        height: 44px !important;
+        border-radius: 9999px !important;
+        padding: 0.4rem 1.1rem !important;
+        min-height: 42px !important;
+        height: 42px !important;
+        border: none !important;
+        background: transparent !important;
+        color: #475569 !important;
+        font-weight: 600 !important;
+        font-size: 0.92rem !important;
+        transition: all 0.2s ease !important;
     }}
     .st-key-top_wizard_bar .stButton > button p,
     .st-key-top_wizard_bar .stButton > button span {{
-        font-size: 0.9rem !important;
+        font-size: 0.92rem !important;
         font-weight: 600 !important;
         white-space: nowrap !important;
+        color: inherit !important;
     }}
-    .st-key-top_nav_step0 button {{ background: {s0_bg} !important; border: 1px solid {s0_border} !important; color: {s0_color} !important; }}
-    .st-key-top_nav_step0 button p {{ color: {s0_color} !important; }}
-
-    .st-key-top_nav_step1 button {{ background: {s1_bg} !important; border: 1px solid {s1_border} !important; color: {s1_color} !important; }}
-    .st-key-top_nav_step1 button p {{ color: {s1_color} !important; }}
-
-    .st-key-top_nav_step2 button {{ background: {s2_bg} !important; border: 1px solid {s2_border} !important; color: {s2_color} !important; }}
-    .st-key-top_nav_step2 button p {{ color: {s2_color} !important; }}
-
-    .st-key-top_nav_step3 button {{ background: {s3_bg} !important; border: 1px solid {s3_border} !important; color: {s3_color} !important; }}
-    .st-key-top_nav_step3 button p {{ color: {s3_color} !important; }}
-
+    /* Bước đang chọn (Active Step) dạng capsule nổi bật gradient vàng cam */
     .st-key-top_wizard_bar .stButton > button[kind="primary"] {{
-        background: #2563eb !important;
-        color: #ffffff !important;
-        border: 1px solid #2563eb !important;
+        background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%) !important;
+        color: #0f172a !important;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25) !important;
     }}
     .st-key-top_wizard_bar .stButton > button[kind="primary"] p,
     .st-key-top_wizard_bar .stButton > button[kind="primary"] span {{
-        color: #ffffff !important;
+        color: #0f172a !important;
+        font-weight: 700 !important;
+    }}
+    .st-key-top_wizard_bar .stButton > button[kind="secondary"] {{
+        color: #64748b !important;
+        background: transparent !important;
+    }}
+    .st-key-top_wizard_bar .stButton > button[kind="secondary"]:hover {{
+        background: #f1f5f9 !important;
+        color: #0f172a !important;
     }}
 
-    /* Căn đều chiều cao ô Upload và ô Google Sheet ở Bước 1 */
-    div[data-testid="stFileUploader"] section {{
-        min-height: 74px !important;
-        height: 74px !important;
-        box-sizing: border-box !important;
+    /* ============================================================
+       THIẾT KẾ BƯỚC 1 CHUẨN XÁC THEO MẪU (THẺ KÍNH TRẮNG, VIỀN NÉT ĐỨT, BADGE HOẶC)
+       ============================================================ */
+    .st-key-zone_upload_left,
+    .st-key-zone_gsheet_right {{
+        background: #ffffff !important;
+        border: 1px solid rgba(226, 232, 240, 0.9) !important;
+        border-radius: 20px !important;
+        padding: 1.5rem !important;
+        box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04) !important;
+        min-height: 250px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
     }}
-    .st-key-step1_gsheet_box div[data-testid="stTextInputRootElement"],
-    .st-key-step1_gsheet_box div[data-baseweb="input"],
-    .st-key-step1_gsheet_box div[data-baseweb="base-input"] {{
-        min-height: 74px !important;
-        height: 74px !important;
+
+    /* Vùng Upload Kéo Thả Viền Nét Đứt Xanh Dương */
+    div[data-testid="stFileUploader"] section {{
+        background: #ffffff !important;
+        border: 2px dashed #93c5fd !important;
+        border-radius: 16px !important;
+        min-height: 145px !important;
+        padding: 1.2rem 1rem !important;
+        text-align: center !important;
+        display: flex !important;
+        flex-direction: column !important;
         align-items: center !important;
-        box-sizing: border-box !important;
+        justify-content: center !important;
+        transition: all 0.25s ease !important;
+    }}
+    div[data-testid="stFileUploader"] section:hover {{
+        border-color: #3b82f6 !important;
+        background: #f8fbff !important;
+    }}
+    div[data-testid="stFileUploader"] button {{
+        display: none !important;
+    }}
+
+    /* Khung Viền Nét Đứt Vàng Cam Cho Ô Google Sheet */
+    .st-key-step1_gsheet_inner_box {{
+        border: 2px dashed #fcd34d !important;
+        border-radius: 16px !important;
+        min-height: 145px !important;
+        padding: 1.5rem 1.2rem !important;
+        background: #ffffff !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        gap: 8px !important;
     }}
     .st-key-step1_gsheet_box input {{
-        min-height: 72px !important;
-        height: 72px !important;
-        padding-top: 18px !important;
-        padding-bottom: 18px !important;
-        box-sizing: border-box !important;
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 10px !important;
+        height: 44px !important;
+        padding: 0 14px !important;
+        font-size: 0.92rem !important;
+        color: #334155 !important;
+    }}
+
+    /* Thẻ Bối Cảnh Doanh Nghiệp Viền Trắng Bo Tròn Đẹp */
+    .st-key-zone_biz_context {{
+        background: #ffffff !important;
+        border: 1px solid rgba(226, 232, 240, 0.9) !important;
+        border-radius: 20px !important;
+        padding: 1.5rem 1.8rem !important;
+        box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04) !important;
+        margin-top: 1.25rem !important;
+    }}
+
+    /* Nút AI Gợi Ý Tone Vàng/Cam Gradient Nổi Bật */
+    .st-key-btn_ai_suggest_ctx button {{
+        background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%) !important;
+        color: #0f172a !important;
+        font-weight: 700 !important;
+        border: none !important;
+        border-radius: 9999px !important;
+        padding: 0.55rem 1.4rem !important;
+        box-shadow: 0 4px 14px rgba(245, 158, 11, 0.28) !important;
+        transition: all 0.2s ease !important;
+    }}
+    .st-key-btn_ai_suggest_ctx button p,
+    .st-key-btn_ai_suggest_ctx button span {{
+        color: #0f172a !important;
+        font-weight: 700 !important;
+    }}
+    .st-key-btn_ai_suggest_ctx button:hover {{
+        filter: brightness(1.05) !important;
+        transform: translateY(-1px) !important;
     }}
 
     /* Hộp thông báo chờ ở giữa màn hình */
@@ -636,22 +711,26 @@ if step != 0:
         nav_col1, nav_col2, nav_col3 = st.columns([1, 1, 1])
 
         with nav_col1:
+            is_active_1 = (step == 1)
+            b1_label = f"1   Bước 1: Nhập dữ liệu" if is_active_1 else f"{s1_icon} Bước 1: Nhập dữ liệu"
             if st.button(
-                f"{s1_icon} Bước 1: Nhập dữ liệu",
+                b1_label,
                 key="top_nav_step1",
                 use_container_width=True,
-                type="primary" if step == 1 else "secondary"
+                type="primary" if is_active_1 else "secondary"
             ):
                 set_spinner_msg("⏳ Đang chuyển sang Bước 1: Nhập dữ liệu...")
                 st.session_state.current_step = 1
                 st.rerun()
 
         with nav_col2:
+            is_active_2 = (step == 2)
+            b2_label = f"2   Bước 2: Làm sạch" if is_active_2 else f"{s2_icon} Bước 2: Làm sạch"
             if st.button(
-                f"{s2_icon} Bước 2: Làm sạch",
+                b2_label,
                 key="top_nav_step2",
                 use_container_width=True,
-                type="primary" if step == 2 else "secondary"
+                type="primary" if is_active_2 else "secondary"
             ):
                 if st.session_state.step1_approved:
                     set_spinner_msg("⏳ Đang mở Bước 2: Làm sạch...")
@@ -661,11 +740,13 @@ if step != 0:
                     st.toast("⚠️ Vui lòng nạp file và duyệt Bước 1 trước!", icon="⚠️")
 
         with nav_col3:
+            is_active_3 = (step == 3)
+            b3_label = f"3   Bước 3: Tạo báo cáo" if is_active_3 else f"{s3_icon} Bước 3: Tạo báo cáo"
             if st.button(
-                f"{s3_icon} Bước 3: Tạo báo cáo",
+                b3_label,
                 key="top_nav_step3",
                 use_container_width=True,
-                type="primary" if step == 3 else "secondary"
+                type="primary" if is_active_3 else "secondary"
             ):
                 if st.session_state.step2_approved:
                     set_spinner_msg("⏳ Đang mở Bước 3: Tạo báo cáo...")
@@ -1229,19 +1310,24 @@ try:
             st.caption("Tải lên tệp CSV / Excel hoặc dán đường dẫn Google Sheet công khai để bắt đầu.")
 
         if (not has_loaded_files) or st.session_state.show_step1_uploader:
-            col_up1, col_up2 = st.columns([1, 1])
+            col_up1, col_divider, col_up2 = st.columns([1, 0.12, 1])
     
             with col_up1:
                 with st.container(key="zone_upload_left"):
-                    st.markdown("##### 📁 Tải tệp")
+                    st.markdown("""
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; font-weight:700; color:#1e3a8a; font-size:1.02rem;">
+                        <span style="color:#2563eb; font-size:1.15rem;">📄</span> Tải tệp
+                    </div>
+                    """, unsafe_allow_html=True)
                     uploaded_files = st.file_uploader(
-                        "Tải tệp lên",
+                        "Kéo thả tệp CSV, Excel vào đây hoặc Nhấn để tải lên (200MB per file)",
                         type=["csv", "xlsx", "xls"],
                         accept_multiple_files=True,
-                        label_visibility="collapsed"
+                        label_visibility="visible",
+                        key="s1_file_uploader"
                     )
                     if uploaded_files:
-                        if st.button("Nạp tệp đã chọn", type="primary", use_container_width=True, key="btn_verify_upload"):
+                        if st.button("Nạp tệp đã chọn ➔", type="primary", use_container_width=True, key="btn_verify_upload"):
                             with st.spinner("⏳ Đang đọc và kiểm tra dữ liệu..."):
                                 for up in uploaded_files:
                                     content = up.read()
@@ -1252,17 +1338,36 @@ try:
                                 st.session_state.show_step1_uploader = False
                             st.rerun()
 
+            with col_divider:
+                st.markdown("""
+                <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; min-height:220px;">
+                    <div style="width:1px; height:40px; background:#cbd5e1;"></div>
+                    <div style="background:#e0f2fe; color:#0284c7; font-weight:700; font-size:0.75rem; padding:4px 8px; border-radius:999px; border:1px solid #bae6fd; margin:6px 0; text-transform:uppercase;">HOẶC</div>
+                    <div style="width:1px; height:40px; background:#cbd5e1;"></div>
+                </div>
+                """, unsafe_allow_html=True)
+
             with col_up2:
                 with st.container(key="zone_gsheet_right"):
-                    st.markdown("##### 🔗 Đường dẫn Google Sheet")
-                    with st.container(key="step1_gsheet_box"):
-                        sheet_url = st.text_input(
-                            "Liên kết Google Sheet",
-                            placeholder="https://docs.google.com/spreadsheets/d/.../edit",
-                            label_visibility="collapsed"
-                        )
+                    st.markdown("""
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; font-weight:700; color:#1e3a8a; font-size:1.02rem;">
+                        <span style="color:#10b981; font-size:1.15rem;">🔗</span> Đường dẫn Google Sheet
+                    </div>
+                    """, unsafe_allow_html=True)
+                    with st.container(key="step1_gsheet_inner_box"):
+                        with st.container(key="step1_gsheet_box"):
+                            sheet_url = st.text_input(
+                                "Liên kết Google Sheet",
+                                placeholder="https://docs.google.com/spreadsheets/d/.../edit",
+                                label_visibility="collapsed"
+                            )
+                        st.markdown("""
+                        <div style="display:flex; align-items:center; gap:6px; font-size:0.8rem; color:#d97706; font-weight:500;">
+                            <span>●</span> Đảm bảo liên kết đang ở chế độ xem công khai.
+                        </div>
+                        """, unsafe_allow_html=True)
                     if sheet_url:
-                        if st.button("Đọc Google Sheet", type="primary", use_container_width=True, key="btn_verify_gsheet"):
+                        if st.button("Đọc Google Sheet ➔", type="primary", use_container_width=True, key="btn_verify_gsheet"):
                             with st.spinner("⏳ Đang kết nối Google Sheet..."):
                                 success, msg = orch.load_google_sheet(sheet_url)
                                 st.session_state.file_messages.append({"file": "Google Sheet", "success": success, "msg": msg})
@@ -1277,11 +1382,59 @@ try:
             st.session_state["biz_questions"] = st.session_state.pop("_pending_biz_questions")
 
         # ============================================================
-        # BỐI CẢNH DOANH NGHIỆP (GỌN, ĐƠN GIẢN)
+        # BỐI CẢNH DOANH NGHIỆP (GIỐNG ẢNH MẪU 100%)
         # ============================================================
-        with st.container(border=True):
-            st.markdown("##### 📄 Bối cảnh doanh nghiệp")
-            st.caption("Mô tả ngắn gọn về mô hình kinh doanh và mục tiêu phân tích.")
+        with st.container(key="zone_biz_context"):
+            col_b_head, col_b_btn = st.columns([2.5, 1.5])
+            with col_b_head:
+                st.markdown("""
+                <div style="display:flex; align-items:center; gap:8px; font-weight:700; color:#1e3a8a; font-size:1.05rem;">
+                    <span style="color:#2563eb; font-size:1.15rem;">📄</span> Bối cảnh doanh nghiệp
+                </div>
+                <div style="font-size:0.85rem; color:#64748b; margin-top:2px; margin-bottom:14px;">
+                    Mô tả ngắn gọn về mô hình kinh doanh và mục tiêu phân tích.
+                </div>
+                """, unsafe_allow_html=True)
+            with col_b_btn:
+                if st.button("✨ AI gợi ý bối cảnh & câu hỏi theo tệp đã nạp", key="btn_ai_suggest_ctx", use_container_width=True):
+                    if has_loaded_files:
+                        first_fname = list(orch.data_agent.raw_dataframes.keys())[0]
+                        first_df = orch.data_agent.raw_dataframes[first_fname]
+                        num_c = [str(c) for c in first_df.select_dtypes(include=["number"]).columns[:4]]
+                        if not num_c:
+                            for c_cand in first_df.columns:
+                                if pd.to_numeric(first_df[c_cand], errors="coerce").notna().mean() > 0.5:
+                                    num_c.append(str(c_cand))
+                                    if len(num_c) >= 4:
+                                        break
+                        cat_c = [str(c) for c in first_df.columns if str(c) not in num_c][:4]
+                        cols_lower = " ".join(str(c).lower() for c in first_df.columns) + " " + first_fname.lower()
+                        sug_type = "Kinh doanh / Bán lẻ & Vận hành"
+                        if any(k in cols_lower for k in ["nhan_su", "nhansu", "hr", "employee", "salary", "luong", "department", "phong_ban"]):
+                            sug_type = "Quản trị Nhân sự & Hiệu suất nhân viên"
+                        elif any(k in cols_lower for k in ["ship", "delivery", "warehouse", "kho", "logistics"]):
+                            sug_type = "Thương mại & Logistics / Chuỗi cung ứng"
+                        elif any(k in cols_lower for k in ["campaign", "marketing", "ads", "click"]):
+                            sug_type = "Marketing & Chiến dịch"
+
+                        q_list = []
+                        if cat_c and num_c:
+                            q_list.append(f"1. Nhóm {cat_c[0]} nào đang có chỉ số {num_c[0]} cao nhất và thấp nhất?")
+                            if len(num_c) > 1:
+                                q_list.append(f"2. Mối tương quan giữa {num_c[0]} và {num_c[1]} theo từng {cat_c[0]} ra sao?")
+                        if len(cat_c) > 1 and num_c:
+                            q_list.append(f"3. Hiệu suất {num_c[0]} khác nhau như thế nào giữa các {cat_c[1]}?")
+                        if len(num_c) > 2:
+                            q_list.append(f"4. Phân bố của {num_c[2]} có điểm bất thường hay chênh lệch lớn giữa các nhóm không?")
+                        q_list.append(f"{len(q_list)+1}. Tỷ lệ dữ liệu thiếu hoặc sai lệch trong tệp {first_fname} tập trung ở nhóm nào?")
+                        q_list.append(f"{len(q_list)+1}. Đề xuất 2 nhóm ưu tiên hàng đầu cần tập trung cải thiện hoặc mở rộng là gì?")
+                        st.session_state["_pending_biz_type"] = sug_type
+                        st.session_state["_pending_biz_questions"] = "\n".join(q_list)
+                        st.session_state["_ai_ctx_done_msg"] = f"✅ Đã gợi ý bối cảnh & câu hỏi dựa trên tệp `{first_fname}`!"
+                        st.rerun()
+                    else:
+                        st.warning("⚠️ Bạn chưa nạp tệp dữ liệu nào. Vui lòng tải tệp CSV/Excel hoặc dán link Google Sheet ở khung phía trên trước nhé!")
+
             col_ctx1, col_ctx2 = st.columns([1, 1])
             with col_ctx1:
                 st.text_input(
@@ -1306,44 +1459,6 @@ try:
                     key="biz_questions"
                 )
 
-            if st.button("✨ AI gợi ý bối cảnh & câu hỏi theo tệp đã nạp", key="btn_ai_suggest_ctx"):
-                if has_loaded_files:
-                    first_fname = list(orch.data_agent.raw_dataframes.keys())[0]
-                    first_df = orch.data_agent.raw_dataframes[first_fname]
-                    num_c = [str(c) for c in first_df.select_dtypes(include=["number"]).columns[:4]]
-                    if not num_c:
-                        for c_cand in first_df.columns:
-                            if pd.to_numeric(first_df[c_cand], errors="coerce").notna().mean() > 0.5:
-                                num_c.append(str(c_cand))
-                                if len(num_c) >= 4:
-                                    break
-                    cat_c = [str(c) for c in first_df.columns if str(c) not in num_c][:4]
-                    cols_lower = " ".join(str(c).lower() for c in first_df.columns) + " " + first_fname.lower()
-                    sug_type = "Kinh doanh / Bán lẻ & Vận hành"
-                    if any(k in cols_lower for k in ["nhan_su", "nhansu", "hr", "employee", "salary", "luong", "department", "phong_ban"]):
-                        sug_type = "Quản trị Nhân sự & Hiệu suất nhân viên"
-                    elif any(k in cols_lower for k in ["ship", "delivery", "warehouse", "kho", "logistics"]):
-                        sug_type = "Thương mại & Logistics / Chuỗi cung ứng"
-                    elif any(k in cols_lower for k in ["campaign", "marketing", "ads", "click"]):
-                        sug_type = "Marketing & Chiến dịch"
-
-                    q_list = []
-                    if cat_c and num_c:
-                        q_list.append(f"1. Nhóm {cat_c[0]} nào đang có chỉ số {num_c[0]} cao nhất và thấp nhất?")
-                        if len(num_c) > 1:
-                            q_list.append(f"2. Mối tương quan giữa {num_c[0]} và {num_c[1]} theo từng {cat_c[0]} ra sao?")
-                    if len(cat_c) > 1 and num_c:
-                        q_list.append(f"3. Hiệu suất {num_c[0]} khác nhau như thế nào giữa các {cat_c[1]}?")
-                    if len(num_c) > 2:
-                        q_list.append(f"4. Phân bố của {num_c[2]} có điểm bất thường hay chênh lệch lớn giữa các nhóm không?")
-                    q_list.append(f"{len(q_list)+1}. Tỷ lệ dữ liệu thiếu hoặc sai lệch trong tệp {first_fname} tập trung ở nhóm nào?")
-                    q_list.append(f"{len(q_list)+1}. Đề xuất 2 nhóm ưu tiên hàng đầu cần tập trung cải thiện hoặc mở rộng là gì?")
-                    st.session_state["_pending_biz_type"] = sug_type
-                    st.session_state["_pending_biz_questions"] = "\n".join(q_list)
-                    st.session_state["_ai_ctx_done_msg"] = f"✅ Đã gợi ý bối cảnh & câu hỏi dựa trên tệp `{first_fname}`!"
-                    st.rerun()
-                else:
-                    st.warning("⚠️ Bạn chưa nạp tệp dữ liệu nào. Vui lòng tải tệp CSV/Excel hoặc dán link Google Sheet ở khung phía trên trước nhé!")
             if st.session_state.get("_ai_ctx_done_msg"):
                 st.success(st.session_state.pop("_ai_ctx_done_msg"))
 
