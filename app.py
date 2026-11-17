@@ -290,11 +290,26 @@ if not st.session_state.api_key_set and DEFAULT_GEMINI_API_KEY:
 step = st.session_state.current_step
 
 # ============================================================
-# HỆ THỐNG THIẾT KẾ CHUẨN UNSLOP (QUIET CHROME VS. RICH CONTENT)
+# HỆ THỐNG THIẾT KẾ UNSLOP (DARK GRAPHITE NEUTRAL RAMP — REFERENCES/TOKENS.MD)
 # ============================================================
-s0_bg = "#2563eb" if step == 0 else "#ffffff"
-s0_color = "#ffffff" if step == 0 else "#0f172a"
-s0_border = "#2563eb" if step == 0 else "#e2e8f0"
+if "unslop_theme" not in st.session_state:
+    st.session_state.unslop_theme = "graphite"  # "graphite" (#141415) | "paper" (#F6F5F2)
+
+_is_dark = (st.session_state.unslop_theme == "graphite")
+
+# Bảng màu chuẩn từ heydamir/unslop/references/tokens.md
+_bg_deep = "#0f0f10" if _is_dark else "#efede8"
+_bg_page = "#141415" if _is_dark else "#f6f5f2"
+_bg_card = "#19191b" if _is_dark else "#ffffff"
+_bg_elev = "#202023" if _is_dark else "#f0efe9"
+_border_hairline = "rgba(255, 255, 255, 0.08)" if _is_dark else "rgba(18, 17, 15, 0.09)"
+_border_hover = "rgba(255, 255, 255, 0.16)" if _is_dark else "rgba(18, 17, 15, 0.18)"
+_text_pri = "#f4f4f6" if _is_dark else "#12110f"
+_text_sec = "#a1a1aa" if _is_dark else "#57534e"
+_text_mut = "#71717a" if _is_dark else "#8c857b"
+_accent = "#3b82f6" if _is_dark else "#2563eb"
+_accent_hover = "#60a5fa" if _is_dark else "#1d4ed8"
+_accent_subtle = "rgba(59, 130, 246, 0.12)" if _is_dark else "rgba(37, 99, 235, 0.08)"
 
 s1_icon = "✓" if st.session_state.step1_approved else "01"
 s2_icon = "✓" if st.session_state.step2_approved else "02"
@@ -302,120 +317,145 @@ s3_icon = "✓" if st.session_state.step3_approved else "03"
 
 st.markdown(f"""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
     
-    /* Pass 5: Typography & Tabular Numerals */
+    /* Pass 5 (Typography): Primary UI font + Partner Mono font, weights 400/500/600, no 800-900 shouty weights */
     html, body, [class*="css"], .stMarkdown p, .stMarkdown span, .stMarkdown div, .stMarkdown li, label {{
-        font-family: 'Inter', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
-        font-size: 0.94rem !important;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+        font-size: 0.92rem !important;
+        font-weight: 400 !important;
         line-height: 1.55 !important;
-        color: #0f172a !important;
+        color: {_text_pri} !important;
         -webkit-font-smoothing: antialiased !important;
     }}
 
-    /* Căn thẳng trục số liệu trong toàn bộ bảng, thẻ KPI và bộ đếm (Pass 5: tabular-nums) */
+    /* Tabular numerals & Monospace figures (tokens.md) */
     [data-testid="stMetricValue"],
     [data-testid="stDataFrame"],
     [data-testid="stTable"],
-    table, td, th, .tabular-nums {{
+    table, td, th, .tabular-nums, .mono-meta {{
+        font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace !important;
         font-variant-numeric: tabular-nums !important;
     }}
 
-    /* Thang bậc tiêu đề chuẩn (không dùng gradient text loè loẹt) */
-    .stMarkdown h3, [data-testid="stMain"] h2, [data-testid="stMain"] h3, .main h2, .main h3 {{
-        font-family: 'Plus Jakarta Sans', 'Inter', sans-serif !important;
-        font-size: 1.25rem !important;
-        font-weight: 700 !important;
+    /* Sentence-case headings, weight 500/600, zero gradient text */
+    .stMarkdown h1, .stMarkdown h2, .stMarkdown h3,
+    [data-testid="stMain"] h2, [data-testid="stMain"] h3, .main h2, .main h3 {{
+        font-family: 'Inter', -apple-system, sans-serif !important;
+        font-size: 1.2rem !important;
+        font-weight: 500 !important;
         line-height: 1.3 !important;
         letter-spacing: -0.02em !important;
         margin-top: 0.25rem !important;
         margin-bottom: 0.5rem !important;
-        color: #0f172a !important;
+        color: {_text_pri} !important;
         background: none !important;
-        -webkit-text-fill-color: #0f172a !important;
-        border-bottom: none !important;
+        -webkit-text-fill-color: {_text_pri} !important;
+        border: none !important;
     }}
     .stMarkdown h4, [data-testid="stMain"] h4, .main h4 {{
-        font-family: 'Plus Jakarta Sans', 'Inter', sans-serif !important;
-        font-size: 1.02rem !important;
-        font-weight: 600 !important;
-        line-height: 1.35 !important;
-        letter-spacing: -0.015em !important;
-        color: #0f172a !important;
-        background: #f8fafc !important;
-        border: 1px solid #e2e8f0 !important;
-        border-left: 3px solid #2563eb !important;
+        font-family: 'Inter', -apple-system, sans-serif !important;
+        font-size: 0.96rem !important;
+        font-weight: 500 !important;
+        line-height: 1.4 !important;
+        letter-spacing: -0.01em !important;
+        color: {_text_pri} !important;
+        background: {_bg_card} !important;
+        border: 1px solid {_border_hairline} !important;
+        border-left: 2px solid {_accent} !important;
         padding: 8px 14px !important;
         border-radius: 8px !important;
-        margin-top: 0.5rem !important;
+        margin-top: 0.75rem !important;
         margin-bottom: 0.65rem !important;
     }}
     .stMarkdown h5, [data-testid="stMain"] h5, .main h5 {{
-        font-size: 0.94rem !important;
-        font-weight: 600 !important;
+        font-size: 0.9rem !important;
+        font-weight: 500 !important;
         line-height: 1.4 !important;
-        color: #334155 !important;
+        color: {_text_sec} !important;
         margin-top: 0.25rem !important;
         margin-bottom: 0.4rem !important;
     }}
     div[data-testid="stCaptionContainer"] p,
     div[data-testid="stCaptionContainer"] span {{
-        font-size: 0.84rem !important;
-        font-weight: 500 !important;
+        font-size: 0.82rem !important;
+        font-weight: 400 !important;
         line-height: 1.45 !important;
-        color: #64748b !important;
-    }}
-    div[data-testid="stAlert"] {{
-        border-radius: 10px !important;
-        border-width: 1px !important;
-    }}
-    div[data-testid="stAlert"] p {{
-        font-size: 0.91rem !important;
-        line-height: 1.55 !important;
+        color: {_text_mut} !important;
     }}
 
-    /* Pass 2: Quiet Chrome — Nền xanh pastel dịu nhẹ đồng bộ (#F4F7FB) */
-    html, body, .stApp {{
-        background-color: #F4F7FB !important;
-        background: linear-gradient(180deg, #F4F7FB 0%, #EEF3F9 100%) !important;
+    /* Pass 2 (Color): Graphite Neutral Ramp (#0f0f10 / #141415 / #19191b) */
+    html, body, .stApp, header[data-testid="stHeader"] {{
+        background-color: {_bg_page} !important;
+        background: {_bg_page} !important;
     }}
 
-    /* Pass 9: Motion — Chuyển trang tinh tế 180ms */
     @keyframes pageTransitionIn {{
-        0% {{ opacity: 0; transform: translateY(4px); }}
+        0% {{ opacity: 0; transform: translateY(3px); }}
         100% {{ opacity: 1; transform: translateY(0); }}
     }}
 
-    /* Pass 1: Spacing — Lưới chuẩn 8px */
+    /* Pass 1 (Spacing): 8px / 16px / 24px / 32px strict rhythm */
     .main .block-container,
     [data-testid="stMainBlockContainer"] {{
         background: transparent !important;
         border: none !important;
         box-shadow: none !important;
-        padding: 1.25rem 2rem 3rem 2rem !important;
+        padding: 1.25rem 2rem 3.5rem 2rem !important;
         margin: 0 auto !important;
-        max-width: 1400px !important;
+        max-width: 1360px !important;
     }}
 
-    /* Pass 7: Details — Bo góc lồng nhau chuẩn (Outer 12px, Inner 8px, Pill 6px) */
-    [data-testid="stVerticalBlockBorderWrapper"] {{
-        background: #ffffff !important;
-        border-radius: 10px !important;
-        border: 1px solid #e2e8f0 !important;
-        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) !important;
-        transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+    /* Pass 7 (Details & Nested Radius): Card 14px -> Inner 10px -> Input/Button 8px -> Tag 5px */
+    [data-testid="stVerticalBlockBorderWrapper"],
+    div[data-testid="stExpander"] {{
+        background: {_bg_card} !important;
+        border-radius: 12px !important;
+        border: 1px solid {_border_hairline} !important;
+        box-shadow: none !important;
+        transition: border-color 0.15s ease !important;
     }}
-    [data-testid="stVerticalBlockBorderWrapper"]:hover {{
-        border-color: #cbd5e1 !important;
-        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05) !important;
+    [data-testid="stVerticalBlockBorderWrapper"]:hover,
+    div[data-testid="stExpander"]:hover {{
+        border-color: {_border_hover} !important;
     }}
 
-    /* Nhãn ô nhập liệu sạch sẽ, chuẩn cấp độ 2 */
+    /* Labels & Inputs (8px radius, elevated surface) */
     [data-testid="stWidgetLabel"] p {{
-        color: #1e293b !important;
-        font-weight: 600 !important;
+        color: {_text_sec} !important;
+        font-weight: 500 !important;
+        font-size: 0.84rem !important;
+        letter-spacing: 0 !important;
+    }}
+    div[data-baseweb="input"] > div,
+    div[data-baseweb="textarea"] > div,
+    div[data-baseweb="select"] > div {{
+        background-color: {_bg_elev} !important;
+        border: 1px solid {_border_hairline} !important;
+        border-radius: 8px !important;
+        color: {_text_pri} !important;
+    }}
+    div[data-baseweb="input"] input,
+    div[data-baseweb="textarea"] textarea {{
+        color: {_text_pri} !important;
         font-size: 0.88rem !important;
-        letter-spacing: -0.01em !important;
+    }}
+    div[data-baseweb="input"] input::placeholder,
+    div[data-baseweb="textarea"] textarea::placeholder {{
+        color: {_text_mut} !important;
+    }}
+
+    /* Alerts & Notifications */
+    div[data-testid="stAlert"] {{
+        background-color: {_bg_card} !important;
+        border: 1px solid {_border_hairline} !important;
+        border-radius: 10px !important;
+        color: {_text_pri} !important;
+    }}
+    div[data-testid="stAlert"] p {{
+        font-size: 0.88rem !important;
+        line-height: 1.55 !important;
+        color: {_text_pri} !important;
     }}
 
     .st-key-landing_stage_container,
@@ -424,28 +464,38 @@ st.markdown(f"""
     .st-key-zone_step1_summary,
     .st-key-zone_step2_workspace,
     .st-key-zone_step3_preview {{
-        animation: pageTransitionIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) both !important;
+        animation: pageTransitionIn 0.16s cubic-bezier(0.16, 1, 0.3, 1) both !important;
     }}
 
-    /* Thẻ khu vực (Surface Cards) chuẩn unslop */
+    /* Surface Cards */
     .st-key-zone_step1_summary,
     .st-key-zone_step2_workspace,
     .st-key-zone_step3_preview,
     .st-key-zone_step2_audit_card,
     div[data-testid="stMetric"] {{
-        background: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
-        border-radius: 12px !important;
+        background: {_bg_card} !important;
+        border: 1px solid {_border_hairline} !important;
+        border-radius: 14px !important;
         padding: 1rem 1.25rem !important;
-        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03) !important;
-        transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+        box-shadow: none !important;
+        transition: border-color 0.15s ease !important;
     }}
     .st-key-zone_step1_summary:hover,
     .st-key-zone_step2_workspace:hover,
     .st-key-zone_step3_preview:hover,
     div[data-testid="stMetric"]:hover {{
-        border-color: #cbd5e1 !important;
-        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05) !important;
+        border-color: {_border_hover} !important;
+    }}
+    [data-testid="stMetricLabel"] p {{
+        color: {_text_mut} !important;
+        font-size: 0.78rem !important;
+        font-weight: 400 !important;
+    }}
+    [data-testid="stMetricValue"] div {{
+        color: {_text_pri} !important;
+        font-size: 1.35rem !important;
+        font-weight: 500 !important;
+        letter-spacing: -0.02em !important;
     }}
 
     .st-key-landing_stage_container {{
@@ -455,160 +505,151 @@ st.markdown(f"""
         margin: 0 !important;
         max-width: 100% !important;
         width: 100% !important;
-        box-shadow: none !important;
     }}
 
-    /* Nút bấm chuẩn sản phẩm (8px radius, hairline border, restrained hover) */
+    /* Buttons: 8px radius, hairline border, restrained accent only on primary CTA */
     .stButton > button,
     .stDownloadButton > button {{
         border-radius: 8px !important;
-        font-weight: 600 !important;
-        font-size: 0.88rem !important;
-        min-height: 40px !important;
-        padding: 0.4rem 1rem !important;
-        border: 1px solid #cbd5e1 !important;
-        background: #ffffff !important;
-        color: #0f172a !important;
-        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) !important;
-        transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        font-weight: 500 !important;
+        font-size: 0.86rem !important;
+        min-height: 38px !important;
+        padding: 0.4rem 0.95rem !important;
+        border: 1px solid {_border_hairline} !important;
+        background: {_bg_elev} !important;
+        color: {_text_pri} !important;
+        box-shadow: none !important;
+        transition: border-color 0.14s ease, background-color 0.14s ease !important;
     }}
     .stButton > button p,
     .stButton > button span,
     .stDownloadButton > button p,
     .stDownloadButton > button span {{
-        font-size: 0.88rem !important;
-        font-weight: 600 !important;
+        font-size: 0.86rem !important;
+        font-weight: 500 !important;
         line-height: 1.25 !important;
+        color: {_text_pri} !important;
     }}
     .stButton > button:hover,
     .stDownloadButton > button:hover {{
-        border-color: #94a3b8 !important;
-        background: #f8fafc !important;
-        color: #0f172a !important;
+        border-color: {_border_hover} !important;
+        background: {_bg_card} !important;
     }}
     .stButton > button[kind="primary"],
     .stDownloadButton > button[kind="primary"] {{
-        background: #2563eb !important;
+        background: {_accent} !important;
         color: #ffffff !important;
-        border: 1px solid #1d4ed8 !important;
-        box-shadow: 0 1px 3px rgba(37, 99, 235, 0.2) !important;
+        border: 1px solid {_accent} !important;
     }}
     .stButton > button[kind="primary"] p,
     .stButton > button[kind="primary"] span,
     .stDownloadButton > button[kind="primary"] p,
     .stDownloadButton > button[kind="primary"] span {{
         color: #ffffff !important;
+        font-weight: 500 !important;
     }}
     .stButton > button[kind="primary"]:hover,
     .stDownloadButton > button[kind="primary"]:hover {{
-        background: #1d4ed8 !important;
-        border-color: #1e40af !important;
+        background: {_accent_hover} !important;
+        border-color: {_accent_hover} !important;
     }}
 
-    /* THANH ĐIỀU HƯỚNG NGANG (SEGMENTED STEPPER BAR CHUẨN UNSLOP) */
+    /* Top Segmented Navigation Bar (Deepest surface #0f0f10, 12px outer radius, 8px inner button radius) */
     .st-key-top_wizard_bar {{
-        background: #ffffff !important;
-        border-radius: 10px !important;
-        padding: 6px 8px !important;
-        border: 1px solid #e2e8f0 !important;
-        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
-        margin-bottom: 1.25rem !important;
+        background: {_bg_deep} !important;
+        border-radius: 12px !important;
+        padding: 5px 6px !important;
+        border: 1px solid {_border_hairline} !important;
+        margin-bottom: 1.5rem !important;
         position: sticky;
         top: 0.5rem;
         z-index: 999;
     }}
     .st-key-top_wizard_bar .stButton > button {{
-        border-radius: 7px !important;
-        padding: 0.4rem 1rem !important;
-        min-height: 38px !important;
-        height: 38px !important;
+        border-radius: 8px !important;
+        padding: 0.35rem 0.9rem !important;
+        min-height: 34px !important;
+        height: 34px !important;
         border: 1px solid transparent !important;
         background: transparent !important;
-        color: #475569 !important;
-        font-weight: 600 !important;
-        font-size: 0.88rem !important;
-        box-shadow: none !important;
-        transition: all 0.15s ease !important;
+        color: {_text_sec} !important;
+        font-weight: 500 !important;
+        font-size: 0.84rem !important;
     }}
     .st-key-top_wizard_bar .stButton > button p,
     .st-key-top_wizard_bar .stButton > button span {{
-        font-size: 0.88rem !important;
-        font-weight: 600 !important;
+        font-size: 0.84rem !important;
+        font-weight: 500 !important;
         white-space: nowrap !important;
         color: inherit !important;
         font-variant-numeric: tabular-nums !important;
     }}
     .st-key-top_wizard_bar .stButton > button[kind="primary"] {{
-        background: #0f172a !important;
-        color: #ffffff !important;
-        border: 1px solid #0f172a !important;
-        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12) !important;
+        background: {_bg_elev} !important;
+        color: {_text_pri} !important;
+        border: 1px solid {_border_hover} !important;
     }}
     .st-key-top_wizard_bar .stButton > button[kind="primary"] p,
     .st-key-top_wizard_bar .stButton > button[kind="primary"] span {{
-        color: #ffffff !important;
-        font-weight: 600 !important;
+        color: {_text_pri} !important;
+        font-weight: 500 !important;
     }}
     .st-key-top_wizard_bar .stButton > button[kind="secondary"] {{
-        color: #64748b !important;
+        color: {_text_mut} !important;
         background: transparent !important;
     }}
     .st-key-top_wizard_bar .stButton > button[kind="secondary"]:hover {{
-        background: #f1f5f9 !important;
-        color: #0f172a !important;
+        background: {_bg_card} !important;
+        color: {_text_pri} !important;
     }}
 
     /* ============================================================
-       THIẾT KẾ BƯỚC 1 CHUẨN UNSLOP (ĐỒNG BỘ LƯỚI, VIỀN SẮC NÉT, TƯƠNG PHẢN CAO)
+       BƯỚC 1: HAI CỘT ĐỒNG TRỤC — NESTED RADIUS (14px -> 10px -> 8px)
        ============================================================ */
     .st-key-zone_upload_left,
     .st-key-zone_gsheet_right {{
-        background: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
-        border-radius: 12px !important;
-        padding: 1.5rem !important;
-        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03) !important;
-        min-height: 244px !important;
+        background: {_bg_card} !important;
+        border: 1px solid {_border_hairline} !important;
+        border-radius: 14px !important;
+        padding: 1.25rem !important;
+        min-height: 232px !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: flex-start !important;
-        transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+        transition: border-color 0.15s ease !important;
     }}
     .st-key-zone_upload_left:hover,
     .st-key-zone_gsheet_right:hover {{
-        border-color: #cbd5e1 !important;
-        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05) !important;
+        border-color: {_border_hover} !important;
     }}
 
-    /* Khung trong đồng bộ kích thước và hình học (Nested radius 8px) */
+    /* Inner Box: 14px outer - 4px gap = 10px inner radius, quiet hairline border */
     .st-key-step1_file_inner_box,
     .st-key-step1_gsheet_inner_box {{
-        border: 1.5px dashed #cbd5e1 !important;
-        border-radius: 8px !important;
-        min-height: 136px !important;
-        padding: 1.25rem !important;
-        background: #f8fafc !important;
+        border: 1px solid {_border_hairline} !important;
+        border-radius: 10px !important;
+        min-height: 124px !important;
+        padding: 1.15rem !important;
+        background: {_bg_elev} !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: center !important;
         gap: 8px !important;
-        transition: border-color 0.15s ease, background-color 0.15s ease !important;
+        transition: border-color 0.15s ease !important;
     }}
     .st-key-step1_file_inner_box:hover,
     .st-key-step1_gsheet_inner_box:hover {{
-        border-color: #2563eb !important;
-        background: #ffffff !important;
+        border-color: {_accent} !important;
     }}
 
-    /* Vùng Upload Kéo Thả Trình Bày Y Hệt Khung Input Google Sheet */
+    /* File Uploader Control Matches Google Sheet Input (8px radius) */
     div[data-testid="stFileUploader"] section {{
-        background: #ffffff !important;
-        border: 1px solid #cbd5e1 !important;
-        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) !important;
+        background: {_bg_page} !important;
+        border: 1px solid {_border_hairline} !important;
         border-radius: 8px !important;
-        min-height: 42px !important;
-        height: 42px !important;
-        padding: 0 14px !important;
+        min-height: 40px !important;
+        height: 40px !important;
+        padding: 0 12px !important;
         text-align: left !important;
         display: flex !important;
         flex-direction: row !important;
@@ -618,14 +659,13 @@ st.markdown(f"""
         box-sizing: border-box !important;
     }}
     div[data-testid="stFileUploader"] section:hover {{
-        border-color: #2563eb !important;
-        background: #ffffff !important;
+        border-color: {_accent} !important;
     }}
     div[data-testid="stFileUploader"] section::after {{
         content: "file CSV, Excel" !important;
-        color: #94a3b8 !important;
-        font-family: 'Inter', 'Plus Jakarta Sans', sans-serif !important;
-        font-size: 0.9rem !important;
+        color: {_text_mut} !important;
+        font-family: 'Inter', sans-serif !important;
+        font-size: 0.86rem !important;
         font-weight: 400 !important;
         pointer-events: none !important;
     }}
@@ -638,56 +678,50 @@ st.markdown(f"""
     }}
 
     .st-key-step1_gsheet_box input {{
-        background: #ffffff !important;
-        border: 1px solid #cbd5e1 !important;
+        background: {_bg_page} !important;
+        border: 1px solid {_border_hairline} !important;
         border-radius: 8px !important;
-        height: 42px !important;
-        padding: 0 14px !important;
-        font-size: 0.9rem !important;
-        color: #0f172a !important;
+        height: 40px !important;
+        padding: 0 12px !important;
+        font-size: 0.86rem !important;
+        color: {_text_pri} !important;
     }}
     .st-key-step1_gsheet_box input:focus {{
-        border-color: #2563eb !important;
+        border-color: {_accent} !important;
     }}
 
-    /* Thẻ Bối Cảnh Doanh Nghiệp */
+    /* Business Context Card */
     .st-key-zone_biz_context {{
-        background: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
-        border-radius: 12px !important;
-        padding: 1.5rem !important;
-        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03) !important;
+        background: {_bg_card} !important;
+        border: 1px solid {_border_hairline} !important;
+        border-radius: 14px !important;
+        padding: 1.25rem 1.5rem !important;
         margin-top: 1rem !important;
-        transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+        transition: border-color 0.15s ease !important;
     }}
     .st-key-zone_biz_context:hover {{
-        border-color: #cbd5e1 !important;
-        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05) !important;
+        border-color: {_border_hover} !important;
     }}
 
-    /* Nút AI Gợi Ý Tone Xanh Dương Nhạt Thanh Lịch */
+    /* AI Suggest Context Button (Subtle Cobalt tint) */
     .st-key-btn_ai_suggest_ctx button {{
-        background: #e0f2fe !important;
-        color: #0369a1 !important;
-        font-weight: 600 !important;
-        border: 1px solid #bae6fd !important;
+        background: {_accent_subtle} !important;
+        color: {_accent_hover} !important;
+        font-weight: 500 !important;
+        border: 1px solid rgba(59, 130, 246, 0.28) !important;
         border-radius: 8px !important;
-        padding: 0.45rem 1.1rem !important;
-        box-shadow: none !important;
-        transition: all 0.15s ease !important;
+        padding: 0.4rem 1rem !important;
     }}
     .st-key-btn_ai_suggest_ctx button p,
     .st-key-btn_ai_suggest_ctx button span {{
-        color: #0369a1 !important;
-        font-weight: 600 !important;
+        color: {_accent_hover} !important;
+        font-weight: 500 !important;
     }}
     .st-key-btn_ai_suggest_ctx button:hover {{
-        background: #bae6fd !important;
-        color: #075985 !important;
-        border-color: #7dd3fc !important;
+        background: rgba(59, 130, 246, 0.2) !important;
+        border-color: {_accent} !important;
     }}
 
-    /* Ẩn hoàn toàn văn bản phụ (200MB per file, bullet, v.v.) bên trong ô Upload */
     div[data-testid="stFileUploader"] small,
     div[data-testid="stFileUploader"] [data-testid="stFileUploaderDropzoneInstructions"] > div > small,
     div[data-testid="stFileUploader"] [data-testid="stFileUploaderDropzoneInstructions"] span:last-child {{
@@ -696,42 +730,31 @@ st.markdown(f"""
         visibility: hidden !important;
         opacity: 0 !important;
     }}
-    div[data-testid="stFileUploader"] label p,
-    div[data-testid="stFileUploader"] label span,
-    div[data-testid="stFileUploader"] label,
-    div[data-testid="stFileUploader"] [data-testid="stWidgetLabel"] p {{
-        font-family: 'Plus Jakarta Sans', sans-serif !important;
-        font-size: 0.92rem !important;
-        font-weight: 600 !important;
-        color: #0f172a !important;
-        line-height: 1.4 !important;
-        margin: 0 !important;
-    }}
 
-    /* Hộp thông báo chờ ở giữa màn hình */
+    /* Spinner */
     div[data-testid="stSpinner"] {{
         position: fixed !important;
         top: 50% !important;
         left: 50% !important;
         transform: translate(-50%, -50%) !important;
-        background: #ffffff !important;
-        color: #0f172a !important;
-        padding: 16px 24px !important;
+        background: {_bg_deep} !important;
+        color: {_text_pri} !important;
+        padding: 14px 22px !important;
         border-radius: 10px !important;
-        border: 1px solid #cbd5e1 !important;
-        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12) !important;
+        border: 1px solid {_border_hover} !important;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4) !important;
         z-index: 999999 !important;
         text-align: center !important;
-        min-width: 320px !important;
+        min-width: 300px !important;
     }}
     div[data-testid="stSpinner"] p,
     div[data-testid="stSpinner"] span {{
-        font-size: 0.92rem !important;
-        font-weight: 600 !important;
-        color: #0f172a !important;
+        font-size: 0.88rem !important;
+        font-weight: 500 !important;
+        color: {_text_pri} !important;
     }}
 
-    /* Nút "Xem thêm" thu gọn / mở rộng danh sách nhóm */
+    /* Expandable Groups Tag (5px keycap radius) */
     details.inline-groups-details {{
         display: inline;
     }}
@@ -739,35 +762,32 @@ st.markdown(f"""
         display: inline-block;
         list-style: none;
         cursor: pointer;
-        background: #f1f5f9;
-        color: #0f172a !important;
-        border: 1px solid #cbd5e1;
-        border-radius: 6px;
-        padding: 1px 8px;
+        background: {_bg_elev};
+        color: {_text_sec} !important;
+        border: 1px solid {_border_hairline};
+        border-radius: 5px;
+        padding: 1px 7px;
         margin-left: 6px;
-        font-size: 0.8rem !important;
-        font-weight: 600 !important;
+        font-family: 'JetBrains Mono', monospace !important;
+        font-size: 0.76rem !important;
+        font-weight: 500 !important;
         user-select: none;
-        transition: all 0.15s ease;
     }}
     details.inline-groups-details summary.more-groups-btn::-webkit-details-marker {{
         display: none;
     }}
-    details.inline-groups-details summary.more-groups-btn:hover {{
-        background: #e2e8f0;
-    }}
     details.inline-groups-details .more-groups-expanded {{
         margin-top: 6px;
         padding: 8px 12px;
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
+        background: {_bg_elev};
+        border: 1px solid {_border_hairline};
         border-radius: 8px;
-        font-size: 0.86rem !important;
-        color: #334155 !important;
+        font-size: 0.84rem !important;
+        color: {_text_sec} !important;
         line-height: 1.5 !important;
     }}
 
-    /* Nút Duyệt & Tải xuống cố định gọn ở góc dưới bên phải */
+    /* Floating Action Pill at bottom-right */
     .st-key-floating_approve_step1,
     .st-key-floating_approve_step2,
     .st-key-floating_download_step3 {{
@@ -778,43 +798,43 @@ st.markdown(f"""
         transform: none !important;
         z-index: 9999 !important;
         width: auto !important;
-        min-width: 220px !important;
-        background: #ffffff !important;
-        padding: 8px 10px !important;
+        min-width: 215px !important;
+        background: {_bg_deep} !important;
+        padding: 6px 8px !important;
         border-radius: 10px !important;
-        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12) !important;
-        border: 1px solid #cbd5e1 !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35) !important;
+        border: 1px solid {_border_hover} !important;
     }}
 
-    /* Tên cột / mã trong dấu backtick chuẩn Monospace nhẹ */
+    /* Inline code tags (5px keycap radius) */
     .main code, [data-testid="stAlert"] code, .stMarkdown code {{
-        font-size: 0.86em !important;
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
-        font-weight: 600 !important;
-        background: #f1f5f9 !important;
-        color: #0f172a !important;
-        padding: 2px 5px !important;
-        border-radius: 4px !important;
+        font-size: 0.83em !important;
+        font-family: 'JetBrains Mono', ui-monospace, monospace !important;
+        font-weight: 500 !important;
+        background: {_bg_elev} !important;
+        color: {_text_pri} !important;
+        border: 1px solid {_border_hairline} !important;
+        padding: 1px 5px !important;
+        border-radius: 5px !important;
     }}
 
     /* ============================================================
-       SIDEBAR THU GỌN CHỈ HIỂN THỊ ICON DỌC, HOVER DI CHUỘT TỰ MỞ RA
+       SIDEBAR (#0f0f10 DEEPEST SURFACE FROM TOKENS.MD)
        ============================================================ */
     section[data-testid="stSidebar"] {{
         position: fixed !important;
         top: 0 !important;
         left: 0 !important;
         height: 100vh !important;
-        width: 60px !important;
-        min-width: 60px !important;
-        max-width: 60px !important;
-        background: #ffffff !important;
-        border-right: 1px solid #e2e8f0 !important;
+        width: 58px !important;
+        min-width: 58px !important;
+        max-width: 58px !important;
+        background: {_bg_deep} !important;
+        border-right: 1px solid {_border_hairline} !important;
         box-shadow: none !important;
-        transition: width 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-                    max-width 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-                    min-width 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-                    box-shadow 0.2s ease !important;
+        transition: width 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+                    max-width 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+                    min-width 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
         overflow-x: hidden !important;
         overflow-y: hidden !important;
         z-index: 99999 !important;
@@ -823,11 +843,11 @@ st.markdown(f"""
     }}
 
     section[data-testid="stSidebar"]:hover {{
-        width: 280px !important;
-        min-width: 280px !important;
-        max-width: 280px !important;
-        background: #ffffff !important;
-        box-shadow: 8px 0 24px rgba(15, 23, 42, 0.08) !important;
+        width: 272px !important;
+        min-width: 272px !important;
+        max-width: 272px !important;
+        background: {_bg_deep} !important;
+        box-shadow: 12px 0 32px rgba(0, 0, 0, 0.35) !important;
         overflow-y: auto !important;
     }}
 
@@ -835,14 +855,14 @@ st.markdown(f"""
         margin-left: 0 !important;
         transform: translate3d(0, 0, 0) !important;
         display: block !important;
-        width: 60px !important;
-        min-width: 60px !important;
-        max-width: 60px !important;
+        width: 58px !important;
+        min-width: 58px !important;
+        max-width: 58px !important;
     }}
 
     section[data-testid="stSidebar"] > div:first-child {{
-        width: 280px !important;
-        padding: 1.2rem 0.5rem !important;
+        width: 272px !important;
+        padding: 1.1rem 0.5rem !important;
         box-sizing: border-box !important;
     }}
 
@@ -858,30 +878,29 @@ st.markdown(f"""
         text-align: left !important;
         justify-content: flex-start !important;
         border-radius: 8px !important;
-        padding: 0.55rem 0.6rem !important;
+        padding: 0.5rem 0.6rem !important;
         border: 1px solid transparent !important;
         background: transparent !important;
         box-shadow: none !important;
-        transition: all 0.15s ease !important;
-        color: #334155 !important;
-        font-weight: 500 !important;
-        font-size: 0.92rem !important;
+        transition: all 0.14s ease !important;
+        color: {_text_sec} !important;
+        font-weight: 400 !important;
+        font-size: 0.86rem !important;
         width: 100% !important;
     }}
     section[data-testid="stSidebar"] .stButton > button:hover {{
-        background: #f1f5f9 !important;
-        color: #0f172a !important;
-        border-color: #e2e8f0 !important;
+        background: {_bg_elev} !important;
+        color: {_text_pri} !important;
+        border-color: {_border_hairline} !important;
     }}
 
     .main, [data-testid="stMain"] {{
-        margin-left: 60px !important;
-        transition: margin-left 0.2s ease !important;
+        margin-left: 58px !important;
+        transition: margin-left 0.18s ease !important;
     }}
 </style>
 """, unsafe_allow_html=True)
 
-# Tinh chỉnh hiệu ứng con trỏ nhẹ nhàng chuẩn unslop (không dùng blob loè loẹt làm nhòe chữ)
 import streamlit.components.v1 as _cursor_comp
 _cursor_comp.html("""
 <script>
@@ -898,7 +917,7 @@ _cursor_comp.html("""
 """, height=0)
 
 # ============================================================
-# CHỈ HIỂN THỊ THANH ĐIỀU HƯỚNG NGANG KHI ĐÃ VÀO BƯỚC 1, 2, 3 (ẨN Ở TRANG MỞ ĐẦU)
+# THANH ĐIỀU HƯỚNG NGANG (CHỈ HIỆN Ở BƯỚC 1, 2, 3)
 # ============================================================
 if step != 0:
     with st.container(key="top_wizard_bar"):
@@ -931,7 +950,7 @@ if step != 0:
                     st.session_state.current_step = 2
                     st.rerun()
                 else:
-                    st.toast("Vui lòng nạp file và duyệt Bước 1 trước.", icon="⚠️")
+                    st.toast("Vui lòng nạp file và duyệt Bước 1 trước.")
 
         with nav_col3:
             is_active_3 = (step == 3)
@@ -947,13 +966,13 @@ if step != 0:
                     st.session_state.current_step = 3
                     st.rerun()
                 else:
-                    st.toast("Vui lòng duyệt Bước 2 trước khi sang Bước 3.", icon="⚠️")
+                    st.toast("Vui lòng duyệt Bước 2 trước khi sang Bước 3.")
 
 # ============================================================
-# SIDEBAR ĐIỀU HƯỚNG NHANH & CÀI ĐẶT ẨN GỌN
+# SIDEBAR ĐIỀU HƯỚNG & TUỲ CHỌN GIAO DIỆN UNSLOP
 # ============================================================
 with st.sidebar:
-    st.markdown("<div style='color:#64748b; font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; padding:0 0.5rem; margin-bottom:0.5rem;'>Điều hướng</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='color:{_text_mut}; font-size:0.74rem; font-weight:500; padding:0 0.5rem; margin-bottom:0.4rem;'>Điều hướng</div>", unsafe_allow_html=True)
 
     if st.button("⊞   Tổng quan", use_container_width=True, key="sb_nav_0"):
         set_spinner_msg("Đang quay lại Trang Mở Đầu...")
@@ -961,25 +980,25 @@ with st.sidebar:
         st.rerun()
 
     if st.button("01  Nhập bảng tính", use_container_width=True, key="sb_nav_1"):
-        set_spinner_msg("Đang chuyển sang Bước 1: Nhập Dữ Liệu...")
+        set_spinner_msg("Đang chuyển sang Bước 1: Nhập dữ liệu...")
         st.session_state.current_step = 1
         st.rerun()
 
     if st.button("02  Làm sạch & Kiểm duyệt", use_container_width=True, key="sb_nav_2"):
         if st.session_state.step1_approved:
-            set_spinner_msg("Đang mở Bước 2: Làm Sạch...")
+            set_spinner_msg("Đang mở Bước 2: Làm sạch...")
             st.session_state.current_step = 2
             st.rerun()
         else:
-            st.toast("Vui lòng nạp file và Duyệt Bước 1 trước.", icon="⚠️")
+            st.toast("Vui lòng nạp file và Duyệt Bước 1 trước.")
 
     if st.button("03  Báo cáo & Dashboard", use_container_width=True, key="sb_nav_3"):
         if st.session_state.step2_approved:
-            set_spinner_msg("Đang mở Bước 3: Tạo Báo Cáo...")
+            set_spinner_msg("Đang mở Bước 3: Báo cáo...")
             st.session_state.current_step = 3
             st.rerun()
         else:
-            st.toast("Vui lòng Duyệt Bước 2 trước.", icon="⚠️")
+            st.toast("Vui lòng Duyệt Bước 2 trước.")
 
     if st.button("↺   Làm mới phiên", use_container_width=True, key="sb_reset_session"):
         for k in ["files_loaded", "file_messages", "analysis_results", "editable_report", "editable_plan", "dashboard_scores_df"]:
@@ -997,7 +1016,25 @@ with st.sidebar:
 
     st.divider()
 
-    st.markdown("<div style='color:#64748b; font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; padding:0 0.5rem; margin-bottom:0.4rem;'>Mô hình phân tích</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='color:{_text_mut}; font-size:0.74rem; font-weight:500; padding:0 0.5rem; margin-bottom:0.4rem;'>Giao diện Unslop</div>", unsafe_allow_html=True)
+    theme_opts = {
+        "graphite": "Unslop Graphite (#141415)",
+        "paper": "Unslop Paper (#F6F5F2)"
+    }
+    picked_theme = st.selectbox(
+        "Chế độ màu (tokens.md):",
+        options=["graphite", "paper"],
+        index=0 if st.session_state.unslop_theme == "graphite" else 1,
+        format_func=lambda k: theme_opts[k],
+        key="sb_theme_selector"
+    )
+    if picked_theme != st.session_state.unslop_theme:
+        st.session_state.unslop_theme = picked_theme
+        st.rerun()
+
+    st.divider()
+
+    st.markdown(f"<div style='color:{_text_mut}; font-size:0.74rem; font-weight:500; padding:0 0.5rem; margin-bottom:0.4rem;'>Mô hình phân tích</div>", unsafe_allow_html=True)
     ai_model_options = {
         "gemini-2.5-pro": "Gemini 2.5 Pro",
         "gemini-2.5-flash": "Gemini 2.5 Flash",
@@ -1145,19 +1182,19 @@ try:
             st.session_state.pending_spinner_msg = ""
 
         with st.container(key="landing_stage_container"):
-            st.markdown("""
+            st.markdown(f"""
             <style>
-                header[data-testid="stHeader"] {
+                header[data-testid="stHeader"] {{
                     background: transparent !important;
-                }
-                .main, [data-testid="stMain"] {
+                }}
+                .main, [data-testid="stMain"] {{
                     margin-left: 0 !important;
-                }
-                section[data-testid="stSidebar"] {
+                }}
+                section[data-testid="stSidebar"] {{
                     display: none !important;
-                }
-                .main .block-container, [data-testid="stMainBlockContainer"] {
-                    padding: 2.6rem 0 0 0 !important;
+                }}
+                .main .block-container, [data-testid="stMainBlockContainer"] {{
+                    padding: 2.2rem 0 0 0 !important;
                     margin: 0 !important;
                     max-width: 100% !important;
                     width: 100% !important;
@@ -1165,220 +1202,273 @@ try:
                     border: none !important;
                     border-radius: 0 !important;
                     box-shadow: none !important;
-                    background: #F4F7FB !important;
-                }
-                .st-key-landing_stage_container div[data-testid="stVerticalBlock"] {
+                    background: {_bg_page} !important;
+                }}
+                .st-key-landing_stage_container div[data-testid="stVerticalBlock"] {{
                     gap: 0 !important;
-                }
-                .st-key-btn_hero_start {
+                }}
+                .st-key-btn_hero_start {{
                     position: fixed !important;
                     left: -9999px !important;
                     top: -9999px !important;
                     opacity: 0 !important;
                     pointer-events: none !important;
-                }
-                iframe[title="streamlit_components_v1.html_v1"] {
+                }}
+                iframe[title="streamlit_components_v1.html_v1"] {{
                     display: block !important;
                     border: none !important;
-                }
+                }}
             </style>
             """, unsafe_allow_html=True)
 
             if st.button("Bắt đầu ➔", key="btn_hero_start", type="primary"):
-                set_spinner_msg("⏳ Đang mở Bước 1...")
+                set_spinner_msg("Đang mở Bước 1...")
                 st.session_state.current_step = 1
                 st.rerun()
 
             import streamlit.components.v1 as _landing_comp
-            _landing_html = """<!DOCTYPE html>
+            _landing_html = f"""<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        body { 
-            font-family: 'Inter', 'Plus Jakarta Sans', -apple-system, sans-serif; 
+        :root {{
+            --bg-deep: {_bg_deep};
+            --bg-page: {_bg_page};
+            --bg-card: {_bg_card};
+            --bg-elev: {_bg_elev};
+            --border-hairline: {_border_hairline};
+            --border-hover: {_border_hover};
+            --text-pri: {_text_pri};
+            --text-sec: {_text_sec};
+            --text-mut: {_text_mut};
+            --accent: {_accent};
+        }}
+        * {{ box-sizing: border-box; }}
+        body {{ 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
             margin: 0;
-            background-color: #F4F7FB;
-            color: #0F172A;
+            background-color: var(--bg-page);
+            color: var(--text-pri);
             -webkit-font-smoothing: antialiased;
-        }
-        .tabular {
+        }}
+        .mono {{
+            font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
             font-variant-numeric: tabular-nums;
-        }
-        .surface-card {
-            background: #FFFFFF;
-            border: 1px solid #E2E8F0;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
-            transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
-        }
-        .surface-card:hover {
-            border-color: #93C5FD;
-            box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.07);
-            transform: translateY(-1px);
-        }
-        .grid-bg {
-            background-size: 32px 32px;
-            background-image: 
-                linear-gradient(to right, rgba(226, 232, 240, 0.5) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(226, 232, 240, 0.5) 1px, transparent 1px);
-        }
+        }}
+        .unslop-card {{
+            background: var(--bg-card);
+            border: 1px solid var(--border-hairline);
+            border-radius: 14px;
+            transition: border-color 0.14s ease, background-color 0.14s ease;
+        }}
+        .unslop-card:hover {{
+            border-color: var(--border-hover);
+        }}
+        .unslop-inner {{
+            background: var(--bg-elev);
+            border: 1px solid var(--border-hairline);
+            border-radius: 8px;
+        }}
+        .unslop-tag {{
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 500;
+            padding: 2px 7px;
+            border-radius: 5px;
+            background: var(--bg-elev);
+            color: var(--text-sec);
+            border: 1px solid var(--border-hairline);
+        }}
+        .btn-primary {{
+            background: var(--accent);
+            color: #ffffff;
+            border: 1px solid var(--accent);
+            border-radius: 8px;
+            padding: 9px 18px;
+            font-size: 13.5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.14s ease;
+        }}
+        .btn-primary:hover {{
+            opacity: 0.92;
+        }}
+        .btn-secondary {{
+            background: var(--bg-card);
+            color: var(--text-pri);
+            border: 1px solid var(--border-hairline);
+            border-radius: 8px;
+            padding: 9px 16px;
+            font-size: 13.5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: border-color 0.14s ease, background-color 0.14s ease;
+        }}
+        .btn-secondary:hover {{
+            border-color: var(--border-hover);
+            background: var(--bg-elev);
+        }}
     </style>
     <script>
-        function triggerStart() {
-            try {
+        function triggerStart() {{
+            try {{
                 const parentDoc = window.parent.document;
                 const btn = parentDoc.querySelector('.st-key-btn_hero_start button') || parentDoc.querySelector('button[kind="primary"]');
                 if (btn) btn.click();
-            } catch (e) {
+            }} catch (e) {{
                 console.error(e);
-            }
-        }
+            }}
+        }}
     </script>
 </head>
-<body class="h-screen max-h-[660px] flex flex-col justify-between relative overflow-hidden grid-bg">
+<body class="h-screen max-h-[660px] flex flex-col justify-between relative overflow-hidden">
 
-    <!-- 1. TOP BAR (QUIET CHROME) -->
-    <header class="relative z-10 px-8 py-4 flex justify-between items-center bg-white/90 backdrop-blur-sm border-b border-slate-200/80">
-        <div class="flex items-center gap-2.5">
-            <div class="w-7 h-7 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold text-xs tracking-tight">
-                DA
-            </div>
-            <span class="font-bold text-slate-900 text-sm tracking-tight">Hệ thống Phân tích &amp; Kiểm toán Dữ liệu</span>
+    <!-- 1. TOP BAR (QUIET CHROME — #0f0f10 DEEPEST SURFACE) -->
+    <header style="background: var(--bg-deep); border-bottom: 1px solid var(--border-hairline);" class="relative z-10 px-8 py-3.5 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <span class="mono" style="background: var(--bg-elev); border: 1px solid var(--border-hairline); color: var(--text-pri); font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 5px;">
+                unslop · data
+            </span>
+            <span style="color: var(--text-sec); font-size: 13px; font-weight: 400;">
+                Hệ thống kiểm toán &amp; phân tích dữ liệu đa tiêu chí
+            </span>
         </div>
         
-        <nav class="hidden md:flex items-center gap-1 bg-slate-100/90 p-1 rounded-lg border border-slate-200/70 text-xs font-medium text-slate-600">
-            <a href="javascript:void(0)" class="bg-white text-slate-900 font-semibold px-3 py-1.5 rounded-md shadow-sm border border-slate-200/60">01 · Tổng quan</a>
-            <a href="javascript:void(0)" onclick="triggerStart()" class="px-3 py-1.5 hover:text-slate-900 rounded-md transition">02 · Nhập bảng tính</a>
-            <a href="javascript:void(0)" onclick="triggerStart()" class="px-3 py-1.5 hover:text-slate-900 rounded-md transition">03 · Kiểm duyệt lỗi</a>
-            <a href="javascript:void(0)" onclick="triggerStart()" class="px-3 py-1.5 hover:text-slate-900 rounded-md transition">04 · Báo cáo &amp; Dashboard</a>
+        <nav style="background: var(--bg-card); border: 1px solid var(--border-hairline); border-radius: 8px; padding: 3px;" class="hidden md:flex items-center gap-1 text-xs">
+            <a href="javascript:void(0)" style="background: var(--bg-elev); color: var(--text-pri); border: 1px solid var(--border-hairline); border-radius: 5px;" class="px-3 py-1 font-medium">01 · Tổng quan</a>
+            <a href="javascript:void(0)" onclick="triggerStart()" style="color: var(--text-sec);" class="px-3 py-1 hover:opacity-80 transition">02 · Nhập bảng tính</a>
+            <a href="javascript:void(0)" onclick="triggerStart()" style="color: var(--text-sec);" class="px-3 py-1 hover:opacity-80 transition">03 · Kiểm duyệt lỗi</a>
+            <a href="javascript:void(0)" onclick="triggerStart()" style="color: var(--text-sec);" class="px-3 py-1 hover:opacity-80 transition">04 · Báo cáo &amp; Dashboard</a>
         </nav>
 
-        <div class="flex items-center gap-2 text-xs font-medium text-slate-600 bg-slate-50 px-3 py-1.5 rounded-md border border-slate-200">
-            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-            <span>CSV · Excel · Google Sheet</span>
+        <div class="flex items-center gap-2">
+            <span style="width: 6px; height: 6px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
+            <span class="mono" style="color: var(--text-mut); font-size: 11.5px;">csv · xlsx · gsheet</span>
         </div>
     </header>
 
-    <!-- 2. MAIN WORKSPACE HERO (2 COLUMNS: EDITORIAL COPY + RICH PRODUCT PREVIEW) -->
-    <main class="relative z-10 flex-1 max-w-7xl w-full mx-auto flex flex-col md:flex-row items-center justify-between px-8 py-6 gap-10">
+    <!-- 2. MAIN WORKSPACE HERO (2 COLUMNS: SENTENCE-CASE HEADLINE + REDLINE AUDIT TERMINAL) -->
+    <main class="relative z-10 flex-1 max-w-7xl w-full mx-auto flex flex-col md:flex-row items-center justify-between px-8 py-6 gap-12">
         
-        <!-- LEFT COLUMN: TYPOGRAPHIC HIERARCHY & ACTION -->
-        <div class="w-full md:w-[46%] flex flex-col items-start gap-5">
-            <div class="inline-flex items-center gap-2 text-xs font-semibold text-blue-700 bg-blue-50 px-3 py-1 rounded-md border border-blue-200">
-                <span>HUMAN-IN-THE-LOOP DATA WORKSPACE</span>
+        <!-- LEFT COLUMN -->
+        <div class="w-full md:w-[45%] flex flex-col items-start gap-5">
+            <div class="flex items-center gap-2">
+                <span class="unslop-tag">human-in-the-loop</span>
+                <span class="unslop-tag">zero auto-mutation</span>
             </div>
 
-            <h1 class="text-4xl lg:text-[2.65rem] font-extrabold text-slate-900 leading-[1.15] tracking-tight" style="font-family: 'Plus Jakarta Sans', sans-serif;">
+            <h1 style="font-size: 2.55rem; font-weight: 500; letter-spacing: -0.03em; line-height: 1.12; color: var(--text-pri); margin: 0;">
                 Kiểm duyệt dữ liệu.<br>
-                Tổng hợp báo cáo tức thì.
+                <span style="color: var(--text-sec);">Phân tích và xuất báo cáo chuẩn xác.</span>
             </h1>
 
-            <p class="text-sm text-slate-600 leading-relaxed max-w-md">
-                Tự động phát hiện dòng trống, bản ghi trùng lặp, giá trị khuyết và sai lệch định dạng từ tệp CSV, Excel hoặc Google Sheet. Mọi thao tác làm sạch đều được báo cáo minh bạch và chờ bạn phê duyệt trước khi thực thi.
+            <p style="font-size: 14px; color: var(--text-sec); line-height: 1.65; margin: 0; max-width: 440px;">
+                Quét tự động 6 lớp lỗi cấu trúc từ tệp CSV, Excel và Google Sheet. Mọi đề xuất làm sạch đều được liệt kê rõ ràng để bạn chọn và phê duyệt trước khi thực thi.
             </p>
 
             <div class="flex items-center gap-3 pt-1">
-                <button onclick="triggerStart()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm px-6 py-2.5 rounded-lg shadow-sm border border-blue-700 flex items-center gap-2 transition cursor-pointer">
-                    <span>Bắt đầu làm việc</span>
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                <button onclick="triggerStart()" class="btn-primary flex items-center gap-2">
+                    <span>Mở không gian làm việc</span>
+                    <span class="mono">→</span>
                 </button>
-                <button onclick="triggerStart()" class="bg-white hover:bg-slate-50 text-slate-700 font-medium text-sm px-4 py-2.5 rounded-lg border border-slate-300 transition cursor-pointer">
-                    Nạp tệp dữ liệu
+                <button onclick="triggerStart()" class="btn-secondary">
+                    Tải tệp lên ngay
                 </button>
             </div>
 
-            <!-- KEY METRICS STRIP (TABULAR NUMS) -->
-            <div class="grid grid-cols-3 gap-6 pt-4 border-t border-slate-200/90 w-full max-w-md tabular">
+            <!-- METRICS STRIP (JETBRAINS MONO TABULAR) -->
+            <div style="border-top: 1px solid var(--border-hairline);" class="grid grid-cols-3 gap-6 pt-4 w-full max-w-md">
                 <div>
-                    <div class="text-lg font-bold text-slate-900">100.0%</div>
-                    <div class="text-xs text-slate-500">Kiểm soát phê duyệt</div>
+                    <div class="mono" style="font-size: 18px; font-weight: 500; color: var(--text-pri);">100.0%</div>
+                    <div style="font-size: 12px; color: var(--text-mut); margin-top: 2px;">Do người dùng duyệt</div>
                 </div>
                 <div>
-                    <div class="text-lg font-bold text-slate-900">6 lớp</div>
-                    <div class="text-xs text-slate-500">Quét lỗi tự động</div>
+                    <div class="mono" style="font-size: 18px; font-weight: 500; color: var(--text-pri);">06 lớp</div>
+                    <div style="font-size: 12px; color: var(--text-mut); margin-top: 2px;">Kiểm toán dữ liệu</div>
                 </div>
                 <div>
-                    <div class="text-lg font-bold text-slate-900">4 định dạng</div>
-                    <div class="text-xs text-slate-500">HTML · DOCX · PDF · CSV</div>
+                    <div class="mono" style="font-size: 18px; font-weight: 500; color: var(--text-pri);">04 chuẩn</div>
+                    <div style="font-size: 12px; color: var(--text-mut); margin-top: 2px;">HTML · DOCX · PDF · CSV</div>
                 </div>
             </div>
         </div>
 
-        <!-- RIGHT COLUMN: RICH PRODUCT CONSOLE & 3-STEP PIPELINE -->
-        <div class="w-full md:w-[54%] flex flex-col gap-3.5">
+        <!-- RIGHT COLUMN: RICH PRODUCT ARTIFACT (REDLINE AUDIT CONSOLE + 3 WORKFLOW CARDS) -->
+        <div class="w-full md:w-[55%] flex flex-col gap-3.5">
             
-            <!-- LIVE PIPELINE PREVIEW CONSOLE -->
-            <div onclick="triggerStart()" class="surface-card p-5 cursor-pointer">
-                <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+            <!-- REDLINE AUDIT TERMINAL CARD (14px outer -> 8px inner) -->
+            <div onclick="triggerStart()" class="unslop-card p-4 cursor-pointer">
+                <div style="border-bottom: 1px solid var(--border-hairline);" class="flex items-center justify-between pb-3 mb-3">
                     <div class="flex items-center gap-2">
-                        <span class="text-xs font-semibold text-slate-900">Trình kiểm toán &amp; Chấm điểm Đa tiêu chí</span>
-                        <span class="text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">Sẵn sàng</span>
+                        <span class="mono" style="font-size: 11.5px; color: var(--text-pri); font-weight: 500;">redline_audit_pipeline.py</span>
+                        <span class="unslop-tag" style="color: #10b981;">active</span>
                     </div>
-                    <span class="text-xs text-slate-400 tabular">Quy trình 3 bước</span>
+                    <span class="mono" style="font-size: 11px; color: var(--text-mut);">pass 01 — 06</span>
                 </div>
-                <div class="grid grid-cols-3 gap-3 tabular">
-                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200/70">
-                        <div class="text-[11px] font-medium text-slate-500">Độ đầy đủ dữ liệu</div>
-                        <div class="text-base font-bold text-slate-900 mt-0.5">99.4%</div>
-                        <div class="text-[11px] text-blue-600 mt-0.5">Tự động phát hiện NaN</div>
+
+                <div class="flex flex-col gap-2 mono" style="font-size: 12px;">
+                    <div class="unslop-inner px-3 py-2 flex items-center justify-between">
+                        <span style="color: var(--text-sec);">01 · empty_rows &amp; empty_cols</span>
+                        <span style="color: #10b981;">Phát hiện &amp; chờ duyệt xóa</span>
                     </div>
-                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200/70">
-                        <div class="text-[11px] font-medium text-slate-500">Kiểm soát trùng lặp</div>
-                        <div class="text-base font-bold text-slate-900 mt-0.5">0 bản ghi</div>
-                        <div class="text-[11px] text-emerald-600 mt-0.5">Duyệt xóa theo yêu cầu</div>
+                    <div class="unslop-inner px-3 py-2 flex items-center justify-between">
+                        <span style="color: var(--text-sec);">02 · duplicate_records</span>
+                        <span style="color: #f59e0b;">Lọc bản ghi trùng 100%</span>
                     </div>
-                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200/70">
-                        <div class="text-[11px] font-medium text-slate-500">Chấm điểm trọng số</div>
-                        <div class="text-base font-bold text-slate-900 mt-0.5">5 tiêu chí</div>
-                        <div class="text-[11px] text-slate-600 mt-0.5">Xếp hạng &amp; Dashboard</div>
+                    <div class="unslop-inner px-3 py-2 flex items-center justify-between">
+                        <span style="color: var(--text-sec);">03 · missing_values &amp; negative_nums</span>
+                        <span style="color: var(--accent);">Điền mặc định &amp; chuẩn hóa dấu</span>
                     </div>
                 </div>
             </div>
 
-            <!-- 3 WORKFLOW STEP CARDS (ALIGNED GRID) -->
-            <div class="grid grid-cols-3 gap-3.5">
-                <div onclick="triggerStart()" class="surface-card p-4 cursor-pointer flex flex-col justify-between">
+            <!-- 3 WORKFLOW STEP CARDS -->
+            <div class="grid grid-cols-3 gap-3">
+                <div onclick="triggerStart()" class="unslop-card p-4 cursor-pointer flex flex-col justify-between">
                     <div>
-                        <div class="flex items-center justify-between mb-2.5">
-                            <span class="text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded tabular">BƯỚC 01</span>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="unslop-tag">01</span>
+                            <span class="mono" style="font-size: 11px; color: var(--text-mut);">ingest</span>
                         </div>
-                        <h3 class="text-sm font-bold text-slate-900 mb-1">Nhập dữ liệu</h3>
-                        <p class="text-xs text-slate-500 leading-relaxed">Tải tệp CSV, Excel hoặc liên kết Google Sheet công khai.</p>
+                        <div style="font-size: 13.5px; font-weight: 500; color: var(--text-pri); margin-bottom: 4px;">Nhập dữ liệu</div>
+                        <div style="font-size: 12px; color: var(--text-mut); line-height: 1.45;">Tải tệp CSV, Excel hoặc liên kết Google Sheet.</div>
                     </div>
-                    <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] font-semibold text-blue-600">
-                        <span>Mở Bước 1</span>
+                    <div style="border-top: 1px solid var(--border-hairline); color: var(--text-sec); font-size: 11.5px;" class="mt-3 pt-2 flex justify-between items-center mono">
+                        <span>Bước 1</span>
                         <span>→</span>
                     </div>
                 </div>
 
-                <div onclick="triggerStart()" class="surface-card p-4 cursor-pointer flex flex-col justify-between border-blue-200">
+                <div onclick="triggerStart()" class="unslop-card p-4 cursor-pointer flex flex-col justify-between" style="border-color: var(--border-hover);">
                     <div>
-                        <div class="flex items-center justify-between mb-2.5">
-                            <span class="text-xs font-bold text-white bg-blue-600 px-2 py-0.5 rounded tabular">BƯỚC 02</span>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="unslop-tag" style="color: var(--accent);">02</span>
+                            <span class="mono" style="font-size: 11px; color: var(--text-mut);">redline</span>
                         </div>
-                        <h3 class="text-sm font-bold text-slate-900 mb-1">Làm sạch &amp; Duyệt</h3>
-                        <p class="text-xs text-slate-500 leading-relaxed">Thông báo lỗi chi tiết, tùy chọn khắc phục và chỉnh sửa trực tiếp.</p>
+                        <div style="font-size: 13.5px; font-weight: 500; color: var(--text-pri); margin-bottom: 4px;">Làm sạch &amp; Duyệt</div>
+                        <div style="font-size: 12px; color: var(--text-mut); line-height: 1.45;">Thông báo lỗi, tích chọn mục cần sửa và phê duyệt.</div>
                     </div>
-                    <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] font-semibold text-blue-600">
-                        <span>Kiểm tra lỗi</span>
+                    <div style="border-top: 1px solid var(--border-hairline); color: var(--accent); font-size: 11.5px;" class="mt-3 pt-2 flex justify-between items-center mono">
+                        <span>Bước 2</span>
                         <span>→</span>
                     </div>
                 </div>
 
-                <div onclick="triggerStart()" class="surface-card p-4 cursor-pointer flex flex-col justify-between">
+                <div onclick="triggerStart()" class="unslop-card p-4 cursor-pointer flex flex-col justify-between">
                     <div>
-                        <div class="flex items-center justify-between mb-2.5">
-                            <span class="text-xs font-bold text-slate-700 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded tabular">BƯỚC 03</span>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="unslop-tag">03</span>
+                            <span class="mono" style="font-size: 11px; color: var(--text-mut);">report</span>
                         </div>
-                        <h3 class="text-sm font-bold text-slate-900 mb-1">Tạo báo cáo</h3>
-                        <p class="text-xs text-slate-500 leading-relaxed">Dashboard xếp hạng đa chiều và xuất báo cáo HTML, Word, PDF.</p>
+                        <div style="font-size: 13.5px; font-weight: 500; color: var(--text-pri); margin-bottom: 4px;">Báo cáo &amp; Điểm</div>
+                        <div style="font-size: 12px; color: var(--text-mut); line-height: 1.45;">Chấm điểm đa tiêu chí, Dashboard &amp; xuất 4 định dạng.</div>
                     </div>
-                    <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] font-semibold text-blue-600">
-                        <span>Xem báo cáo</span>
+                    <div style="border-top: 1px solid var(--border-hairline); color: var(--text-sec); font-size: 11.5px;" class="mt-3 pt-2 flex justify-between items-center mono">
+                        <span>Bước 3</span>
                         <span>→</span>
                     </div>
                 </div>
@@ -1387,10 +1477,10 @@ try:
         </div>
     </main>
 
-    <!-- 3. FOOTER (CLEAN STATUS BAR) -->
-    <footer class="relative z-10 w-full bg-white/90 border-t border-slate-200/80 text-slate-500 px-8 py-2.5 text-xs flex justify-between items-center">
-        <span>Quy trình phân tích chuẩn hóa 3 bước · Mọi chỉnh sửa dữ liệu đều do người dùng kiểm duyệt</span>
-        <span class="tabular font-medium text-slate-700">Phiên bản 2.5 Enterprise</span>
+    <!-- 3. FOOTER (QUIET CHROME) -->
+    <footer style="background: var(--bg-deep); border-top: 1px solid var(--border-hairline); color: var(--text-mut);" class="relative z-10 w-full px-8 py-2.5 text-xs flex justify-between items-center">
+        <span>Thiết kế theo hệ thống chuẩn heydamir/unslop · Quiet chrome, rich content</span>
+        <span class="mono">graphite · tabular-nums</span>
     </footer>
 
 </body>
@@ -1414,11 +1504,12 @@ try:
         if has_loaded_files:
             col_s1_h1, col_s1_h2 = st.columns([2.7, 1.3])
             with col_s1_h1:
-                st.markdown("""
+                st.markdown(f"""
                 <div style="margin-bottom:0.5rem;">
-                    <div style="background:#eff6ff; border:1px solid #bfdbfe; border-left:4px solid #2563eb; padding:0.45rem 1rem; border-radius:8px; display:inline-flex; align-items:center; gap:8px;">
-                        <span style="font-weight:800; color:#1e3a8a; font-size:1.25rem; letter-spacing:-0.02em;">
-                            BƯỚC 1: NHẬP &amp; KIỂM TRA DỮ LIỆU
+                    <div style="background:{_bg_card}; border:1px solid {_border_hairline}; border-left:2px solid {_accent}; padding:0.45rem 0.95rem; border-radius:8px; display:inline-flex; align-items:center; gap:10px;">
+                        <span class="mono-meta" style="font-size:0.76rem; color:{_accent}; background:{_bg_elev}; padding:2px 6px; border-radius:4px; border:1px solid {_border_hairline};">01</span>
+                        <span style="font-weight:500; color:{_text_pri}; font-size:1.1rem; letter-spacing:-0.01em;">
+                            Bước 1 · Nhập và kiểm tra dữ liệu
                         </span>
                     </div>
                 </div>
@@ -1429,29 +1520,31 @@ try:
                     st.session_state.show_step1_uploader = not st.session_state.show_step1_uploader
                     st.rerun()
         else:
-            st.markdown("""
+            st.markdown(f"""
             <div style="margin-bottom:1rem;">
-                <div style="background:#eff6ff; border:1px solid #bfdbfe; border-left:4px solid #2563eb; padding:0.55rem 1.15rem; border-radius:8px; display:inline-flex; align-items:center; gap:10px; margin-bottom:6px;">
-                    <span style="font-weight:800; color:#1e3a8a; font-size:1.45rem; letter-spacing:-0.02em;">
-                        BƯỚC 1: NHẬP DỮ LIỆU
+                <div style="background:{_bg_card}; border:1px solid {_border_hairline}; border-left:2px solid {_accent}; padding:0.5rem 1rem; border-radius:8px; display:inline-flex; align-items:center; gap:10px; margin-bottom:6px;">
+                    <span class="mono-meta" style="font-size:0.78rem; color:{_accent}; background:{_bg_elev}; padding:2px 7px; border-radius:4px; border:1px solid {_border_hairline};">01</span>
+                    <span style="font-weight:500; color:{_text_pri}; font-size:1.25rem; letter-spacing:-0.02em;">
+                        Bước 1 · Nhập dữ liệu
                     </span>
                 </div>
-                <div style="font-size:0.92rem; color:#475569; margin-top:2px; font-weight:500;">
-                    Tải lên tệp CSV / Excel hoặc dán đường dẫn Google Sheet công khai để hệ thống kiểm tra cấu trúc và phát hiện lỗi.
+                <div style="font-size:0.88rem; color:{_text_sec}; margin-top:2px; font-weight:400;">
+                    Tải lên tệp CSV, Excel hoặc dán đường dẫn Google Sheet công khai để hệ thống quét lỗi cấu trúc.
                 </div>
             </div>
             """, unsafe_allow_html=True)
 
         if (not has_loaded_files) or st.session_state.show_step1_uploader:
-            col_up1, col_divider, col_up2 = st.columns([1, 0.12, 1])
+            col_up1, col_divider, col_up2 = st.columns([1, 0.1, 1])
     
             with col_up1:
                 with st.container(key="zone_upload_left"):
-                    st.markdown("""
-                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px; font-weight:700; color:#2563eb; font-size:1.05rem; letter-spacing:-0.01em;">
-                        <span>Tải tệp</span>
+                    st.markdown(f"""
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                        <span style="font-weight:500; color:{_accent}; font-size:0.95rem;">Tải tệp</span>
+                        <span class="mono-meta" style="font-size:0.72rem; color:{_text_mut}; background:{_bg_elev}; padding:1px 6px; border-radius:4px; border:1px solid {_border_hairline};">csv · xlsx</span>
                     </div>
-                    <div class="gsheet-hint-text" style="font-family:'Plus Jakarta Sans',sans-serif; font-size:0.92rem; font-weight:600; color:#0f172a; margin-bottom:10px; line-height:1.4;">
+                    <div class="gsheet-hint-text" style="font-size:0.86rem; font-weight:400; color:{_text_sec}; margin-bottom:10px; line-height:1.45;">
                         Kéo thả tệp CSV, Excel vào đây hoặc Nhấn để tải lên
                     </div>
                     """, unsafe_allow_html=True)
@@ -1464,7 +1557,7 @@ try:
                             key="s1_file_uploader"
                         )
                     if uploaded_files:
-                        if st.button("Nạp tệp đã chọn ➔", type="primary", use_container_width=True, key="btn_verify_upload"):
+                        if st.button("Nạp tệp đã chọn →", type="primary", use_container_width=True, key="btn_verify_upload"):
                             with st.spinner("Đang đọc và kiểm tra chất lượng dữ liệu..."):
                                 for up in uploaded_files:
                                     content = up.read()
@@ -1479,21 +1572,22 @@ try:
                             st.rerun()
 
             with col_divider:
-                st.markdown("""
+                st.markdown(f"""
                 <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; min-height:220px;">
-                    <div style="width:1px; height:44px; background:#e2e8f0;"></div>
-                    <div style="background:#f8fafc; color:#475569; font-weight:600; font-size:0.72rem; padding:3px 8px; border-radius:6px; border:1px solid #cbd5e1; margin:6px 0; text-transform:uppercase; letter-spacing:0.04em;">HOẶC</div>
-                    <div style="width:1px; height:44px; background:#e2e8f0;"></div>
+                    <div style="width:1px; height:44px; background:{_border_hairline};"></div>
+                    <div class="mono-meta" style="background:{_bg_elev}; color:{_text_mut}; font-size:0.7rem; padding:2px 6px; border-radius:5px; border:1px solid {_border_hairline}; margin:6px 0;">hoặc</div>
+                    <div style="width:1px; height:44px; background:{_border_hairline};"></div>
                 </div>
                 """, unsafe_allow_html=True)
 
             with col_up2:
                 with st.container(key="zone_gsheet_right"):
-                    st.markdown("""
-                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px; font-weight:700; color:#2563eb; font-size:1.05rem; letter-spacing:-0.01em;">
-                        <span>Đường dẫn Google Sheet</span>
+                    st.markdown(f"""
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                        <span style="font-weight:500; color:{_accent}; font-size:0.95rem;">Đường dẫn Google Sheet</span>
+                        <span class="mono-meta" style="font-size:0.72rem; color:{_text_mut}; background:{_bg_elev}; padding:1px 6px; border-radius:4px; border:1px solid {_border_hairline};">public url</span>
                     </div>
-                    <div class="gsheet-hint-text" style="font-family:'Plus Jakarta Sans',sans-serif; font-size:0.92rem; font-weight:600; color:#0f172a; margin-bottom:10px; line-height:1.4;">
+                    <div class="gsheet-hint-text" style="font-size:0.86rem; font-weight:400; color:{_text_sec}; margin-bottom:10px; line-height:1.45;">
                         Đảm bảo liên kết đang ở chế độ xem công khai.
                     </div>
                     """, unsafe_allow_html=True)
@@ -1505,7 +1599,7 @@ try:
                                 label_visibility="collapsed"
                             )
                     if sheet_url:
-                        if st.button("Đọc Google Sheet ➔", type="primary", use_container_width=True, key="btn_verify_gsheet"):
+                        if st.button("Đọc Google Sheet →", type="primary", use_container_width=True, key="btn_verify_gsheet"):
                             with st.spinner("Đang kết nối và kiểm tra Google Sheet..."):
                                 success, msg = orch.load_google_sheet(sheet_url)
                                 g_keys = [k for k in orch.data_agent.raw_dataframes.keys() if k.startswith("GoogleSheet")]
@@ -1524,18 +1618,19 @@ try:
             st.session_state["biz_questions"] = st.session_state.pop("_pending_biz_questions")
 
         # ============================================================
-        # BỐI CẢNH DOANH NGHIỆP
+        # BỐI CẢNH DOANH NGHIỆP (CHUẨN UNSLOP SENTENCE CASE)
         # ============================================================
         with st.container(key="zone_biz_context"):
             col_b_head, col_b_btn = st.columns([2.4, 1.6])
             with col_b_head:
-                st.markdown("""
-                <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-left:4px solid #16a34a; padding:0.55rem 1.15rem; border-radius:8px; display:inline-flex; align-items:center; gap:10px; margin-bottom:6px;">
-                    <span style="font-weight:800; color:#14532d; font-size:1.45rem; letter-spacing:-0.02em;">
-                        BỐI CẢNH DOANH NGHIỆP
+                st.markdown(f"""
+                <div style="background:{_bg_elev}; border:1px solid {_border_hairline}; border-left:2px solid #10b981; padding:0.45rem 0.95rem; border-radius:8px; display:inline-flex; align-items:center; gap:10px; margin-bottom:6px;">
+                    <span class="mono-meta" style="font-size:0.75rem; color:#10b981;">context</span>
+                    <span style="font-weight:500; color:{_text_pri}; font-size:1.15rem; letter-spacing:-0.015em;">
+                        Bối cảnh doanh nghiệp
                     </span>
                 </div>
-                <div style="font-size:0.92rem; color:#475569; margin-top:2px; margin-bottom:12px; font-weight:500;">
+                <div style="font-size:0.86rem; color:{_text_sec}; margin-top:2px; margin-bottom:12px; font-weight:400;">
                     Mô tả ngắn gọn về mô hình kinh doanh và mục tiêu phân tích để hệ thống chấm điểm sát thực tế.
                 </div>
                 """, unsafe_allow_html=True)
@@ -1609,7 +1704,6 @@ try:
         if orch.data_agent.raw_dataframes:
             st.write("")
             detected_groups = orch.data_agent.get_regions_detected()
-            # Tính điểm sức khỏe dữ liệu tổng thể (Data Health Scorecard)
             all_dfs_list = list(orch.data_agent.raw_dataframes.values())
             avg_health = round(sum(compute_data_health_metrics(d)["health_score"] for d in all_dfs_list) / max(1, len(all_dfs_list)), 1)
             with st.container(key="zone_step1_summary"):
@@ -1619,9 +1713,9 @@ try:
                 sum_c3.metric("Nhóm phân tích", len(detected_groups))
                 sum_c4.metric("Chất lượng dữ liệu", f"{avg_health}%")
                 with sum_c5:
-                    st.markdown(f"<div style='margin-top:0.35rem; font-size:0.88rem; color:#334155;'><b>Nhóm phát hiện:</b> {_format_groups_preview(detected_groups, 3)}</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div style='margin-top:0.35rem; font-size:0.86rem; color:{_text_sec};'><b>Nhóm phát hiện:</b> {_format_groups_preview(detected_groups, 3)}</div>", unsafe_allow_html=True)
             with st.container(key="floating_approve_step1"):
-                if st.button("Duyệt & Sang Bước 2 ➔", type="primary", use_container_width=True, key="btn_approve_step1"):
+                if st.button("Duyệt & Sang Bước 2 →", type="primary", use_container_width=True, key="btn_approve_step1"):
                     set_spinner_msg("Đang chuyển sang Bước 2: Làm sạch & Kiểm duyệt...")
                     st.session_state.step1_approved = True
                     st.session_state.current_step = 2
@@ -1657,18 +1751,16 @@ try:
                                 for idx_iss, iss in enumerate(detected_issues):
                                     with cols_iss[idx_iss % min(len(detected_issues), 3)]:
                                         with st.container(border=True):
-                                            sev_bg = "#fef2f2" if iss["severity"] == "Quan trọng" else ("#fffbeb" if iss["severity"] == "Cảnh báo" else "#f8fafc")
-                                            sev_fg = "#dc2626" if iss["severity"] == "Quan trọng" else ("#d97706" if iss["severity"] == "Cảnh báo" else "#475569")
-                                            sev_bd = "#fecaca" if iss["severity"] == "Quan trọng" else ("#fde68a" if iss["severity"] == "Cảnh báo" else "#e2e8f0")
+                                            sev_fg = "#ef4444" if iss["severity"] == "Quan trọng" else ("#f59e0b" if iss["severity"] == "Cảnh báo" else _text_sec)
                                             st.markdown(
                                                 f"<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;'>"
-                                                f"<span style='font-weight:700; color:#0f172a; font-size:0.9rem;'>{iss['type']}</span>"
-                                                f"<span style='background:{sev_bg}; color:{sev_fg}; border:1px solid {sev_bd}; font-size:0.7rem; font-weight:700; padding:1px 7px; border-radius:4px; text-transform:uppercase;'>{iss['severity']}</span>"
+                                                f"<span style='font-weight:500; color:{_text_pri}; font-size:0.88rem;'>{iss['type']}</span>"
+                                                f"<span class='mono-meta' style='background:{_bg_elev}; color:{sev_fg}; border:1px solid {_border_hairline}; font-size:0.7rem; font-weight:500; padding:1px 6px; border-radius:4px;'>{iss['severity']}</span>"
                                                 f"</div>",
                                                 unsafe_allow_html=True
                                             )
-                                            st.markdown(f"<div style='font-size:0.84rem; color:#475569; margin-bottom:6px;'>{iss['desc']}</div>", unsafe_allow_html=True)
-                                            st.markdown(f"<div style='font-size:0.82rem; color:#0369a1; background:#f0f9ff; padding:6px 8px; border-radius:6px; margin-bottom:8px;'><b>Đề xuất xử lý:</b> {iss['suggested_fix']}</div>", unsafe_allow_html=True)
+                                            st.markdown(f"<div style='font-size:0.83rem; color:{_text_sec}; margin-bottom:6px;'>{iss['desc']}</div>", unsafe_allow_html=True)
+                                            st.markdown(f"<div style='font-size:0.8rem; color:{_text_pri}; background:{_bg_elev}; border:1px solid {_border_hairline}; padding:6px 8px; border-radius:6px; margin-bottom:8px;'><span style='color:{_accent}; font-weight:500;'>Đề xuất:</span> {iss['suggested_fix']}</div>", unsafe_allow_html=True)
                                             is_chk = st.checkbox(
                                                 f"Cho phép: {iss['action_label']}",
                                                 value=(iss["id"] in st.session_state[f"{issue_key_prefix}_selected"]),
@@ -1725,7 +1817,6 @@ try:
                                             st.toast(f"Đã khôi phục tệp {item['file']} về trạng thái gốc ban đầu.")
                                             st.rerun()
 
-                                # Tính năng xem trước các dòng có lỗi
                                 err_preview_df = get_issue_preview_rows(df_chk, max_rows=25)
                                 if not err_preview_df.empty:
                                     with st.expander(f"Xem trước các dòng đang chứa lỗi trong `{item['file']}` ({len(err_preview_df)} dòng mẫu)", expanded=False):
@@ -1879,11 +1970,12 @@ try:
                 st.rerun()
         else:
             file_list = list(orch.data_agent.raw_dataframes.keys())
-            st.markdown("""
+            st.markdown(f"""
             <div style="margin-bottom:0.75rem;">
-                <div style="background:#eff6ff; border:1px solid #bfdbfe; border-left:4px solid #2563eb; padding:0.45rem 1rem; border-radius:8px; display:inline-flex; align-items:center; gap:8px;">
-                    <span style="font-weight:800; color:#1e3a8a; font-size:1.25rem; letter-spacing:-0.02em;">
-                        BƯỚC 2: LÀM SẠCH &amp; KIỂM DUYỆT CHẤT LƯỢNG DỮ LIỆU
+                <div style="background:{_bg_card}; border:1px solid {_border_hairline}; border-left:2px solid {_accent}; padding:0.45rem 0.95rem; border-radius:8px; display:inline-flex; align-items:center; gap:10px;">
+                    <span class="mono-meta" style="font-size:0.76rem; color:{_accent}; background:{_bg_elev}; padding:2px 6px; border-radius:4px; border:1px solid {_border_hairline};">02</span>
+                    <span style="font-weight:500; color:{_text_pri}; font-size:1.15rem; letter-spacing:-0.015em;">
+                        Bước 2 · Làm sạch và kiểm duyệt chất lượng dữ liệu
                     </span>
                 </div>
             </div>
@@ -1901,8 +1993,8 @@ try:
 
             with top_bar_c2:
                 total_records = sum(len(df) for df in orch.data_agent.raw_dataframes.values())
-                st.markdown(f"<div style='margin-top:0.35rem;'><b>{total_rows:,} dòng × {len(df_current.columns)} cột</b> · {len(detected_groups)} nhóm phân tích</div>", unsafe_allow_html=True)
-                st.markdown(f"<div style='font-size:0.86rem; color:#475569;'>Phân nhóm chính: {_format_groups_preview(detected_groups, 3)}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='margin-top:0.35rem; color:{_text_pri};'><b class='mono-meta'>{total_rows:,} dòng × {len(df_current.columns)} cột</b> · {len(detected_groups)} nhóm phân tích</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='font-size:0.84rem; color:{_text_sec};'>Phân nhóm chính: {_format_groups_preview(detected_groups, 3)}</div>", unsafe_allow_html=True)
 
             with top_bar_c3:
                 csv_clean_bytes = df_current.to_csv(index=False).encode("utf-8-sig")
@@ -1915,7 +2007,6 @@ try:
                     key=f"dl_cleaned_csv_s2_{selected_file}"
                 )
 
-            # Bảng chỉ số chất lượng dữ liệu (Data Health Scorecard - Tabular Nums)
             hc1, hc2, hc3, hc4 = st.columns(4)
             hc1.metric("Điểm chất lượng tệp", f"{s2_health['health_score']}%")
             hc2.metric("Độ đầy đủ (Không trống)", f"{s2_health['completeness_pct']}%")
@@ -1924,7 +2015,7 @@ try:
 
             if total_records > 0:
                 with st.container(key="floating_approve_step2"):
-                    if st.button("Duyệt & Sang Bước 3 ➔", type="primary", use_container_width=True, key="btn_approve_step2"):
+                    if st.button("Duyệt & Sang Bước 3 →", type="primary", use_container_width=True, key="btn_approve_step2"):
                         set_spinner_msg("Đang phân tích dữ liệu và tạo Báo cáo & Dashboard...")
                         st.session_state.step2_approved = True
                         st.session_state.current_step = 3
@@ -1984,18 +2075,16 @@ try:
                             for idx_s2i, s2_iss in enumerate(s2_issues):
                                 with cols_s2_iss[idx_s2i % min(len(s2_issues), 3)]:
                                     with st.container(border=True):
-                                        sev_bg = "#fef2f2" if s2_iss["severity"] == "Quan trọng" else ("#fffbeb" if s2_iss["severity"] == "Cảnh báo" else "#f8fafc")
-                                        sev_fg = "#dc2626" if s2_iss["severity"] == "Quan trọng" else ("#d97706" if s2_iss["severity"] == "Cảnh báo" else "#475569")
-                                        sev_bd = "#fecaca" if s2_iss["severity"] == "Quan trọng" else ("#fde68a" if s2_iss["severity"] == "Cảnh báo" else "#e2e8f0")
+                                        sev_fg = "#ef4444" if s2_iss["severity"] == "Quan trọng" else ("#f59e0b" if s2_iss["severity"] == "Cảnh báo" else _text_sec)
                                         st.markdown(
                                             f"<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;'>"
-                                            f"<span style='font-weight:700; color:#0f172a; font-size:0.9rem;'>{s2_iss['type']}</span>"
-                                            f"<span style='background:{sev_bg}; color:{sev_fg}; border:1px solid {sev_bd}; font-size:0.7rem; font-weight:700; padding:1px 7px; border-radius:4px; text-transform:uppercase;'>{s2_iss['severity']}</span>"
+                                            f"<span style='font-weight:500; color:{_text_pri}; font-size:0.88rem;'>{s2_iss['type']}</span>"
+                                            f"<span class='mono-meta' style='background:{_bg_elev}; color:{sev_fg}; border:1px solid {_border_hairline}; font-size:0.7rem; font-weight:500; padding:1px 6px; border-radius:4px;'>{s2_iss['severity']}</span>"
                                             f"</div>",
                                             unsafe_allow_html=True
                                         )
-                                        st.markdown(f"<div style='font-size:0.84rem; color:#475569; margin-bottom:6px;'>{s2_iss['desc']}</div>", unsafe_allow_html=True)
-                                        st.markdown(f"<div style='font-size:0.82rem; color:#0369a1; background:#f0f9ff; padding:6px 8px; border-radius:6px; margin-bottom:8px;'><b>Đề xuất xử lý:</b> {s2_iss['suggested_fix']}</div>", unsafe_allow_html=True)
+                                        st.markdown(f"<div style='font-size:0.83rem; color:{_text_sec}; margin-bottom:6px;'>{s2_iss['desc']}</div>", unsafe_allow_html=True)
+                                        st.markdown(f"<div style='font-size:0.8rem; color:{_text_pri}; background:{_bg_elev}; border:1px solid {_border_hairline}; padding:6px 8px; border-radius:6px; margin-bottom:8px;'><span style='color:{_accent}; font-weight:500;'>Đề xuất:</span> {s2_iss['suggested_fix']}</div>", unsafe_allow_html=True)
                                         is_checked = st.checkbox(
                                             f"Cho phép: {s2_iss['action_label']}",
                                             value=(s2_iss["id"] in st.session_state[f"{s2_issue_key_prefix}_selected"]),
@@ -2447,21 +2536,596 @@ try:
         df_scores = st.session_state.dashboard_scores_df.copy()
 
         import importlib
+        import re as _re_mod
         import utils.export_helper as _exp_mod
         importlib.reload(_exp_mod)
-        from utils.export_helper import build_unified_report_dashboard_html
         build_docx_bytes = getattr(_exp_mod, "build_docx_bytes", None)
         build_pdf_bytes = getattr(_exp_mod, "build_pdf_bytes", None)
         import streamlit.components.v1 as components
 
+        def _md_to_unslop_html(md_text: str) -> str:
+            lines = str(md_text or "").split("\n")
+            out = []
+            for line in lines:
+                s = line.strip()
+                if not s:
+                    continue
+                if s.startswith("### "):
+                    out.append(f"<h3>{s[4:]}</h3>")
+                elif s.startswith("## "):
+                    out.append(f"<h2>{s[3:]}</h2>")
+                elif s.startswith("# "):
+                    out.append(f"<h1>{s[2:]}</h1>")
+                elif s.startswith("- "):
+                    content_li = _re_mod.sub(r"\*\*(.*?)\*\*", r"<strong>\1</strong>", s[2:])
+                    out.append(f"<li>{content_li}</li>")
+                else:
+                    content_p = _re_mod.sub(r"\*\*(.*?)\*\*", r"<strong>\1</strong>", line)
+                    out.append(f"<p>{content_p}</p>")
+            return "\n".join(out)
+
+        def _render_unslop_dashboard_html(title: str, df_sc: pd.DataFrame, report_md: str, plan_md: str, total_records: int = 0) -> str:
+            clean_title = _re_mod.sub(r"^[📊🏢📈📋\s]+", "", str(title)).strip() or "Báo cáo phân tích dữ liệu & Dashboard"
+            top2_list = df_sc["Địa bàn"].astype(str).head(2).tolist()
+            best_region = str(df_sc.iloc[0]["Địa bàn"]) if len(df_sc) > 0 else "N/A"
+            best_score = float(df_sc.iloc[0]["Điểm tổng hợp"]) if len(df_sc) > 0 else 0.0
+            avg_score = round(float(df_sc["Điểm tổng hợp"].mean()), 2) if len(df_sc) > 0 else 0.0
+            second_region = str(df_sc.iloc[1]["Địa bàn"]) if len(df_sc) > 1 else best_region
+            second_score = float(df_sc.iloc[1]["Điểm tổng hợp"]) if len(df_sc) > 1 else best_score
+            lead_gap = round(best_score - avg_score, 2)
+            records_label = f"{total_records:,} bản ghi" if total_records > 0 else f"{len(df_sc)} nhóm"
+
+            df_chart = df_sc.head(7).copy()
+            palette = ["#3b82f6", "#60a5fa", "#10b981", "#f59e0b", "#8b5cf6", "#06b6d4", "#ec4899"]
+
+            vbars_items = ""
+            for idx, row in df_chart.iterrows():
+                r_name = str(row["Địa bàn"])
+                sc = float(row["Điểm tổng hợp"])
+                bar_h = max(18, min(168, int(round((sc / 10.0) * 168))))
+                bar_c = _accent if idx == 0 else (palette[1] if idx == 1 else (_text_mut if _is_dark else "#94a3b8"))
+                vbars_items += f"""
+                <div class="vbar-col">
+                    <div class="vbar-score">{sc:.2f}</div>
+                    <div class="vbar-track">
+                        <div class="vbar-fill" style="height:{bar_h}px; background:{bar_c};"></div>
+                    </div>
+                    <div class="vbar-label">{r_name}</div>
+                </div>
+                """
+
+            total_sc_sum = float(df_chart["Điểm tổng hợp"].sum()) or 1.0
+            conic_parts = []
+            legend_items = ""
+            acc_pct = 0.0
+            for idx, row in df_chart.iterrows():
+                r_name = str(row["Địa bàn"])
+                sc = float(row["Điểm tổng hợp"])
+                share = (sc / total_sc_sum) * 100.0
+                next_pct = min(100.0, acc_pct + share)
+                c = palette[idx % len(palette)]
+                conic_parts.append(f"{c} {acc_pct:.2f}% {next_pct:.2f}%")
+                acc_pct = next_pct
+                legend_items += f"""
+                <div class="donut-leg-item">
+                    <span class="donut-dot" style="background:{c};"></span>
+                    <span>{r_name}</span>
+                    <span class="donut-pct">{share:.1f}%</span>
+                </div>
+                """
+            conic_str = ", ".join(conic_parts) if conic_parts else f"{_accent} 0% 100%"
+
+            crit_cols = [c for c in ["Quy mô (25%)", "Nhu cầu WMS (25%)", "Khả thi On-site (25%)", "Cạnh tranh (15%)", "Tăng trưởng (10%)"] if c in df_sc.columns]
+            crit_display_names = {
+                "Quy mô (25%)": "Quy mô dữ liệu (25%)",
+                "Nhu cầu WMS (25%)": "Hiệu suất / Nhu cầu (25%)",
+                "Khả thi On-site (25%)": "Độ đầy đủ & Khả thi (25%)",
+                "Cạnh tranh (15%)": "Dư địa cạnh tranh (15%)",
+                "Tăng trưởng (10%)": "Tiềm năng tăng trưởng (10%)"
+            }
+            hbar_items = ""
+            crit_averages = []
+            for idx, col_c in enumerate(crit_cols):
+                c_val = round(float(df_sc[col_c].astype(float).mean()), 2) if len(df_sc) > 0 else 0.0
+                crit_averages.append((crit_display_names.get(col_c, col_c), c_val))
+                c_pct = max(8, min(100, round(c_val * 10, 1)))
+                c_label = crit_display_names.get(col_c, col_c)
+                hbar_items += f"""
+                <div class="hbar-row">
+                    <div class="hbar-head">
+                        <span>{c_label}</span>
+                        <span class="hbar-val">{c_val:.2f} / 10</span>
+                    </div>
+                    <div class="hbar-track">
+                        <div class="hbar-fill" style="width:{c_pct}%; background:{_accent};"></div>
+                    </div>
+                </div>
+                """
+
+            strongest_crit = max(crit_averages, key=lambda x: x[1]) if crit_averages else ("Chỉ số tổng hợp", avg_score)
+            weakest_crit = min(crit_averages, key=lambda x: x[1]) if crit_averages else ("Chỉ số phụ", avg_score)
+
+            ranking_bars_html = ""
+            for idx, row in df_sc.head(8).iterrows():
+                reg_name = str(row["Địa bàn"])
+                sc = float(row["Điểm tổng hợp"])
+                pct = min(100, max(5, round(sc * 10, 1)))
+                b_txt = f"0{idx+1}" if idx < 9 else f"{idx+1}"
+                ranking_bars_html += f"""
+                <div class="rank-row">
+                    <div class="rank-top">
+                        <span><span class="rank-tag">{b_txt}</span>{reg_name}</span>
+                        <span class="rank-val">{sc:.2f} / 10</span>
+                    </div>
+                    <div class="rank-track"><div class="rank-fill" style="width:{pct}%;"></div></div>
+                </div>
+                """
+
+            df_display = df_sc.rename(columns={"Nhu cầu WMS (25%)": "Hiệu suất (25%)", "Khả thi On-site (25%)": "Khả thi (25%)"})
+            scores_html_table = df_display.to_html(index=False, classes="styled-table")
+            report_body = _md_to_unslop_html(report_md)
+            plan_body = _md_to_unslop_html(plan_md)
+
+            return f"""<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>{clean_title}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {{ box-sizing: border-box; }}
+        body {{
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: {_bg_page};
+            color: {_text_pri};
+            padding: 18px;
+            margin: 0;
+            font-size: 13.5px;
+            line-height: 1.65;
+            -webkit-font-smoothing: antialiased;
+        }}
+        .mono, .kpi-val, .vbar-score, .donut-big, .donut-pct, .hbar-val, .rank-val, .rank-tag, .styled-table td {{
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            font-variant-numeric: tabular-nums;
+        }}
+        .exec-wrap {{
+            max-width: 1220px;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }}
+        .exec-header {{
+            background: {_bg_deep};
+            border: 1px solid {_border_hairline};
+            border-radius: 14px;
+            padding: 18px 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }}
+        .exec-header h1 {{
+            margin: 0;
+            font-size: 1.15rem;
+            color: {_text_pri};
+            font-weight: 500;
+            letter-spacing: -0.02em;
+        }}
+        .exec-header .sub {{
+            font-size: 0.82rem;
+            color: {_text_sec};
+            margin-top: 3px;
+        }}
+        .pill {{
+            font-family: 'JetBrains Mono', monospace;
+            background: {_bg_elev};
+            color: {_text_sec};
+            border: 1px solid {_border_hairline};
+            border-radius: 5px;
+            padding: 2px 8px;
+            font-size: 0.72rem;
+            font-weight: 500;
+        }}
+        .kpi-grid {{
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+        }}
+        .kpi-card {{
+            background: {_bg_card};
+            border: 1px solid {_border_hairline};
+            border-radius: 14px;
+            padding: 15px 18px;
+        }}
+        .kpi-label {{
+            font-size: 0.76rem;
+            color: {_text_mut};
+            font-weight: 400;
+        }}
+        .kpi-val {{
+            font-size: 1.25rem;
+            color: {_text_pri};
+            font-weight: 500;
+            margin-top: 6px;
+            letter-spacing: -0.02em;
+        }}
+        .kpi-sub {{
+            font-size: 0.75rem;
+            color: {_accent};
+            margin-top: 4px;
+        }}
+        .grid-main-top {{
+            display: grid;
+            grid-template-columns: 1.35fr 1fr;
+            gap: 14px;
+        }}
+        .grid-two {{
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }}
+        .card {{
+            background: {_bg_card};
+            border: 1px solid {_border_hairline};
+            border-radius: 14px;
+            padding: 18px 20px;
+        }}
+        .card-title {{
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: {_text_pri};
+            margin: 0 0 14px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }}
+        .vbar-chart {{
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            gap: 10px;
+            padding: 16px 10px 10px 10px;
+            min-height: 225px;
+            background: {_bg_elev};
+            border: 1px solid {_border_hairline};
+            border-radius: 10px;
+        }}
+        .vbar-col {{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            min-width: 44px;
+        }}
+        .vbar-score {{
+            font-size: 0.75rem;
+            color: {_text_pri};
+            margin-bottom: 6px;
+        }}
+        .vbar-track {{
+            height: 168px;
+            width: 100%;
+            max-width: 36px;
+            background: {_bg_deep};
+            border-radius: 5px;
+            display: flex;
+            align-items: flex-end;
+            overflow: hidden;
+        }}
+        .vbar-fill {{
+            width: 100%;
+            border-radius: 5px 5px 0 0;
+        }}
+        .vbar-label {{
+            margin-top: 8px;
+            font-size: 0.75rem;
+            color: {_text_sec};
+            text-align: center;
+        }}
+        .donut-wrap {{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            min-height: 225px;
+        }}
+        .donut-ring {{
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }}
+        .donut-hole {{
+            width: 94px;
+            height: 94px;
+            border-radius: 50%;
+            background: {_bg_card};
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }}
+        .donut-big {{
+            font-size: 1rem;
+            font-weight: 500;
+            color: {_text_pri};
+        }}
+        .donut-small {{
+            font-size: 0.7rem;
+            color: {_text_mut};
+        }}
+        .donut-legend {{
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px 12px;
+        }}
+        .donut-leg-item {{
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            color: {_text_sec};
+        }}
+        .donut-dot {{
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+            display: inline-block;
+        }}
+        .donut-pct {{
+            color: {_text_pri};
+            font-weight: 500;
+        }}
+        .hbar-list {{
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }}
+        .hbar-head {{
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: {_text_sec};
+            margin-bottom: 4px;
+        }}
+        .hbar-val {{
+            color: {_text_pri};
+        }}
+        .hbar-track {{
+            width: 100%;
+            height: 6px;
+            background: {_bg_elev};
+            border-radius: 3px;
+            overflow: hidden;
+        }}
+        .hbar-fill {{
+            height: 100%;
+            border-radius: 3px;
+        }}
+        .insight-strip {{
+            background: {_bg_card};
+            border: 1px solid {_border_hairline};
+            border-left: 2px solid {_accent};
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 0.85rem;
+            color: {_text_sec};
+        }}
+        .insight-strip strong {{ color: {_text_pri}; font-weight: 500; }}
+        .rank-row {{ margin-bottom: 10px; }}
+        .rank-top {{
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.82rem;
+            color: {_text_pri};
+            margin-bottom: 4px;
+        }}
+        .rank-tag {{
+            display: inline-block;
+            background: {_bg_elev};
+            color: {_accent};
+            border: 1px solid {_border_hairline};
+            font-size: 0.68rem;
+            padding: 1px 5px;
+            border-radius: 4px;
+            margin-right: 8px;
+        }}
+        .rank-track {{
+            width: 100%;
+            height: 6px;
+            background: {_bg_elev};
+            border-radius: 3px;
+            overflow: hidden;
+        }}
+        .rank-fill {{
+            height: 100%;
+            background: {_accent};
+            border-radius: 3px;
+        }}
+        .insights-3col {{
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }}
+        .insight-box {{
+            background: {_bg_elev};
+            border: 1px solid {_border_hairline};
+            border-radius: 10px;
+            padding: 14px;
+        }}
+        .insight-box .tag {{
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.68rem;
+            color: {_accent};
+            margin-bottom: 4px;
+        }}
+        .insight-box h4 {{
+            margin: 0 0 5px 0;
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: {_text_pri};
+        }}
+        .insight-box p {{
+            margin: 0;
+            font-size: 0.8rem;
+            color: {_text_sec};
+        }}
+        .styled-table {{
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.78rem;
+        }}
+        .styled-table th, .styled-table td {{
+            border-bottom: 1px solid {_border_hairline};
+            padding: 8px 10px;
+            text-align: left;
+        }}
+        .styled-table th {{
+            background: {_bg_elev};
+            color: {_text_sec};
+            font-weight: 500;
+        }}
+        .report-detail {{
+            background: {_bg_elev};
+            border: 1px solid {_border_hairline};
+            border-radius: 10px;
+            padding: 16px 20px;
+            font-size: 0.86rem;
+            color: {_text_sec};
+        }}
+        .report-detail h1, .report-detail h2, .report-detail h3 {{
+            color: {_text_pri};
+            font-size: 0.96rem;
+            font-weight: 500;
+            margin-top: 12px;
+            margin-bottom: 6px;
+        }}
+        .report-detail strong {{ color: {_text_pri}; font-weight: 500; }}
+        @media (max-width: 900px) {{
+            .kpi-grid, .grid-main-top, .grid-two, .insights-3col {{ grid-template-columns: 1fr; }}
+        }}
+    </style>
+</head>
+<body>
+    <div class="exec-wrap">
+        <div class="exec-header">
+            <div>
+                <h1>{clean_title}</h1>
+                <div class="sub">Tổng hợp phân tích đa chiều &amp; nhận xét trực tiếp từ dữ liệu ({records_label})</div>
+            </div>
+            <span class="pill">unslop · report</span>
+        </div>
+
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">Số nhóm đánh giá</div>
+                <div class="kpi-val">{len(df_sc)}</div>
+                <div class="kpi-sub">Chuẩn hóa từ dữ liệu gốc</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Dẫn đầu bảng điểm</div>
+                <div class="kpi-val">{best_region}</div>
+                <div class="kpi-sub">{best_score:.2f} / 10 điểm</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Top ưu tiên</div>
+                <div class="kpi-val">{", ".join(top2_list)}</div>
+                <div class="kpi-sub">Nhóm đề xuất trọng tâm</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Điểm trung bình</div>
+                <div class="kpi-val">{avg_score:.2f} / 10</div>
+                <div class="kpi-sub">Mặt bằng chung toàn tệp</div>
+            </div>
+        </div>
+
+        <div class="grid-main-top">
+            <div class="card">
+                <div class="card-title"><span>Xếp hạng điểm tổng hợp</span><span class="pill">scale 10</span></div>
+                <div class="vbar-chart">{vbars_items}</div>
+            </div>
+            <div class="card">
+                <div class="card-title"><span>Tỷ trọng điểm số</span><span class="pill">share</span></div>
+                <div class="donut-wrap">
+                    <div class="donut-ring" style="background: conic-gradient({conic_str});">
+                        <div class="donut-hole">
+                            <div class="donut-big">100%</div>
+                            <div class="donut-small">{len(df_sc)} nhóm</div>
+                        </div>
+                    </div>
+                    <div class="donut-legend">{legend_items}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="insight-strip">
+            <strong>Điểm nhấn phân tích:</strong> Nhóm <strong>{best_region}</strong> dẫn đầu với <strong>{best_score:.2f}/10 điểm</strong> (vượt trung bình <strong>+{lead_gap:.2f}</strong> điểm), xếp tiếp theo là <strong>{second_region}</strong> ({second_score:.2f}/10 điểm).
+        </div>
+
+        <div class="grid-two">
+            <div class="card">
+                <div class="card-title"><span>Điểm trung bình 5 tiêu chí</span><span class="pill">criteria</span></div>
+                <div class="hbar-list">{hbar_items}</div>
+            </div>
+            <div class="card">
+                <div class="card-title"><span>Bảng xếp hạng nổi bật</span><span class="pill">top {min(len(df_sc), 8)}</span></div>
+                {ranking_bars_html}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title"><span>Bảng điểm định lượng chi tiết</span><span class="pill">tabular-nums</span></div>
+            <div style="overflow-x:auto;">{scores_html_table}</div>
+        </div>
+
+        <div class="card">
+            <div class="card-title"><span>Nhận xét &amp; đề xuất trọng tâm</span><span class="pill">insights</span></div>
+            <div class="insights-3col">
+                <div class="insight-box">
+                    <div class="tag">01 · lead group</div>
+                    <h4>Ưu tiên trọng tâm {best_region}</h4>
+                    <p>Đạt {best_score:.2f}/10 điểm — cao hơn trung bình {lead_gap:.2f} điểm nhờ các chỉ số định lượng vượt trội.</p>
+                </div>
+                <div class="insight-box">
+                    <div class="tag">02 · key strength</div>
+                    <h4>Nổi bật ở {strongest_crit[0]}</h4>
+                    <p>Đạt trung bình {strongest_crit[1]:.2f}/10 trên toàn bộ dữ liệu; nên tiếp tục duy trì tại {second_region}.</p>
+                </div>
+                <div class="insight-box">
+                    <div class="tag">03 · bottleneck</div>
+                    <h4>Lưu ý {weakest_crit[0]}</h4>
+                    <p>Trung bình {weakest_crit[1]:.2f}/10 — là điểm nghẽn cần theo dõi thêm trong kế hoạch thực thi.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title"><span>Nội dung phân tích &amp; kế hoạch hành động</span><span class="pill">narrative</span></div>
+            <div class="report-detail">
+                {report_body}
+                <hr style="border:none; border-top:1px solid {_border_hairline}; margin:14px 0;">
+                {plan_body}
+            </div>
+        </div>
+    </div>
+</body>
+</html>"""
+
         # ============================================================
         # BÁO CÁO TỔNG HỢP & DASHBOARD TRỰC QUAN
         # ============================================================
-        st.markdown("""
+        st.markdown(f"""
         <div style="margin-bottom:0.75rem;">
-            <div style="background:#eff6ff; border:1px solid #bfdbfe; border-left:4px solid #2563eb; padding:0.45rem 1rem; border-radius:8px; display:inline-flex; align-items:center; gap:8px;">
-                <span style="font-weight:800; color:#1e3a8a; font-size:1.25rem; letter-spacing:-0.02em;">
-                    BƯỚC 3: BÁO CÁO TỔNG HỢP &amp; DASHBOARD ĐA CHIỀU
+            <div style="background:{_bg_card}; border:1px solid {_border_hairline}; border-left:2px solid {_accent}; padding:0.45rem 0.95rem; border-radius:8px; display:inline-flex; align-items:center; gap:10px;">
+                <span class="mono-meta" style="font-size:0.76rem; color:{_accent}; background:{_bg_elev}; padding:2px 6px; border-radius:4px; border:1px solid {_border_hairline};">03</span>
+                <span style="font-weight:500; color:{_text_pri}; font-size:1.15rem; letter-spacing:-0.015em;">
+                    Bước 3 · Báo cáo tổng hợp và Dashboard đa chiều
                 </span>
             </div>
         </div>
@@ -2471,7 +3135,8 @@ try:
         st.session_state.pending_spinner_msg = ""
         _total_rec = sum(len(df) for df in orch.data_agent.raw_dataframes.values())
         _uni_cache_key = (
-            "v5_unslop_clean",
+            "v6_unslop_graphite",
+            st.session_state.unslop_theme,
             st.session_state.dashboard_title,
             st.session_state.editable_report,
             st.session_state.editable_plan,
@@ -2480,17 +3145,12 @@ try:
         )
         if st.session_state.get("_uni_export_key") != _uni_cache_key:
             with st.spinner(_msg_uni):
-                st.session_state._uni_html_cached = build_unified_report_dashboard_html(
+                st.session_state._uni_html_cached = _render_unslop_dashboard_html(
                     title=st.session_state.dashboard_title,
-                    df_scores=df_scores,
-                    bar_html="",
-                    donut_html="",
-                    radar_html="",
-                    grouped_html="",
+                    df_sc=df_scores,
                     report_md=st.session_state.editable_report,
                     plan_md=st.session_state.editable_plan,
-                    total_records=_total_rec,
-                    total_files=len(orch.data_agent.raw_dataframes)
+                    total_records=_total_rec
                 )
                 try:
                     st.session_state._uni_docx_cached = build_docx_bytes(
@@ -2500,7 +3160,7 @@ try:
                         plan_md=st.session_state.editable_plan,
                         chart_keys=["bar", "radar", "grouped"],
                         mode="report"
-                    )
+                    ) if build_docx_bytes else None
                 except Exception:
                     st.session_state._uni_docx_cached = None
                 try:
@@ -2511,7 +3171,7 @@ try:
                         plan_md=st.session_state.editable_plan,
                         chart_keys=["bar", "radar", "grouped"],
                         mode="report"
-                    )
+                    ) if build_pdf_bytes else None
                 except Exception:
                     st.session_state._uni_pdf_cached = None
                 st.session_state._uni_export_key = _uni_cache_key
