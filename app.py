@@ -522,16 +522,19 @@ st.markdown(f"""
         transform: translateY(-1px) !important;
     }}
 
-    /* Định dạng nhãn và chữ bên trong ô Upload và Google Sheet hoàn toàn đồng nhất */
-    div[data-testid="stFileUploader"] label p,
-    div[data-testid="stFileUploader"] label span,
-    .gsheet-hint-text {{
-        font-family: 'Plus Jakarta Sans', sans-serif !important;
+    /* Ẩn hoàn toàn văn bản phụ (200MB per file, bullet, v.v.) bên trong ô Upload */
+    div[data-testid="stFileUploader"] small,
+    div[data-testid="stFileUploader"] [data-testid="stFileUploaderDropzoneInstructions"] > div > small,
+    div[data-testid="stFileUploader"] [data-testid="stFileUploaderDropzoneInstructions"] span:last-child {{
+        display: none !important;
+        font-size: 0 !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+    }}
+    div[data-testid="stFileUploader"] [data-testid="stFileUploaderDropzoneInstructions"] {{
         font-size: 0.95rem !important;
         font-weight: 700 !important;
         color: #0f172a !important;
-        line-height: 1.4 !important;
-        margin: 0 !important;
     }}
 
     /* Hộp thông báo chờ ở giữa màn hình */
@@ -1321,11 +1324,14 @@ try:
                     st.rerun()
         else:
             st.markdown("""
-            <div style="margin-bottom:1.2rem; padding-bottom:0.6rem; border-bottom:3px solid #2563eb; display:inline-block;">
-                <h2 style="font-size:2.2rem; font-weight:800; color:#0f172a; margin:0 0 6px 0; letter-spacing:-0.03em; line-height:1.2;">
-                    🚀 Bước 1: Nhập dữ liệu
-                </h2>
-                <div style="font-size:1rem; color:#475569; font-weight:600;">
+            <div style="margin-bottom:1.5rem; background:linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-left:6px solid #2563eb; padding:1.2rem 1.6rem; border-radius:14px; box-shadow:0 6px 20px rgba(37,99,235,0.08);">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:1.8rem;">🚀</span>
+                    <h1 style="font-size:2.4rem; font-weight:900; color:#1e3a8a; margin:0; letter-spacing:-0.03em; line-height:1.15;">
+                        BƯỚC 1: NHẬP DỮ LIỆU
+                    </h1>
+                </div>
+                <div style="font-size:1.05rem; color:#3b82f6; font-weight:700; margin-top:6px;">
                     Tải lên tệp CSV / Excel hoặc dán đường dẫn Google Sheet công khai để bắt đầu.
                 </div>
             </div>
@@ -1375,8 +1381,8 @@ try:
                     <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; font-weight:700; color:#1e3a8a; font-size:1.02rem;">
                         <span style="color:#10b981; font-size:1.15rem;">🔗</span> Đường dẫn Google Sheet
                     </div>
-                    <div class="gsheet-hint-text" style="margin-bottom:8px;">
-                        ● Đảm bảo liên kết đang ở chế độ xem công khai.
+                    <div class="gsheet-hint-text" style="font-family:'Plus Jakarta Sans',sans-serif; font-size:0.95rem; font-weight:700; color:#0f172a; margin-bottom:8px; line-height:1.4;">
+                        Đảm bảo liên kết đang ở chế độ xem công khai.
                     </div>
                     """, unsafe_allow_html=True)
                     with st.container(key="step1_gsheet_inner_box"):
@@ -1408,10 +1414,13 @@ try:
             col_b_head, col_b_btn = st.columns([2.5, 1.5])
             with col_b_head:
                 st.markdown("""
-                <div style="display:flex; align-items:center; gap:10px; font-weight:800; color:#0f172a; font-size:1.6rem; letter-spacing:-0.02em; padding-bottom:4px; border-bottom:2.5px solid #3b82f6; display:inline-flex;">
-                    <span style="color:#2563eb; font-size:1.7rem;">📄</span> Bối cảnh doanh nghiệp
+                <div style="background:linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-left:5px solid #16a34a; padding:0.6rem 1.2rem; border-radius:10px; display:inline-flex; align-items:center; gap:10px; margin-bottom:8px;">
+                    <span style="font-size:1.5rem;">📄</span>
+                    <span style="font-weight:900; color:#14532d; font-size:1.6rem; letter-spacing:-0.02em;">
+                        BỐI CẢNH DOANH NGHIỆP
+                    </span>
                 </div>
-                <div style="font-size:0.95rem; color:#475569; margin-top:6px; margin-bottom:14px; font-weight:600;">
+                <div style="font-size:0.95rem; color:#475569; margin-top:2px; margin-bottom:14px; font-weight:600;">
                     Mô tả ngắn gọn về mô hình kinh doanh và mục tiêu phân tích.
                 </div>
                 """, unsafe_allow_html=True)
