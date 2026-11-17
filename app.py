@@ -1233,6 +1233,20 @@ with st.sidebar:
             border-right: 1px solid #dbeafe !important;
             z-index: 999999 !important;
             position: relative !important;
+            width: 260px !important;
+            min-width: 260px !important;
+            max-width: 260px !important;
+            transform: none !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+        section[data-testid="stSidebar"] button[kind="primary"] {
+            background: #2563eb !important;
+            color: #ffffff !important;
+            border: none !important;
+        }
+        section[data-testid="stSidebar"] button[kind="primary"] p {
+            color: #ffffff !important;
         }
         [data-testid="stMain"], .main {
             z-index: 1 !important;
