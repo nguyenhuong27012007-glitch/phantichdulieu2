@@ -3022,9 +3022,14 @@ try:
                 st.session_state._uni_html_cached = build_unified_report_dashboard_html(
                     title=st.session_state.dashboard_title,
                     df_scores=df_scores,
+                    bar_html="",
+                    donut_html="",
+                    radar_html="",
+                    grouped_html="",
                     report_md=st.session_state.editable_report,
                     plan_md=st.session_state.editable_plan,
-                    total_records=_total_rec
+                    total_records=_total_rec,
+                    total_files=len(orch.data_agent.raw_dataframes)
                 )
                 try:
                     st.session_state._uni_docx_cached = build_docx_bytes(
