@@ -159,12 +159,6 @@ st.markdown(f"""
                     linear-gradient(180deg, #eff6ff 0%, #f4f8ff 50%, #f8fafc 100%) !important;
     }}
 
-    /* Thanh bên trái (Sidebar) tông xanh pastel dịu */
-    section[data-testid="stSidebar"] {{
-        background: linear-gradient(180deg, #eff6ff 0%, #e6f0ff 100%) !important;
-        border-right: 1px solid #dbeafe !important;
-    }}
-
     /* Hiệu ứng chuyển trang mượt mà */
     @keyframes pageTransitionIn {{
         0% {{ opacity: 0; transform: translateY(6px); }}
@@ -230,12 +224,6 @@ st.markdown(f"""
     .st-key-human_approval_top_card,
     .st-key-zone_step3_preview {{
         animation: pageTransitionIn 0.28s ease-out both !important;
-    }}
-
-    /* Sidebar thanh lịch */
-    section[data-testid="stSidebar"] {{
-        background: #f8fbff !important;
-        border-right: 1px solid #dbeafe !important;
     }}
 
     /* Thẻ khu vực tối giản, không nhảy giật khi di chuột */
@@ -552,10 +540,10 @@ st.markdown(f"""
         top: 0 !important;
         left: 0 !important;
         height: 100vh !important;
-        width: 72px !important;
-        min-width: 72px !important;
-        max-width: 72px !important;
-        background: #ffffff !important;
+        width: 64px !important;
+        min-width: 64px !important;
+        max-width: 64px !important;
+        background: #f8fbff !important;
         border-right: 1.5px solid #dbeafe !important;
         box-shadow: 4px 0 20px rgba(37, 99, 235, 0.08) !important;
         transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
@@ -565,7 +553,7 @@ st.markdown(f"""
         overflow-x: hidden !important;
         overflow-y: hidden !important;
         z-index: 99999 !important;
-        transform: none !important;
+        transform: translate3d(0, 0, 0) !important;
         visibility: visible !important;
     }}
 
@@ -582,15 +570,17 @@ st.markdown(f"""
     /* Luôn hiển thị sidebar, không bị ẩn bởi collapse state của Streamlit */
     section[data-testid="stSidebar"][aria-expanded="false"] {{
         margin-left: 0 !important;
-        transform: none !important;
+        transform: translate3d(0, 0, 0) !important;
         display: block !important;
-        width: 72px !important;
+        width: 64px !important;
+        min-width: 64px !important;
+        max-width: 64px !important;
     }}
 
     /* Bố trí nội dung bên trong sidebar */
     section[data-testid="stSidebar"] > div:first-child {{
         width: 290px !important;
-        padding: 1.2rem 0.5rem !important;
+        padding: 1.2rem 0.4rem !important;
         box-sizing: border-box !important;
     }}
 
@@ -608,13 +598,13 @@ st.markdown(f"""
         text-align: left !important;
         justify-content: flex-start !important;
         border-radius: 12px !important;
-        padding: 0.65rem 0.6rem !important;
+        padding: 0.65rem 0.5rem !important;
         border: 1px solid transparent !important;
         background: transparent !important;
         transition: all 0.2s ease !important;
         color: #334155 !important;
         font-weight: 600 !important;
-        font-size: 0.95rem !important;
+        font-size: 1.15rem !important;
         width: 100% !important;
     }}
     section[data-testid="stSidebar"] .stButton > button:hover {{
@@ -623,11 +613,17 @@ st.markdown(f"""
         border-color: #bae6fd !important;
     }}
 
-    /* Giữ khoảng cách lề trái cho nội dung chính không bị che bởi thanh icon 72px */
-    .main, [data-testid="stMain"] {{
-        margin-left: 72px !important;
-        transition: margin-left 0.3s ease !important;
+    /* Cột biểu tượng dọc nổi bật bo góc capsule giống thiết kế mẫu */
+    .st-sidebar-pill-wrap {{
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
     }}
+
+    /* Giữ khoảng cách lề trái cho nội dung chính không bị che bởi thanh icon */
+    .main, [data-testid="stMain"] {{
+        margin-left: 64px !important;
+        transition: margin-left 0.3s ease !important;
     }}
 </style>
 """, unsafe_allow_html=True)
