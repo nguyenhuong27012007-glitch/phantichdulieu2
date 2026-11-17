@@ -152,11 +152,12 @@ st.markdown(f"""
         line-height: 1.5 !important;
     }}
 
-    /* Nền Xanh Dương Pastel hiện đại, có chiều sâu */
-    .stApp {{
+    /* Nền toàn trang web đồng bộ màu xanh pastel giống trang mở đầu (#F4F7FB) */
+    html, body, .stApp {{
+        background-color: #F4F7FB !important;
         background: radial-gradient(circle at 12% 10%, #dbeafe 0%, transparent 40%),
                     radial-gradient(circle at 88% 15%, #e0f2fe 0%, transparent 38%),
-                    linear-gradient(180deg, #eff6ff 0%, #f4f8ff 50%, #f8fafc 100%) !important;
+                    linear-gradient(180deg, #F4F7FB 0%, #edf3fa 50%, #e6eff9 100%) !important;
     }}
 
     /* Hiệu ứng chuyển trang mượt mà */
@@ -165,17 +166,16 @@ st.markdown(f"""
         100% {{ opacity: 1; transform: translateY(0); }}
     }}
 
-    /* Khung chính — Rộng toàn màn hình + viền nhấn xanh */
+    /* Khung chính — Nền xanh pastel mềm mượt không bị hộp trắng bao bọc */
     .main .block-container,
     [data-testid="stMainBlockContainer"] {{
-        background: rgba(255, 255, 255, 0.96) !important;
-        border-radius: 22px !important;
-        padding: 2rem 2.2rem 2rem 2.2rem !important;
-        margin: 0.75rem auto !important;
+        background: transparent !important;
+        border: none !important;
+        border-top: none !important;
+        box-shadow: none !important;
+        padding: 1.5rem 1.8rem 2.5rem 1.8rem !important;
+        margin: 0 auto !important;
         max-width: 98% !important;
-        box-shadow: 0 12px 36px rgba(37, 99, 235, 0.07), 0 2px 8px rgba(15, 23, 42, 0.03) !important;
-        border: 1px solid #dbeafe !important;
-        border-top: 4px solid #3b82f6 !important;
     }}
 
     /* Khung thẻ con (bordered container) tinh tế */
