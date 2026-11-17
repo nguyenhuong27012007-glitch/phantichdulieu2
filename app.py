@@ -880,13 +880,19 @@ try:
     <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-200 rounded-full mix-blend-multiply filter blur-[120px] opacity-60 z-0 pointer-events-none"></div>
     <div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-200 rounded-full mix-blend-multiply filter blur-[120px] opacity-60 z-0 pointer-events-none"></div>
 
-    <!-- Ngôi sao 8 cánh đè dưới Tiêu đề (Cột Trái) -->
-    <svg class="absolute top-[10%] left-[-5%] w-[420px] h-[420px] text-blue-300 opacity-30 z-0 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Ngôi sao 8 cánh trang trí ở các khoảng trống (theo yêu cầu) -->
+    <!-- 1. Vị trí trống phía trên ở giữa / giữa Navbar và Tiêu đề & Thẻ -->
+    <svg class="absolute top-[2%] left-[32%] w-[260px] h-[260px] text-blue-300 opacity-25 z-0 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 2v20M17 5l-10 14M22 12H2M19 19L5 5"/>
     </svg>
-    
-    <!-- Ngôi sao 8 cánh đè dưới 3 Thẻ Quy trình (Cột Phải) -->
-    <svg class="absolute top-[12%] right-[2%] w-[480px] h-[480px] text-blue-300 opacity-30 z-0 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+
+    <!-- 2. Vị trí trống ở giữa nút Bắt đầu và Thẻ quy trình số 1 -->
+    <svg class="absolute top-[44%] left-[38%] w-[220px] h-[220px] text-blue-300 opacity-25 z-0 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2v20M17 5l-10 14M22 12H2M19 19L5 5"/>
+    </svg>
+
+    <!-- 3. Vị trí trống phía dưới cụm thẻ quy trình -->
+    <svg class="absolute bottom-[3%] left-[54%] w-[260px] h-[260px] text-blue-300 opacity-25 z-0 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 2v20M17 5l-10 14M22 12H2M19 19L5 5"/>
     </svg>
 
