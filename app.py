@@ -133,12 +133,13 @@ def detect_data_issues(df: pd.DataFrame, filename: str = "Tệp dữ liệu") ->
     return issues
 
 
-def apply_data_issue_fixes(df: pd.DataFrame, selected_issue_ids: list):
-    """Áp dụng các biện pháp sửa lỗi dữ liệu do người dùng lựa chọn và phê duyệt."""
+def apply_data_issue_fixes(df: pd.DataFrame, selected_issue_ids: list, custom_instructions: dict = None):
+    """Áp dụng các biện pháp sửa lỗi dữ liệu do người dùng lựa chọn, tùy chỉnh hướng sửa và phê duyệt."""
     if df is None or df.empty or not selected_issue_ids:
         return df, []
     df_fixed = df.copy()
     report = []
+    instr_map = custom_instructions or {}
 
     if "empty_rows" in selected_issue_ids:
         before_r = len(df_fixed)
@@ -155,11 +156,14 @@ def apply_data_issue_fixes(df: pd.DataFrame, selected_issue_ids: list):
             report.append(f"Đã loại bỏ {diff_c:,} cột hoàn toàn trống.")
 
     if "duplicate_rows" in selected_issue_ids:
+        ins_dup = str(instr_map.get("duplicate_rows", "")).lower()
+        keep_mode = "last" if ("cuối" in ins_dup or "last" in ins_dup) else "first"
         before_d = len(df_fixed)
-        df_fixed = df_fixed.drop_duplicates(keep="first")
+        df_fixed = df_fixed.drop_duplicates(keep=keep_mode)
         diff_d = before_d - len(df_fixed)
         if diff_d > 0:
-            report.append(f"Đã loại bỏ {diff_d:,} dòng trùng lặp (giữ bản ghi đầu tiên).")
+            keep_vn = "bản ghi cuối cùng" if keep_mode == "last" else "bản ghi đầu tiên"
+            report.append(f"Đã loại bỏ {diff_d:,} dòng trùng lặp (giữ {keep_vn}).")
 
     if "extra_whitespace" in selected_issue_ids:
         ws_count = 0
@@ -171,27 +175,63 @@ def apply_data_issue_fixes(df: pd.DataFrame, selected_issue_ids: list):
             report.append(f"Đã cắt tỉa khoảng trắng thừa trên {ws_count} cột văn bản.")
 
     if "missing_values" in selected_issue_ids:
-        filled_count = 0
-        for col in df_fixed.columns:
-            null_cnt = int(df_fixed[col].isna().sum())
-            if null_cnt > 0:
-                filled_count += null_cnt
-                if pd.api.types.is_numeric_dtype(df_fixed[col]):
-                    df_fixed[col] = df_fixed[col].fillna(0)
-                else:
-                    df_fixed[col] = df_fixed[col].fillna("Chưa xác định")
-        if filled_count > 0:
-            report.append(f"Đã điền giá trị an toàn cho {filled_count:,} ô bị khuyết (Số: 0, Chữ: 'Chưa xác định').")
+        ins_miss = str(instr_map.get("missing_values", "")).lower()
+        if any(k in ins_miss for k in ["xóa", "xoá", "bỏ dòng", "drop"]):
+            before_m = len(df_fixed)
+            df_fixed = df_fixed.dropna()
+            diff_m = before_m - len(df_fixed)
+            report.append(f"Đã xóa {diff_m:,} dòng có ô bị khuyết theo hướng dẫn: '{instr_map.get('missing_values', '')}'.")
+        else:
+            use_mean = any(k in ins_miss for k in ["trung bình", "mean"])
+            use_median = any(k in ins_miss for k in ["trung vị", "median"])
+            filled_count = 0
+            for col in df_fixed.columns:
+                null_cnt = int(df_fixed[col].isna().sum())
+                if null_cnt > 0:
+                    filled_count += null_cnt
+                    if pd.api.types.is_numeric_dtype(df_fixed[col]):
+                        if use_mean:
+                            fill_v = df_fixed[col].mean()
+                            df_fixed[col] = df_fixed[col].fillna(0 if pd.isna(fill_v) else round(float(fill_v), 2))
+                        elif use_median:
+                            fill_v = df_fixed[col].median()
+                            df_fixed[col] = df_fixed[col].fillna(0 if pd.isna(fill_v) else round(float(fill_v), 2))
+                        else:
+                            df_fixed[col] = df_fixed[col].fillna(0)
+                    else:
+                        df_fixed[col] = df_fixed[col].fillna("Chưa xác định")
+            if filled_count > 0:
+                mode_lbl = "trung bình" if use_mean else ("trung vị" if use_median else "mặc định (Số: 0, Chữ: 'Chưa xác định')")
+                report.append(f"Đã điền giá trị {mode_lbl} cho {filled_count:,} ô bị khuyết.")
 
     if "negative_values" in selected_issue_ids:
-        neg_count = 0
-        for col in df_fixed.select_dtypes(include=["number"]).columns:
-            neg_mask = df_fixed[col] < 0
-            if neg_mask.any():
-                neg_count += int(neg_mask.sum())
-                df_fixed[col] = df_fixed[col].abs()
-        if neg_count > 0:
-            report.append(f"Đã chuyển {neg_count:,} giá trị âm sang số dương.")
+        ins_neg = str(instr_map.get("negative_values", "")).lower()
+        if any(k in ins_neg for k in ["xóa", "xoá", "loại bỏ", "drop"]):
+            before_n = len(df_fixed)
+            num_cols_n = df_fixed.select_dtypes(include=["number"]).columns
+            if len(num_cols_n) > 0:
+                neg_row_mask = (df_fixed[num_cols_n] < 0).any(axis=1)
+                df_fixed = df_fixed[~neg_row_mask]
+            diff_n = before_n - len(df_fixed)
+            report.append(f"Đã xóa {diff_n:,} dòng chứa giá trị âm theo yêu cầu của bạn.")
+        elif any(k in ins_neg for k in ["bằng 0", "thay 0", "về 0", "= 0", "số 0"]):
+            neg_count = 0
+            for col in df_fixed.select_dtypes(include=["number"]).columns:
+                neg_mask = df_fixed[col] < 0
+                if neg_mask.any():
+                    neg_count += int(neg_mask.sum())
+                    df_fixed.loc[neg_mask, col] = 0
+            if neg_count > 0:
+                report.append(f"Đã chuyển {neg_count:,} giá trị âm về 0 theo yêu cầu của bạn.")
+        else:
+            neg_count = 0
+            for col in df_fixed.select_dtypes(include=["number"]).columns:
+                neg_mask = df_fixed[col] < 0
+                if neg_mask.any():
+                    neg_count += int(neg_mask.sum())
+                    df_fixed[col] = df_fixed[col].abs()
+            if neg_count > 0:
+                report.append(f"Đã chuyển {neg_count:,} giá trị âm sang số dương.")
 
     return df_fixed, report
 
@@ -1800,8 +1840,112 @@ try:
         if "_pending_biz_questions" in st.session_state:
             st.session_state["biz_questions"] = st.session_state.pop("_pending_biz_questions")
 
+        if "s1_issues_dismissed" not in st.session_state:
+            st.session_state.s1_issues_dismissed = set()
+
+        # Kiểm tra xem có tệp nào vừa nạp đang có lỗi cần người dùng duyệt sửa trước khi hiện giao diện còn lại
+        pending_error_items = []
+        for _fn_chk, _df_chk in orch.data_agent.raw_dataframes.items():
+            if _fn_chk not in st.session_state.s1_issues_dismissed and _df_chk is not None and not _df_chk.empty:
+                _iss_list = detect_data_issues(_df_chk, _fn_chk)
+                if _iss_list:
+                    pending_error_items.append((_fn_chk, _df_chk, _iss_list))
+
+        has_pending_s1_errors = bool(pending_error_items)
+        if has_pending_s1_errors:
+            for _err_fname, _err_df, _err_issues in pending_error_items:
+                _err_health = compute_data_health_metrics(_err_df)
+                with st.container(border=True):
+                    st.warning(
+                        f"⚠️ **Phát hiện {len(_err_issues)} loại lỗi trong tệp `{_err_fname}`** "
+                        f"(Điểm chất lượng: **{_err_health['health_score']}%** · Độ đầy đủ: **{_err_health['completeness_pct']}%**).\n\n"
+                        f"Vui lòng kiểm tra, **chỉnh sửa văn bản hướng sửa theo ý bạn** (nếu cần), tích chọn các mục cho phép và bấm **Duyệt & Sửa ngay** để tiếp tục:"
+                    )
+                    issue_key_prefix = f"s1_fix_{_err_fname}"
+                    if f"{issue_key_prefix}_selected" not in st.session_state:
+                        st.session_state[f"{issue_key_prefix}_selected"] = [iss["id"] for iss in _err_issues]
+
+                    custom_instrs = {}
+                    cols_iss = st.columns(min(len(_err_issues), 3))
+                    for idx_iss, iss in enumerate(_err_issues):
+                        with cols_iss[idx_iss % min(len(_err_issues), 3)]:
+                            with st.container(border=True):
+                                sev_bg = "#fee2e2" if iss["severity"] == "Quan trọng" else ("#fef3c7" if iss["severity"] == "Cảnh báo" else "#e0f2fe")
+                                sev_fg = "#991b1b" if iss["severity"] == "Quan trọng" else ("#92400e" if iss["severity"] == "Cảnh báo" else "#075985")
+                                st.markdown(
+                                    f"<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;'>"
+                                    f"<span style='font-weight:800; color:#0f172a; font-size:0.9rem;'>{iss.get('icon', '⚠️')} {iss['type']}</span>"
+                                    f"<span style='background:{sev_bg}; color:{sev_fg}; font-size:0.7rem; font-weight:800; padding:2px 7px; border-radius:999px;'>{iss['severity']}</span>"
+                                    f"</div>",
+                                    unsafe_allow_html=True
+                                )
+                                st.markdown(f"<div style='font-size:0.83rem; color:#334155; margin-bottom:6px;'><b>Chi tiết lỗi:</b> {iss['desc']}</div>", unsafe_allow_html=True)
+                                custom_txt = st.text_area(
+                                    "💡 Hướng sửa (bạn có thể tự nhập cách sửa):",
+                                    value=st.session_state.get(f"instr_s1_{_err_fname}_{iss['id']}", iss["suggested_fix"]),
+                                    height=72,
+                                    key=f"instr_s1_{_err_fname}_{iss['id']}"
+                                )
+                                custom_instrs[iss["id"]] = custom_txt
+                                is_chk = st.checkbox(
+                                    f"✅ Cho phép: {iss['action_label']}",
+                                    value=(iss["id"] in st.session_state[f"{issue_key_prefix}_selected"]),
+                                    key=f"chk_s1_{_err_fname}_{iss['id']}"
+                                )
+                                if is_chk and iss["id"] not in st.session_state[f"{issue_key_prefix}_selected"]:
+                                    st.session_state[f"{issue_key_prefix}_selected"].append(iss["id"])
+                                elif not is_chk and iss["id"] in st.session_state[f"{issue_key_prefix}_selected"]:
+                                    st.session_state[f"{issue_key_prefix}_selected"].remove(iss["id"])
+
+                    col_btn_fix, col_btn_all, col_btn_skip = st.columns([1.8, 1.1, 1.1])
+                    with col_btn_fix:
+                        chosen_fixes = st.session_state.get(f"{issue_key_prefix}_selected", [])
+                        btn_fix_label = f"🛠️ Duyệt & Sửa ngay ({len(chosen_fixes)} mục đã chọn)" if chosen_fixes else "⚠️ Chưa chọn mục nào để sửa"
+                        if st.button(btn_fix_label, type="primary", use_container_width=True, key=f"btn_apply_fixes_{_err_fname}", disabled=(not chosen_fixes)):
+                            with st.spinner(f"Đang thực thi các mục sửa lỗi theo hướng dẫn của bạn trên {_err_fname}..."):
+                                fixed_df, fix_reports = apply_data_issue_fixes(_err_df, chosen_fixes, custom_instructions=custom_instrs)
+                                orch.data_agent.raw_dataframes[_err_fname] = fixed_df
+                                from utils.column_mapper import map_columns
+                                from utils.file_handler import _auto_aggregate
+                                orch.data_agent.column_mappings[_err_fname] = map_columns(list(fixed_df.columns))
+                                if len(fixed_df) > 1000:
+                                    agg_df, agg_note = _auto_aggregate(fixed_df, _err_fname)
+                                    orch.data_agent.file_infos[_err_fname]["aggregated_df"] = agg_df
+                                    orch.data_agent.file_infos[_err_fname]["aggregation_note"] = agg_note
+                                orch.data_agent.file_infos[_err_fname]["rows"] = len(fixed_df)
+                                orch.data_agent.file_infos[_err_fname]["missing_cells_count"] = int(fixed_df.isna().sum().sum())
+                                orch.data_agent.file_infos.setdefault(_err_fname, {}).setdefault("user_action_log", []).extend(fix_reports)
+                                st.session_state[f"{issue_key_prefix}_selected"] = []
+                                st.session_state.s1_issues_dismissed.add(_err_fname)
+                                st.toast(f"✅ Đã sửa thành công {len(fix_reports)} hạng mục trên {_err_fname}!")
+                            st.rerun()
+                    with col_btn_all:
+                        all_ids_s1 = [iss["id"] for iss in _err_issues]
+                        if len(chosen_fixes) < len(all_ids_s1):
+                            if st.button("☑️ Chọn tất cả lỗi", use_container_width=True, key=f"btn_sel_all_s1_{_err_fname}"):
+                                st.session_state[f"{issue_key_prefix}_selected"] = list(all_ids_s1)
+                                for iid in all_ids_s1:
+                                    st.session_state[f"chk_s1_{_err_fname}_{iid}"] = True
+                                st.rerun()
+                        else:
+                            if st.button("⬜ Bỏ chọn tất cả", use_container_width=True, key=f"btn_unsel_all_s1_{_err_fname}"):
+                                st.session_state[f"{issue_key_prefix}_selected"] = []
+                                for iid in all_ids_s1:
+                                    st.session_state[f"chk_s1_{_err_fname}_{iid}"] = False
+                                st.rerun()
+                    with col_btn_skip:
+                        if st.button("⏭️ Bỏ qua & Tiếp tục", use_container_width=True, key=f"btn_skip_s1_{_err_fname}"):
+                            st.session_state.s1_issues_dismissed.add(_err_fname)
+                            st.rerun()
+
+                    err_preview_df = get_issue_preview_rows(_err_df, max_rows=25)
+                    if not err_preview_df.empty:
+                        with st.expander(f"🔎 Xem trước các dòng đang chứa lỗi trong `{_err_fname}` ({len(err_preview_df)} dòng mẫu)", expanded=False):
+                            st.dataframe(err_preview_df, use_container_width=True, height=220)
+            st.stop()
+
         # ============================================================
-        # BỐI CẢNH DOANH NGHIỆP (NẰM NGAY DƯỚI KHUNG NẠP TỆP)
+        # BỐI CẢNH DOANH NGHIỆP (CHỈ HIỆN SAU KHI ĐÃ XỬ LÝ/BỎ QUA LỖI)
         # ============================================================
         with st.container(key="zone_biz_context"):
             col_b_head, col_b_btn = st.columns([2.4, 1.6])
