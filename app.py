@@ -1909,7 +1909,11 @@ try:
 
                     card_bg = "#f0f7ff" if is_selected_card else ("#fffbeb" if sev_label == "Cảnh báo" else "rgba(255, 255, 255, 0.92)")
                     card_border = "2px solid #2563eb" if is_selected_card else ("1.5px solid #fde68a" if sev_label == "Cảnh báo" else "1px solid #e2e8f0")
-                    card_shadow = "0 4px 16px rgba(37, 99, 235, 0.12)" if is_selected_card else "0 2px 8px rgba(15, 23, 42, 0.04)"
+                    card_shadow = (
+                        "0 12px 28px -6px rgba(37, 99, 235, 0.22), 0 4px 10px -2px rgba(37, 99, 235, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9)"
+                        if is_selected_card else
+                        "0 10px 24px -6px rgba(15, 23, 42, 0.10), 0 4px 8px -2px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.95)"
+                    )
                     sug_bg = "#fef9c3" if (is_selected_card or sev_label == "Cảnh báo") else ("#ecfeff" if sev_label == "Nhẹ" else "#f1f5f9")
                     clean_desc = str(iss["desc"]).replace("`", "")
                     unit_lbl = "dòng" if "trùng" in iss["type"].lower() or "dòng" in iss["type"].lower() else "ô"
@@ -1922,8 +1926,12 @@ try:
                             border: {card_border} !important;
                             border-radius: 16px !important;
                             padding: 14px 18px !important;
-                            margin-bottom: 10px !important;
+                            margin-bottom: 12px !important;
                             box-shadow: {card_shadow} !important;
+                            transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+                        }}
+                        .st-key-{card_key}:hover {{
+                            transform: translateY(-2px) !important;
                         }}
                         .st-key-{card_key} div[data-testid="stCheckbox"] label span[data-baseweb="checkbox"] > div {{
                             background-color: {"#2563eb" if is_selected_card else "#ffffff"} !important;
