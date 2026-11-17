@@ -1332,11 +1332,13 @@ if st.session_state.current_step != 0:
             display: none !important;
         }
         .main .block-container, [data-testid="stMainBlockContainer"] {
-            padding-left: 96px !important;
+            padding-left: 74px !important;
+            padding-right: 1.5rem !important;
+            max-width: 100% !important;
         }
         .st-key-floating_left_dock {
             position: fixed !important;
-            left: 18px !important;
+            left: 8px !important;
             top: 50% !important;
             transform: translateY(-50%) !important;
             width: 58px !important;
