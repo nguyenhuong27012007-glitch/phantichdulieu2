@@ -1857,8 +1857,7 @@ try:
                 _err_health = compute_data_health_metrics(_err_df)
                 with st.container(border=True):
                     st.warning(
-                        f"⚠️ **Phát hiện {len(_err_issues)} loại lỗi trong tệp `{_err_fname}`** "
-                        f"(Điểm chất lượng: **{_err_health['health_score']}%** · Độ đầy đủ: **{_err_health['completeness_pct']}%**).\n\n"
+                        f"⚠️ **Phát hiện {len(_err_issues)} loại lỗi trong tệp `{_err_fname}`**.\n\n"
                         f"Vui lòng kiểm tra, **chỉnh sửa văn bản hướng sửa theo ý bạn** (nếu cần), tích chọn các mục cho phép và bấm **Duyệt & Sửa ngay** để tiếp tục:"
                     )
                     issue_key_prefix = f"s1_fix_{_err_fname}"
@@ -1872,23 +1871,24 @@ try:
                             with st.container(border=True):
                                 sev_bg = "#fee2e2" if iss["severity"] == "Quan trọng" else ("#fef3c7" if iss["severity"] == "Cảnh báo" else "#e0f2fe")
                                 sev_fg = "#991b1b" if iss["severity"] == "Quan trọng" else ("#92400e" if iss["severity"] == "Cảnh báo" else "#075985")
+                                clean_desc = str(iss['desc']).replace("`", "")
                                 st.markdown(
-                                    f"<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;'>"
-                                    f"<span style='font-weight:800; color:#0f172a; font-size:0.9rem;'>{iss.get('icon', '⚠️')} {iss['type']}</span>"
-                                    f"<span style='background:{sev_bg}; color:{sev_fg}; font-size:0.7rem; font-weight:800; padding:2px 7px; border-radius:999px;'>{iss['severity']}</span>"
+                                    f"<div style='display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px;'>"
+                                    f"<span style='font-weight:700; color:#111827; font-size:0.92rem; line-height:1.3;'>{iss['type']}</span>"
+                                    f"<span style='background:{sev_bg}; color:{sev_fg}; font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:999px; white-space:nowrap; flex-shrink:0;'>{iss['severity']}</span>"
                                     f"</div>",
                                     unsafe_allow_html=True
                                 )
-                                st.markdown(f"<div style='font-size:0.83rem; color:#334155; margin-bottom:6px;'><b>Chi tiết lỗi:</b> {iss['desc']}</div>", unsafe_allow_html=True)
+                                st.markdown(f"<div style='font-size:0.83rem; color:#374151; line-height:1.45; margin-bottom:8px;'>{clean_desc}</div>", unsafe_allow_html=True)
                                 custom_txt = st.text_area(
-                                    "💡 Hướng sửa (bạn có thể tự nhập cách sửa):",
+                                    "Cách xử lý (có thể sửa lại):",
                                     value=st.session_state.get(f"instr_s1_{_err_fname}_{iss['id']}", iss["suggested_fix"]),
-                                    height=72,
+                                    height=68,
                                     key=f"instr_s1_{_err_fname}_{iss['id']}"
                                 )
                                 custom_instrs[iss["id"]] = custom_txt
                                 is_chk = st.checkbox(
-                                    f"✅ Cho phép: {iss['action_label']}",
+                                    f"Áp dụng: {iss['action_label']}",
                                     value=(iss["id"] in st.session_state[f"{issue_key_prefix}_selected"]),
                                     key=f"chk_s1_{_err_fname}_{iss['id']}"
                                 )
@@ -2064,8 +2064,7 @@ try:
 
                             if detected_issues:
                                 st.warning(
-                                    f"⚠️ **Phát hiện {len(detected_issues)} loại lỗi trong tệp `{item['file']}`** "
-                                    f"(Điểm chất lượng hiện tại: **{health_info['health_score']}%** · Độ đầy đủ: **{health_info['completeness_pct']}%**). "
+                                    f"⚠️ **Phát hiện {len(detected_issues)} loại lỗi trong tệp `{item['file']}`**. "
                                     f"Vui lòng tích chọn các hạng mục bạn cho phép hệ thống sửa và bấm **Duyệt & Sửa ngay**:"
                                 )
                                 
