@@ -263,15 +263,14 @@ st.markdown(f"""
        TRANG MỞ ĐẦU (TỐI GIẢN, THOÁNG ĐÃNG, TẬP TRUNG VÀO HÀNH ĐỘNG CHÍNH)
        ============================================================ */
     .st-key-landing_stage_container {{
-        background: linear-gradient(180deg, #f8fbff 0%, #ffffff 55%, #eff6ff 100%);
-        border: 1px solid #dbeafe;
-        border-radius: 24px;
-        padding: 4rem 2.5rem 3.8rem 2.5rem !important;
-        margin: 1.5rem auto !important;
-        max-width: 860px;
-        min-height: 410px;
-        box-shadow: 0 12px 36px rgba(30, 58, 138, 0.06);
-        text-align: center;
+        background: transparent !important;
+        border: none !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        box-shadow: none !important;
     }}
     .hero-graphic-icon {{
         display: inline-flex;
@@ -795,8 +794,13 @@ try:
             <style>
                 .main .block-container, [data-testid="stMainBlockContainer"] {
                     padding: 0 !important;
+                    margin: 0 !important;
+                    max-width: 100% !important;
+                    width: 100% !important;
                     overflow: hidden !important;
-                    border-top: none !important;
+                    border: none !important;
+                    border-radius: 0 !important;
+                    box-shadow: none !important;
                     background: #F4F7FB !important;
                 }
                 .st-key-btn_hero_start {
