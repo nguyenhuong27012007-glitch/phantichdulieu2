@@ -2004,8 +2004,50 @@ try:
 
                 err_preview_df = get_issue_preview_rows(_err_df, max_rows=25)
                 if not err_preview_df.empty:
-                    with st.expander(f"📋 Xem trước các dòng dữ liệu có lỗi · {len(err_preview_df)} dòng mẫu (Mở bảng)", expanded=False):
-                        st.dataframe(err_preview_df, use_container_width=True, height=220)
+                    pv_open_key = f"s1_pv_open_{_err_fname}"
+                    if pv_open_key not in st.session_state:
+                        st.session_state[pv_open_key] = False
+                    st.markdown("""
+                    <style>
+                        .st-key-err_preview_card {
+                            background: rgba(255, 255, 255, 0.94) !important;
+                            border: 1px solid #e2e8f0 !important;
+                            border-radius: 16px !important;
+                            padding: 12px 18px !important;
+                            margin-top: 4px !important;
+                            box-shadow: 0 10px 24px -6px rgba(15, 23, 42, 0.08), 0 4px 8px -2px rgba(15, 23, 42, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
+                        }
+                        .st-key-btn_toggle_pv_s1 button {
+                            background: #eff6ff !important;
+                            color: #2563eb !important;
+                            border: 1px solid #bfdbfe !important;
+                            border-radius: 999px !important;
+                            font-weight: 700 !important;
+                            font-size: 0.82rem !important;
+                        }
+                    </style>
+                    """, unsafe_allow_html=True)
+                    with st.container(key="err_preview_card"):
+                        pv_c1, pv_c2 = st.columns([4.8, 1.2])
+                        with pv_c1:
+                            st.markdown(f"""
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div style="width:38px; height:38px; border-radius:10px; background:#eff6ff; border:1px solid #dbeafe; display:flex; align-items:center; justify-content:center; color:#2563eb; flex-shrink:0;">
+                                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                                </div>
+                                <div>
+                                    <div style="font-size:0.92rem; color:#0f172a;"><b>Xem trước các dòng dữ liệu có lỗi</b> <span style="color:#64748b; font-size:0.84rem;">· {len(err_preview_df)} dòng mẫu</span></div>
+                                    <div style="font-size:0.8rem; color:#64748b; margin-top:1px;">Đối chiếu trực tiếp các ô bị khuyết, số âm và chuỗi dư khoảng trắng trước khi sửa</div>
+                                </div>
+                            </div>
+                            """, unsafe_allow_html=True)
+                        with pv_c2:
+                            pv_lbl = "Thu gọn ⌃" if st.session_state[pv_open_key] else "Mở bảng ⌄"
+                            if st.button(pv_lbl, use_container_width=True, key="btn_toggle_pv_s1"):
+                                st.session_state[pv_open_key] = not st.session_state[pv_open_key]
+                                st.rerun()
+                        if st.session_state[pv_open_key]:
+                            st.dataframe(err_preview_df, use_container_width=True, height=230)
 
                 st.write("")
                 col_btn_fix, col_btn_skip = st.columns([2.5, 1.0])
