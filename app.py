@@ -1468,6 +1468,18 @@ try:
             transform: translateY(-6px) scale(1.015);
             box-shadow: 0 18px 36px -10px rgba(37, 99, 235, 0.18);
         }
+        @keyframes marquee-scroll {
+            0% { transform: translateX(0%); }
+            100% { transform: translateX(-50%); }
+        }
+        .marquee-track {
+            display: flex;
+            width: max-content;
+            animation: marquee-scroll 24s linear infinite;
+        }
+        .marquee-track:hover {
+            animation-play-state: paused;
+        }
     </style>
     <script>
         function triggerStart() {
@@ -1538,7 +1550,7 @@ try:
 
             <h1 class="text-4xl md:text-[2.75rem] font-extrabold text-slate-900 leading-[1.18] tracking-tight">
                 Dữ liệu thông minh<br>
-                <span class="text-blue-600">Báo cáo tức thì</span>
+                <span class="text-slate-900">Báo cáo tức thì</span>
             </h1>
 
             <div class="flex items-center space-x-3 pt-1">
@@ -1557,14 +1569,14 @@ try:
             </div>
         </div>
 
-        <!-- CỘT PHẢI: 3 BƯỚC QUY TRÌNH -->
-        <div class="w-full md:w-[55%] relative h-[390px] flex items-center justify-center">
+        <!-- CỘT PHẢI: 3 BƯỚC QUY TRÌNH (BỐ CỤC SO LE) -->
+        <div class="w-full md:w-[55%] relative h-[410px] flex items-center justify-center">
             <div class="absolute w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-2xl opacity-60 animate-pulse"></div>
             
-            <div class="relative w-full h-full grid grid-cols-2 gap-4 items-center">
+            <div class="relative w-full h-full grid grid-cols-2 gap-x-5 gap-y-6 items-start pt-4">
                 
-                <!-- Bước 1 -->
-                <div onclick="triggerStart()" class="hover-card cursor-pointer glass-panel p-5 rounded-3xl shadow-lg border border-white flex flex-col justify-between h-44 transform -translate-y-4">
+                <!-- Bước 1 (Cao hơn - Trái) -->
+                <div onclick="triggerStart()" class="hover-card cursor-pointer glass-panel p-5 rounded-3xl shadow-lg border border-white flex flex-col justify-between h-44 transform -translate-y-2">
                     <div class="flex justify-between items-start">
                         <span class="w-9 h-9 rounded-full bg-blue-100 text-blue-600 font-bold flex items-center justify-center text-base">1</span>
                         <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
@@ -1576,8 +1588,8 @@ try:
                     </div>
                 </div>
 
-                <!-- Bước 2 -->
-                <div onclick="triggerStart()" class="hover-card cursor-pointer bg-gradient-to-br from-blue-500 to-blue-600 p-5 rounded-3xl shadow-xl text-white flex flex-col justify-between h-48 transform translate-y-6">
+                <!-- Bước 2 (Thấp hơn - Phải) -->
+                <div onclick="triggerStart()" class="hover-card cursor-pointer bg-gradient-to-br from-blue-500 to-blue-600 p-5 rounded-3xl shadow-xl text-white flex flex-col justify-between h-44 transform translate-y-6">
                     <div class="flex justify-between items-start">
                         <span class="w-9 h-9 rounded-full bg-white/20 text-white font-bold flex items-center justify-center text-base backdrop-blur-sm">2</span>
                         <span class="bg-yellow-400 text-slate-900 text-[11px] font-bold px-2.5 py-1 rounded-full">Tự động AI</span>
@@ -1592,8 +1604,8 @@ try:
                     </div>
                 </div>
 
-                <!-- Bước 3 -->
-                <div onclick="triggerStart()" class="hover-card cursor-pointer col-span-2 glass-panel p-5 rounded-3xl shadow-lg border border-white flex items-center justify-between h-32 w-11/12 mx-auto transform -translate-y-1">
+                <!-- Bước 3 (So le lệch trái phía dưới) -->
+                <div onclick="triggerStart()" class="hover-card cursor-pointer col-span-2 glass-panel p-5 rounded-3xl shadow-lg border border-white flex items-center justify-between h-32 w-[88%] mr-auto ml-2 transform translate-y-2">
                     <div class="flex items-center space-x-4">
                         <span class="w-11 h-11 rounded-2xl bg-yellow-400 text-slate-900 font-black flex items-center justify-center text-lg shadow-md">3</span>
                         <div>
@@ -1615,14 +1627,23 @@ try:
         </div>
     </main>
 
-    <!-- 3. DẢI Băng CHỮ CHẠY DƯỚI CÙNG (FOOTER) -->
-    <footer class="relative z-10 bg-slate-900 text-white py-2.5 overflow-hidden w-full">
-        <div class="flex whitespace-nowrap items-center justify-around text-[11px] font-semibold tracking-wider uppercase text-slate-300">
-            <span class="flex items-center"><span class="text-yellow-400 mr-2">✦</span> XỬ LÝ DỮ LIỆU THÔNG MINH</span>
-            <span class="flex items-center"><span class="text-yellow-400 mr-2">✦</span> BÁO CÁO TRỰC QUAN</span>
-            <span class="flex items-center"><span class="text-yellow-400 mr-2">✦</span> PHÂN TÍCH CHUYÊN SÂU</span>
-            <span class="hidden md:flex items-center"><span class="text-yellow-400 mr-2">✦</span> TIẾT KIỆM THỜI GIAN</span>
-            <span class="hidden lg:flex items-center"><span class="text-yellow-400 mr-2">✦</span> TỐI ƯU HÓA QUY TRÌNH</span>
+    <!-- 3. DẢI BĂNG CHỮ CHẠY NGANG DƯỚI CÙNG (FOOTER NỀN SÁNG) -->
+    <footer class="relative z-10 bg-white/85 backdrop-blur-md border-t border-blue-100 text-slate-700 py-2.5 overflow-hidden w-full">
+        <div class="marquee-track text-[11px] font-bold tracking-wider uppercase">
+            <div class="flex items-center space-x-12 px-6 shrink-0">
+                <span class="flex items-center"><span class="text-blue-600 mr-2">✦</span> XỬ LÝ DỮ LIỆU THÔNG MINH</span>
+                <span class="flex items-center"><span class="text-amber-500 mr-2">✦</span> BÁO CÁO TRỰC QUAN</span>
+                <span class="flex items-center"><span class="text-blue-600 mr-2">✦</span> PHÂN TÍCH CHUYÊN SÂU</span>
+                <span class="flex items-center"><span class="text-amber-500 mr-2">✦</span> TIẾT KIỆM THỜI GIAN</span>
+                <span class="flex items-center"><span class="text-blue-600 mr-2">✦</span> TỐI ƯU HÓA QUY TRÌNH</span>
+            </div>
+            <div class="flex items-center space-x-12 px-6 shrink-0">
+                <span class="flex items-center"><span class="text-blue-600 mr-2">✦</span> XỬ LÝ DỮ LIỆU THÔNG MINH</span>
+                <span class="flex items-center"><span class="text-amber-500 mr-2">✦</span> BÁO CÁO TRỰC QUAN</span>
+                <span class="flex items-center"><span class="text-blue-600 mr-2">✦</span> PHÂN TÍCH CHUYÊN SÂU</span>
+                <span class="flex items-center"><span class="text-amber-500 mr-2">✦</span> TIẾT KIỆM THỜI GIAN</span>
+                <span class="flex items-center"><span class="text-blue-600 mr-2">✦</span> TỐI ƯU HÓA QUY TRÌNH</span>
+            </div>
         </div>
     </footer>
 
