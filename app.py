@@ -1217,47 +1217,36 @@ if step != 0:
                     st.toast("⚠️ Vui lòng duyệt Bước 2 trước khi sang Bước 3!", icon="⚠️")
 
 # ============================================================
-# SIDEBAR DẠNG DOCK ICON DỌC NỔI BO TRÒN (Y HỆT ẢNH MẪU)
+# THANH ĐIỀU HƯỚNG DOCK ICON DỌC NỔI TRONG KHUNG TRANG (BƯỚC 1, 2, 3)
 # ============================================================
-with st.sidebar:
+if st.session_state.current_step != 0:
     _sb_cur = st.session_state.current_step
-
     st.markdown("""
     <style>
         section[data-testid="stSidebar"] {
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            width: 82px !important;
-            min-width: 82px !important;
-            max-width: 82px !important;
-            transform: none !important;
-            opacity: 1 !important;
-            visibility: visible !important;
-            z-index: 999999 !important;
-            padding: 16px 10px !important;
-        }
-        section[data-testid="stSidebar"] > div:first-child {
-            background: rgba(255, 255, 255, 0.78) !important;
-            backdrop-filter: blur(14px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.95) !important;
-            border-radius: 999px !important;
-            padding: 12px 8px !important;
-            box-shadow: 0 12px 32px rgba(37, 99, 235, 0.12), 0 4px 12px rgba(15, 23, 42, 0.05) !important;
-            width: 60px !important;
-            margin: 12px auto 0 auto !important;
-            height: auto !important;
-            min-height: 0 !important;
-        }
-        section[data-testid="stSidebar"] [data-testid="stSidebarHeader"],
-        section[data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"] {
             display: none !important;
         }
-        section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
+        .main .block-container, [data-testid="stMainBlockContainer"] {
+            padding-left: 96px !important;
+        }
+        .st-key-floating_left_dock {
+            position: fixed !important;
+            left: 18px !important;
+            top: 86px !important;
+            width: 58px !important;
+            z-index: 99999 !important;
+            background: rgba(255, 255, 255, 0.82) !important;
+            backdrop-filter: blur(14px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.96) !important;
+            border-radius: 999px !important;
+            padding: 12px 8px !important;
+            box-shadow: 0 12px 32px rgba(37, 99, 235, 0.14), 0 4px 12px rgba(15, 23, 42, 0.06) !important;
+        }
+        .st-key-floating_left_dock [data-testid="stVerticalBlock"] {
             gap: 6px !important;
             align-items: center !important;
         }
-        section[data-testid="stSidebar"] button {
+        .st-key-floating_left_dock button {
             width: 40px !important;
             height: 40px !important;
             min-height: 40px !important;
@@ -1273,74 +1262,74 @@ with st.sidebar:
             box-shadow: none !important;
             transition: all 0.18s ease !important;
         }
-        section[data-testid="stSidebar"] button:hover {
-            background: rgba(255, 255, 255, 0.9) !important;
+        .st-key-floating_left_dock button:hover {
+            background: rgba(255, 255, 255, 0.95) !important;
             color: #1e3a8a !important;
         }
-        section[data-testid="stSidebar"] button[kind="primary"] {
+        .st-key-floating_left_dock button[kind="primary"] {
             background: #ffffff !important;
             color: #1e3a8a !important;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.18), 0 1px 3px rgba(15, 23, 42, 0.08) !important;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2), 0 1px 3px rgba(15, 23, 42, 0.08) !important;
         }
-        section[data-testid="stSidebar"] button[kind="primary"] p {
+        .st-key-floating_left_dock button[kind="primary"] p {
             color: #1e3a8a !important;
         }
-        section[data-testid="stSidebar"] hr {
+        .st-key-floating_left_dock hr {
             margin: 4px auto !important;
             width: 24px !important;
             border-color: #cbd5e1 !important;
         }
-        [data-testid="stMain"], .main {
-            z-index: 1 !important;
-        }
     </style>
     """, unsafe_allow_html=True)
 
-    if st.button("⊞", help="Tổng quan", type="primary" if _sb_cur == 0 else "secondary", key="sb_nav_0"):
-        set_spinner_msg("⏳ Đang quay lại Trang Mở Đầu...")
-        st.session_state.current_step = 0
-        st.rerun()
-
-    if st.button("◫", help="Bước 1: Nhập dữ liệu", type="primary" if _sb_cur == 1 else "secondary", key="sb_nav_1"):
-        set_spinner_msg("⏳ Đang chuyển sang Bước 1: Nhập Dữ Liệu...")
-        st.session_state.current_step = 1
-        st.rerun()
-
-    if st.button("◈", help="Bước 2: Làm sạch dữ liệu", type="primary" if _sb_cur == 2 else "secondary", key="sb_nav_2"):
-        if st.session_state.step1_approved:
-            set_spinner_msg("⏳ Đang mở Bước 2: Làm Sạch...")
-            st.session_state.current_step = 2
+    with st.container(key="floating_left_dock"):
+        if st.button("⊞", help="Tổng quan", type="primary" if _sb_cur == 0 else "secondary", key="sb_nav_0"):
+            set_spinner_msg("⏳ Đang quay lại Trang Mở Đầu...")
+            st.session_state.current_step = 0
             st.rerun()
-        else:
-            st.toast("⚠️ Vui lòng nạp file và Duyệt Bước 1 trước!", icon="⚠️")
 
-    if st.button("↗", help="Bước 3: Báo cáo & Dashboard", type="primary" if _sb_cur == 3 else "secondary", key="sb_nav_3"):
-        if st.session_state.step2_approved:
-            set_spinner_msg("⏳ Đang mở Bước 3: Tạo Báo Cáo...")
-            st.session_state.current_step = 3
+        if st.button("◫", help="Bước 1: Nhập dữ liệu", type="primary" if _sb_cur == 1 else "secondary", key="sb_nav_1"):
+            set_spinner_msg("⏳ Đang chuyển sang Bước 1: Nhập Dữ Liệu...")
+            st.session_state.current_step = 1
             st.rerun()
-        else:
-            st.toast("⚠️ Vui lòng Duyệt Bước 2 trước!", icon="⚠️")
 
-    st.divider()
+        if st.button("◈", help="Bước 2: Làm sạch dữ liệu", type="primary" if _sb_cur == 2 else "secondary", key="sb_nav_2"):
+            if st.session_state.step1_approved:
+                set_spinner_msg("⏳ Đang mở Bước 2: Làm Sạch...")
+                st.session_state.current_step = 2
+                st.rerun()
+            else:
+                st.toast("⚠️ Vui lòng nạp file và Duyệt Bước 1 trước!", icon="⚠️")
 
-    if st.button("↻", help="Làm mới phiên làm việc", key="sb_reset_session"):
-        for k in ["files_loaded", "file_messages", "analysis_results", "editable_report", "editable_plan", "dashboard_scores_df"]:
-            if k in st.session_state:
-                st.session_state[k] = [] if k in ["files_loaded", "file_messages"] else None
-        st.session_state.step1_approved = False
-        st.session_state.step2_approved = False
-        st.session_state.step3_approved = False
-        st.session_state.show_step2_audit_log = False
-        st.session_state.show_step2_editor = False
-        st.session_state.s1_issues_dismissed = set()
-        st.session_state.current_step = 0
-        orch.data_agent.raw_dataframes.clear()
-        set_spinner_msg("⏳ Đang làm mới toàn bộ phiên làm việc...")
-        st.rerun()
+        if st.button("↗", help="Bước 3: Báo cáo & Dashboard", type="primary" if _sb_cur == 3 else "secondary", key="sb_nav_3"):
+            if st.session_state.step2_approved:
+                set_spinner_msg("⏳ Đang mở Bước 3: Tạo Báo Cáo...")
+                st.session_state.current_step = 3
+                st.rerun()
+            else:
+                st.toast("⚠️ Vui lòng Duyệt Bước 2 trước!", icon="⚠️")
 
-    if st.button("?", help="Hướng dẫn: Nạp tệp CSV/Excel/Google Sheet -> Duyệt sửa lỗi -> Tạo Báo cáo & Dashboard", key="sb_help_btn"):
-        st.toast("💡 Quy trình 3 bước: Nhập dữ liệu ➔ Làm sạch & Duyệt lỗi ➔ Xuất Báo cáo & Dashboard.", icon="💡")
+        st.divider()
+
+        if st.button("↻", help="Làm mới phiên làm việc", key="sb_reset_session"):
+            for k in ["files_loaded", "file_messages", "analysis_results", "editable_report", "editable_plan", "dashboard_scores_df"]:
+                if k in st.session_state:
+                    st.session_state[k] = [] if k in ["files_loaded", "file_messages"] else None
+            st.session_state.step1_approved = False
+            st.session_state.step2_approved = False
+            st.session_state.step3_approved = False
+            st.session_state.show_step2_audit_log = False
+            st.session_state.show_step2_editor = False
+            st.session_state.s1_issues_dismissed = set()
+            st.session_state.current_step = 0
+            orch.data_agent.raw_dataframes.clear()
+            set_spinner_msg("⏳ Đang làm mới toàn bộ phiên làm việc...")
+            st.rerun()
+
+        if st.button("?", help="Hướng dẫn sử dụng", key="sb_help_btn"):
+            st.toast("💡 Quy trình 3 bước: Nhập dữ liệu ➔ Làm sạch & Duyệt lỗi ➔ Xuất Báo cáo & Dashboard.", icon="💡")
+
+with st.sidebar:
 
     st.markdown("#### 🤖 Chọn Phiên Bản Model AI")
     ai_model_options = {
