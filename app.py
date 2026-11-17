@@ -864,7 +864,7 @@ try:
         }
     </script>
 </head>
-<body class="bg-[#F4F7FB] text-slate-800 min-h-screen flex flex-col relative overflow-hidden">
+<body class="bg-[#F4F7FB] text-slate-800 min-h-screen flex flex-col relative overflow-x-hidden">
     
     <!-- 1. CÁC HỌA TIẾT NỀN ĐÈ DƯỚI NỘI DUNG -->
     <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-200 rounded-full mix-blend-multiply filter blur-[120px] opacity-60 z-0 pointer-events-none"></div>
@@ -881,34 +881,34 @@ try:
     </svg>
 
     <!-- 2. THANH ĐIỀU HƯỚNG (NAVBAR) -->
-    <header class="relative z-10 p-6 flex justify-between items-center whitespace-nowrap overflow-x-auto no-scrollbar">
-        <div class="bg-yellow-400 text-slate-900 font-bold px-6 py-2 rounded-full shadow-sm flex items-center gap-2 shrink-0">
+    <header class="relative z-10 p-5 md:p-6 flex justify-between items-center whitespace-nowrap overflow-x-auto no-scrollbar">
+        <div class="bg-yellow-400 text-slate-900 font-bold px-5 md:px-6 py-2 rounded-full shadow-sm flex items-center gap-2 shrink-0">
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12z"/></svg>
             Phân tích dữ liệu
         </div>
         
-        <nav class="hidden lg:flex items-center gap-2 bg-white/80 backdrop-blur-md px-2 py-2 rounded-full shadow-sm border border-white/50 text-sm font-semibold text-slate-600 shrink-0 mx-4">
-            <a href="javascript:void(0)" class="px-5 py-2 hover:bg-slate-100 rounded-full transition">Mở đầu</a>
-            <a href="javascript:void(0)" onclick="triggerStart()" class="px-5 py-2 hover:bg-slate-100 rounded-full transition">Nạp file</a>
-            <a href="javascript:void(0)" onclick="triggerStart()" class="px-5 py-2 hover:bg-slate-100 rounded-full transition">Làm sạch</a>
-            <a href="javascript:void(0)" onclick="triggerStart()" class="px-5 py-2 hover:bg-slate-100 rounded-full transition">Tạo báo cáo</a>
+        <nav class="flex items-center gap-1 md:gap-2 bg-white/80 backdrop-blur-md px-2 py-2 rounded-full shadow-sm border border-white/50 text-xs md:text-sm font-semibold text-slate-600 shrink-0 mx-3 md:mx-4">
+            <a href="javascript:void(0)" class="px-3 md:px-5 py-2 hover:bg-slate-100 rounded-full transition">Mở đầu</a>
+            <a href="javascript:void(0)" onclick="triggerStart()" class="px-3 md:px-5 py-2 hover:bg-slate-100 rounded-full transition">Nạp file</a>
+            <a href="javascript:void(0)" onclick="triggerStart()" class="px-3 md:px-5 py-2 hover:bg-slate-100 rounded-full transition">Làm sạch</a>
+            <a href="javascript:void(0)" onclick="triggerStart()" class="px-3 md:px-5 py-2 hover:bg-slate-100 rounded-full transition">Tạo báo cáo</a>
         </nav>
 
-        <div class="bg-white/80 backdrop-blur-md text-slate-700 font-semibold px-6 py-2 rounded-full shadow-sm border border-white/50 text-sm shrink-0">
+        <div class="bg-white/80 backdrop-blur-md text-slate-700 font-semibold px-4 md:px-6 py-2 rounded-full shadow-sm border border-white/50 text-xs md:text-sm shrink-0">
             Hỗ trợ CSV, Excel, Google Sheet
         </div>
     </header>
 
     <!-- 3. NỘI DUNG CHÍNH (2 CỘT) -->
-    <main class="relative z-10 flex-1 flex flex-col lg:flex-row items-center justify-between px-8 lg:px-12 py-10 gap-8">
+    <main class="relative z-10 flex-1 flex flex-col md:flex-row items-center justify-between px-6 md:px-10 py-8 md:py-10 gap-6 md:gap-8">
         
         <!-- CỘT TRÁI: Tiêu đề & Nút -->
-        <div class="w-full lg:w-[45%] flex flex-col items-start gap-8 z-10">
-            <div class="text-sm font-bold text-slate-600 uppercase tracking-widest bg-white/60 backdrop-blur-sm px-5 py-2 rounded-full shadow-sm border border-white/50">
+        <div class="w-full md:w-[44%] flex flex-col items-start gap-6 md:gap-7 z-10">
+            <div class="text-xs md:text-sm font-bold text-slate-600 uppercase tracking-widest bg-white/60 backdrop-blur-sm px-5 py-2 rounded-full shadow-sm border border-white/50">
                 Nền tảng Quản trị Dữ liệu
             </div>
 
-            <h1 class="text-[3.5rem] lg:text-[4.5rem] font-extrabold text-slate-900 leading-[1.1] tracking-tight">
+            <h1 class="text-[2.7rem] md:text-[3.5rem] xl:text-[4.3rem] font-extrabold text-slate-900 leading-[1.1] tracking-tight">
                 Dữ liệu thông minh.<br>
                 Báo cáo tức thì.
             </h1>
@@ -922,16 +922,16 @@ try:
                 </button>
             </div>
 
-            <p class="text-lg text-slate-600 max-w-xl leading-relaxed glass-panel p-5 rounded-2xl">
+            <p class="text-base md:text-lg text-slate-600 max-w-xl leading-relaxed glass-panel p-5 rounded-2xl">
                 Tự động kiểm tra, làm sạch, và điều phối chính xác dữ liệu từ tệp CSV, Excel hoặc Google Sheet. Hỗ trợ tổng hợp số liệu và tạo báo cáo Dashboard trực quan.
             </p>
         </div>
 
         <!-- CỘT PHẢI: 3 Thẻ xếp so le -->
-        <div class="w-full lg:w-[55%] flex flex-row items-center justify-end gap-5 mt-16 lg:mt-0 z-10">
+        <div class="w-full md:w-[56%] flex flex-row items-center justify-center md:justify-end gap-3 md:gap-4 mt-10 md:mt-0 z-10">
             
             <!-- Thẻ 1 (Thấp) -->
-            <div onclick="triggerStart()" class="w-64 glass-panel rounded-[2rem] p-6 shadow-xl flex flex-col relative translate-y-8 hover:-translate-y-2 transition duration-500 cursor-pointer">
+            <div onclick="triggerStart()" class="flex-1 min-w-[175px] max-w-[240px] glass-panel rounded-[2rem] p-5 md:p-6 shadow-xl flex flex-col relative translate-y-8 hover:-translate-y-2 transition duration-500 cursor-pointer">
                 <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mb-6 font-bold text-xl">1</div>
                 <h3 class="text-xl font-bold text-slate-800 mb-2">Nhập dữ liệu</h3>
                 <p class="text-sm text-slate-500 font-medium">CSV, Excel, Google Sheet</p>
@@ -941,7 +941,7 @@ try:
             </div>
 
             <!-- Thẻ 2 (Nhô cao, nổi bật) -->
-            <div onclick="triggerStart()" class="w-64 bg-white rounded-[2rem] p-6 shadow-2xl border border-blue-50 flex flex-col relative -translate-y-8 scale-105 z-20 hover:-translate-y-12 transition duration-500 cursor-pointer">
+            <div onclick="triggerStart()" class="flex-1 min-w-[175px] max-w-[240px] bg-white rounded-[2rem] p-5 md:p-6 shadow-2xl border border-blue-50 flex flex-col relative -translate-y-8 scale-105 z-20 hover:-translate-y-12 transition duration-500 cursor-pointer">
                 <div class="absolute -top-4 -right-4 w-20 h-20 bg-yellow-400 rounded-full mix-blend-multiply opacity-30 blur-2xl pointer-events-none"></div>
                 <div class="flex justify-between items-start mb-6">
                     <div class="w-12 h-12 bg-blue-600 text-white rounded-xl flex items-center justify-center font-bold text-xl shadow-lg shadow-blue-200">2</div>
@@ -962,7 +962,7 @@ try:
             </div>
 
             <!-- Thẻ 3 (Thấp) -->
-            <div onclick="triggerStart()" class="w-64 bg-amber-400/90 backdrop-blur-md rounded-[2rem] p-6 shadow-xl border border-amber-300 flex flex-col relative text-slate-900 translate-y-8 hover:-translate-y-2 transition duration-500 cursor-pointer">
+            <div onclick="triggerStart()" class="flex-1 min-w-[175px] max-w-[240px] bg-amber-400/90 backdrop-blur-md rounded-[2rem] p-5 md:p-6 shadow-xl border border-amber-300 flex flex-col relative text-slate-900 translate-y-8 hover:-translate-y-2 transition duration-500 cursor-pointer">
                 <div class="w-12 h-12 bg-white/40 text-slate-900 rounded-xl flex items-center justify-center mb-6 font-bold text-xl shadow-sm">3</div>
                 <h3 class="text-xl font-bold mb-2">Tạo báo cáo</h3>
                 <p class="text-sm text-slate-800/80 font-medium">Dashboard &amp; Xuất HTML</p>
