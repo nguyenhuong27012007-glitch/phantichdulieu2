@@ -18,6 +18,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from agents.orchestrator import AgentOrchestrator
 from config import COMPANY_NAME, EXPANSION_SLOTS, TOTAL_REGIONS, DEFAULT_CRITERIA, DEFAULT_GEMINI_API_KEY
 from utils.column_mapper import COLUMN_SCHEMA
+from utils.file_handler import detect_data_issues, apply_data_issue_fixes
 
 # ============================================================
 # CẤU HÌNH TRANG STREAMLIT
@@ -1754,13 +1755,67 @@ try:
         if st.session_state.file_messages:
             if "step1_ai_summaries" not in st.session_state:
                 st.session_state.step1_ai_summaries = {}
-            st.markdown(f"#### 📋 Chi tiết kiểm tra ({len(st.session_state.file_messages)} tệp)")
+            st.markdown(f"#### 📋 Chi tiết kiểm tra & Phát hiện lỗi ({len(st.session_state.file_messages)} tệp)")
             with st.container():
                 for item in st.session_state.file_messages[-6:]:
                     if item["success"]:
                         st.success(f"**{item['file']}**: {item['msg']}")
                         df_chk = orch.data_agent.raw_dataframes.get(item["file"])
                         if df_chk is not None and not df_chk.empty:
+                            # Quét toàn diện các lỗi và vấn đề thực tế trong file
+                            detected_issues = detect_data_issues(df_chk, item["file"])
+                            
+                            if detected_issues:
+                                st.warning(f"⚠️ **Hệ thống phát hiện {len(detected_issues)} vấn đề cần xử lý trong tệp `{item['file']}`:**")
+                                
+                                # Hộp danh sách lỗi và checkbox lựa chọn cách sửa
+                                issue_key_prefix = f"s1_fix_{item['file']}"
+                                if f"{issue_key_prefix}_selected" not in st.session_state:
+                                    st.session_state[f"{issue_key_prefix}_selected"] = [iss["id"] for iss in detected_issues]
+                                    
+                                cols_iss = st.columns(min(len(detected_issues), 3))
+                                for idx_iss, iss in enumerate(detected_issues):
+                                    with cols_iss[idx_iss % min(len(detected_issues), 3)]:
+                                        with st.container(border=True):
+                                            sev_color = "#dc2626" if iss["severity"] == "Quan trọng" else "#d97706"
+                                            st.markdown(f"<span style='color:{sev_color}; font-weight:800; font-size:0.88rem;'>[{iss['severity'].upper()}]</span> **{iss['type']}**", unsafe_allow_html=True)
+                                            st.markdown(f"<div style='font-size:0.86rem; color:#475569; margin:4px 0;'>{iss['desc']}</div>", unsafe_allow_html=True)
+                                            st.markdown(f"<div style='font-size:0.84rem; color:#0284c7; font-weight:600; margin-bottom:6px;'>💡 Gợi ý: {iss['suggested_fix']}</div>", unsafe_allow_html=True)
+                                            is_chk = st.checkbox(
+                                                f"Sửa: {iss['action_label']}",
+                                                value=(iss["id"] in st.session_state[f"{issue_key_prefix}_selected"]),
+                                                key=f"chk_s1_{item['file']}_{iss['id']}"
+                                            )
+                                            if is_chk and iss["id"] not in st.session_state[f"{issue_key_prefix}_selected"]:
+                                                st.session_state[f"{issue_key_prefix}_selected"].append(iss["id"])
+                                            elif not is_chk and iss["id"] in st.session_state[f"{issue_key_prefix}_selected"]:
+                                                st.session_state[f"{issue_key_prefix}_selected"].remove(iss["id"])
+                                
+                                col_btn_fix, col_btn_space = st.columns([1.8, 2.2])
+                                with col_btn_fix:
+                                    chosen_fixes = st.session_state.get(f"{issue_key_prefix}_selected", [])
+                                    btn_fix_label = f"🛠️ Duyệt & Sửa ngay {len(chosen_fixes)} mục đã chọn" if chosen_fixes else "Chưa chọn mục nào để sửa"
+                                    if st.button(btn_fix_label, type="primary", use_container_width=True, key=f"btn_apply_fixes_{item['file']}", disabled=(not chosen_fixes)):
+                                        with st.spinner(f"⏳ Đang áp dụng các sửa đổi do bạn duyệt trên tệp {item['file']}..."):
+                                            fixed_df, fix_reports = apply_data_issue_fixes(df_chk, chosen_fixes)
+                                            orch.data_agent.raw_dataframes[item["file"]] = fixed_df
+                                            
+                                            from utils.column_mapper import map_columns
+                                            from utils.file_handler import _auto_aggregate
+                                            orch.data_agent.column_mappings[item["file"]] = map_columns(list(fixed_df.columns))
+                                            if len(fixed_df) > 1000:
+                                                agg_df, agg_note = _auto_aggregate(fixed_df, item["file"])
+                                                orch.data_agent.file_infos[item["file"]]["aggregated_df"] = agg_df
+                                                orch.data_agent.file_infos[item["file"]]["aggregation_note"] = agg_note
+                                            orch.data_agent.file_infos[item["file"]]["rows"] = len(fixed_df)
+                                            orch.data_agent.file_infos[item["file"]]["missing_cells_count"] = int(fixed_df.isna().sum().sum())
+                                            orch.data_agent.file_infos.setdefault(item["file"], {}).setdefault("user_action_log", []).extend(fix_reports)
+                                            st.session_state[f"{issue_key_prefix}_selected"] = []
+                                            st.toast(f"✅ Đã xử lý xong các lỗi trên {item['file']}!", icon="✅")
+                                        st.rerun()
+                            else:
+                                st.success(f"✨ **Tệp `{item['file']}` hoàn toàn sạch đẹp:** Không có ô trống, không trùng lặp và cấu trúc bảng hợp lệ 100%!")
+                            
                             cache_key = f"v2_{item['file']}_{len(df_chk)}_{len(df_chk.columns)}"
                             if cache_key not in st.session_state.step1_ai_summaries:
                                 null_cnt = int(df_chk.isna().sum().sum())
@@ -1806,7 +1861,7 @@ try:
                                             issues_parts.append(f"- **Trùng lặp bản ghi:** Phát hiện **{dup_cnt:,} dòng trùng lặp** cần rà soát.")
                                         if neg_cols:
                                             issues_parts.append(f"- **Giá trị bất thường:** Cột `{', '.join(neg_cols[:4])}` có chứa số âm.")
-                                        issues_parts.append("- **Đề xuất:** Chuyển sang **Bước 2** để hệ thống tự động làm sạch hoặc sửa trực tiếp các ô lỗi.")
+                                        issues_parts.append("- **Đề xuất:** Duyệt các mục sửa lỗi bên trên hoặc chuyển sang **Bước 2** để chỉnh sửa thủ công từng ô.")
                                         ai_text = "\n".join(issues_parts)
                                     else:
                                         rev_cols = [c for c in df_chk.columns if any(k in str(c).lower() for k in ["revenue", "doanh_thu", "doanhthu", "sales", "amount", "profit", "loi_nhuan"])]
@@ -1819,9 +1874,9 @@ try:
                                         biz_parts.append("- **Đánh giá chung:** Dữ liệu phản ánh hoạt động vận hành ổn định, đủ điều kiện tổng hợp báo cáo và Dashboard ở Bước 3.")
                                         ai_text = "\n".join(biz_parts)
                                 st.session_state.step1_ai_summaries[cache_key] = ai_text
-                            st.info(f"🤖 **AI Phân tích sơ bộ ({item['file']}):**\n\n{st.session_state.step1_ai_summaries[cache_key]}")
+                            st.info(f"🤖 **AI Đánh giá chất lượng dữ liệu ({item['file']}):**\n\n{st.session_state.step1_ai_summaries[cache_key]}")
                     else:
-                        st.error(f"**{item['file']}**: {item['msg']}")
+                        st.error(f"❌ **Lỗi đọc tệp '{item['file']}':** {item['msg']}\n\n*Gợi ý khắc phục: Kiểm tra lại xem file có đang bị khóa bởi Excel không, hoặc xuất lại file dưới định dạng chuẩn CSV (UTF-8) hoặc Excel (.xlsx).*")
 
     # ============================================================
     # BƯỚC 2: XEM TRẠNG THÁI LÀM SẠCH & CHỈNH SỬA DỮ LIỆU
@@ -1899,9 +1954,12 @@ try:
                     txt_cols_str = ", ".join(f"`{c}`" for c in txt_cols[:6]) + (f" (+{len(txt_cols)-6} cột)" if len(txt_cols) > 6 else "")
                     mapped_str = ", ".join(f"`{k}`" for k in list(mapped_dict.keys())[:8]) + (f" (+{len(mapped_dict)-8})" if len(mapped_dict) > 8 else "")
 
-                    if empty_r == 0 and empty_c == 0 and missing_cells == 0 and dup_rows_cnt == 0 and not user_edits:
+                    # Quét toàn diện các vấn đề cần xử lý
+                    s2_issues = detect_data_issues(df_current, selected_file)
+
+                    if not s2_issues and not user_edits:
                         st.success(
-                            f"✅ **File gốc `{selected_file}` của bạn đã chuẩn (OK 100%)!**\n\n"
+                            f"✅ **Tệp `{selected_file}` của bạn đã chuẩn sạch 100%!**\n\n"
                             f"- **Cấu trúc bảng:** Giữ nguyên toàn bộ **{total_rows:,} dòng × {len(df_current.columns)} cột**, không có dòng/cột trống thừa hay dòng trùng lặp.\n"
                             f"- **Độ đầy đủ dữ liệu:** 100% các ô đều có giá trị (0 ô trống).\n"
                             f"- **Các cột số đã chuẩn hóa ({len(num_cols)} cột):** {num_cols_str if num_cols else 'Không có'}.\n"
@@ -1909,23 +1967,59 @@ try:
                             f"- **Đã chuẩn hóa tên trường ({len(mapped_dict)} trường):** {mapped_str if mapped_dict else 'Tự động nhận diện'}."
                         )
                     else:
-                        details = [f"🔍 **Những gì hệ thống đã kiểm tra & xử lý trên tệp `{selected_file}`:**"]
-                        if empty_r > 0 or empty_c > 0:
-                            details.append(f"- 🧹 **Đã tự động xóa:** `{empty_r}` dòng hoàn toàn trống và `{empty_c}` cột hoàn toàn trống (còn lại **{total_rows:,} dòng × {len(df_current.columns)} cột**).")
-                        else:
-                            details.append(f"- ✅ **Dòng & cột gốc:** Không có dòng/cột trống thừa (giữ nguyên **{total_rows:,} dòng × {len(df_current.columns)} cột**).")
-                        if missing_cells > 0:
-                            cols_missing_str = ", ".join(null_cols_detail[:6]) + (f" và {len(null_cols_detail)-6} cột khác" if len(null_cols_detail) > 6 else "")
-                            details.append(f"- ⚠️ **Ô dữ liệu khuyết (NaN/Trống):** Phát hiện **{missing_cells:,} ô trống** tại {cols_missing_str}; hệ thống đã xử lý an toàn khi tính toán (không làm lệch điểm).")
-                        else:
-                            details.append("- ✅ **Độ đầy đủ:** 100% các ô dữ liệu đều có giá trị (0 ô trống).")
-                        if dup_rows_cnt > 0:
-                            details.append(f"- 🔁 **Dòng trùng lặp:** Phát hiện **{dup_rows_cnt:,} dòng** có nội dung giống hệt nhau.")
-                        details.append(f"- 🔢 **Cột số đã chuẩn hóa ({len(num_cols)} cột):** {num_cols_str if num_cols else 'Không có'}.")
+                        if s2_issues:
+                            st.warning(f"⚠️ **Phát hiện {len(s2_issues)} vấn đề trong tệp `{selected_file}`. Bạn có thể chọn cách xử lý và bấm duyệt:**")
+                            s2_issue_key_prefix = f"s2_fix_{selected_file}"
+                            if f"{s2_issue_key_prefix}_selected" not in st.session_state:
+                                st.session_state[f"{s2_issue_key_prefix}_selected"] = [iss["id"] for iss in s2_issues]
+
+                            cols_s2_iss = st.columns(min(len(s2_issues), 3))
+                            for idx_s2i, s2_iss in enumerate(s2_issues):
+                                with cols_s2_iss[idx_s2i % min(len(s2_issues), 3)]:
+                                    with st.container(border=True):
+                                        sev_col = "#dc2626" if s2_iss["severity"] == "Quan trọng" else "#d97706"
+                                        st.markdown(f"<span style='color:{sev_col}; font-weight:800; font-size:0.88rem;'>[{s2_iss['severity'].upper()}]</span> **{s2_iss['type']}**", unsafe_allow_html=True)
+                                        st.markdown(f"<div style='font-size:0.86rem; color:#475569; margin:4px 0;'>{s2_iss['desc']}</div>", unsafe_allow_html=True)
+                                        st.markdown(f"<div style='font-size:0.84rem; color:#0284c7; font-weight:600; margin-bottom:6px;'>💡 Gợi ý: {s2_iss['suggested_fix']}</div>", unsafe_allow_html=True)
+                                        is_checked = st.checkbox(
+                                            f"Xử lý: {s2_iss['action_label']}",
+                                            value=(s2_iss["id"] in st.session_state[f"{s2_issue_key_prefix}_selected"]),
+                                            key=f"chk_s2_{selected_file}_{s2_iss['id']}"
+                                        )
+                                        if is_checked and s2_iss["id"] not in st.session_state[f"{s2_issue_key_prefix}_selected"]:
+                                            st.session_state[f"{s2_issue_key_prefix}_selected"].append(s2_iss["id"])
+                                        elif not is_checked and s2_iss["id"] in st.session_state[f"{s2_issue_key_prefix}_selected"]:
+                                            st.session_state[f"{s2_issue_key_prefix}_selected"].remove(s2_iss["id"])
+
+                            s2_chosen_fixes = st.session_state.get(f"{s2_issue_key_prefix}_selected", [])
+                            col_s2_btn_apply, _ = st.columns([1.8, 2.2])
+                            with col_s2_btn_apply:
+                                btn_s2_fix_label = f"🛠️ Duyệt & Sửa ngay {len(s2_chosen_fixes)} mục đã chọn" if s2_chosen_fixes else "Chưa chọn mục nào để sửa"
+                                if st.button(btn_s2_fix_label, type="primary", use_container_width=True, key=f"btn_apply_fixes_s2_{selected_file}", disabled=(not s2_chosen_fixes)):
+                                    with st.spinner(f"⏳ Đang áp dụng các sửa đổi do bạn duyệt trên tệp {selected_file}..."):
+                                        fixed_df, fix_reps = apply_data_issue_fixes(df_current, s2_chosen_fixes)
+                                        orch.data_agent.raw_dataframes[selected_file] = fixed_df
+                                        from utils.column_mapper import map_columns
+                                        from utils.file_handler import _auto_aggregate
+                                        orch.data_agent.column_mappings[selected_file] = map_columns(list(fixed_df.columns))
+                                        if len(fixed_df) > 1000:
+                                            agg_df, agg_note = _auto_aggregate(fixed_df, selected_file)
+                                            orch.data_agent.file_infos[selected_file]["aggregated_df"] = agg_df
+                                            orch.data_agent.file_infos[selected_file]["aggregation_note"] = agg_note
+                                        orch.data_agent.file_infos[selected_file]["rows"] = len(fixed_df)
+                                        orch.data_agent.file_infos[selected_file]["missing_cells_count"] = int(fixed_df.isna().sum().sum())
+                                        orch.data_agent.file_infos.setdefault(selected_file, {}).setdefault("user_action_log", []).extend(fix_reps)
+                                        st.session_state[f"{s2_issue_key_prefix}_selected"] = []
+                                        st.toast(f"✅ Đã xử lý xong các lỗi trên {selected_file}!", icon="✅")
+                                    st.rerun()
+
+                        details = [f"🔍 **Nhật ký kiểm tra & thao tác trên tệp `{selected_file}`:**"]
+                        details.append(f"- 📊 **Quy mô hiện tại:** **{len(df_current):,} dòng × {len(df_current.columns)} cột**.")
+                        details.append(f"- 🔢 **Cột số ({len(num_cols)} cột):** {num_cols_str if num_cols else 'Không có'}.")
                         details.append(f"- 🏷️ **Cột phân loại / văn bản ({len(txt_cols)} cột):** {txt_cols_str if txt_cols else 'Không có'}.")
-                        details.append(f"- 🔗 **Đã chuẩn hóa tên trường ({len(mapped_dict)} trường):** {mapped_str if mapped_dict else 'Tự động nhận diện'}.")
+                        details.append(f"- 🔗 **Ánh xạ trường ({len(mapped_dict)} trường):** {mapped_str if mapped_dict else 'Tự động nhận diện'}.")
                         for u_log in user_edits:
-                            details.append(f"- ✏️ **Thao tác của bạn:** {u_log}")
+                            details.append(f"- ✏️ **Thao tác đã duyệt:** {u_log}")
                         st.info("\n".join(details))
 
             if st.session_state.show_step2_editor:
