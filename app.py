@@ -868,111 +868,111 @@ try:
         }
     </script>
 </head>
-<body class="bg-[#F4F7FB] text-slate-800 min-h-screen flex flex-col relative overflow-x-hidden">
+<body class="bg-[#F4F7FB] text-slate-800 h-screen max-h-[660px] flex flex-col justify-between relative overflow-x-hidden">
     
     <!-- 1. CÁC HỌA TIẾT NỀN ĐÈ DƯỚI NỘI DUNG -->
     <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-200 rounded-full mix-blend-multiply filter blur-[120px] opacity-60 z-0 pointer-events-none"></div>
     <div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-200 rounded-full mix-blend-multiply filter blur-[120px] opacity-60 z-0 pointer-events-none"></div>
 
     <!-- Ngôi sao 8 cánh đè dưới Tiêu đề (Cột Trái) -->
-    <svg class="absolute top-[10%] left-[-5%] w-[500px] h-[500px] text-blue-300 opacity-30 z-0 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+    <svg class="absolute top-[10%] left-[-5%] w-[420px] h-[420px] text-blue-300 opacity-30 z-0 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 2v20M17 5l-10 14M22 12H2M19 19L5 5"/>
     </svg>
     
     <!-- Ngôi sao 8 cánh đè dưới 3 Thẻ Quy trình (Cột Phải) -->
-    <svg class="absolute top-[15%] right-[2%] w-[600px] h-[600px] text-blue-300 opacity-30 z-0 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+    <svg class="absolute top-[12%] right-[2%] w-[480px] h-[480px] text-blue-300 opacity-30 z-0 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 2v20M17 5l-10 14M22 12H2M19 19L5 5"/>
     </svg>
 
     <!-- 2. THANH ĐIỀU HƯỚNG (NAVBAR) -->
-    <header class="relative z-10 p-5 md:p-6 flex justify-between items-center whitespace-nowrap overflow-x-auto no-scrollbar">
-        <div class="bg-yellow-400 text-slate-900 font-bold px-5 md:px-6 py-2 rounded-full shadow-sm flex items-center gap-2 shrink-0">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12z"/></svg>
+    <header class="relative z-10 px-6 py-3.5 flex justify-between items-center whitespace-nowrap">
+        <div class="bg-yellow-400 text-slate-900 font-bold px-4 py-1.5 text-xs rounded-full shadow-sm flex items-center gap-1.5 shrink-0">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12z"/></svg>
             Phân tích dữ liệu
         </div>
         
-        <nav class="flex items-center gap-1 md:gap-2 bg-white/80 backdrop-blur-md px-2 py-2 rounded-full shadow-sm border border-white/50 text-xs md:text-sm font-semibold text-slate-600 shrink-0 mx-3 md:mx-4">
-            <a href="javascript:void(0)" class="px-3 md:px-5 py-2 hover:bg-slate-100 rounded-full transition">Mở đầu</a>
-            <a href="javascript:void(0)" onclick="triggerStart()" class="px-3 md:px-5 py-2 hover:bg-slate-100 rounded-full transition">Nạp file</a>
-            <a href="javascript:void(0)" onclick="triggerStart()" class="px-3 md:px-5 py-2 hover:bg-slate-100 rounded-full transition">Làm sạch</a>
-            <a href="javascript:void(0)" onclick="triggerStart()" class="px-3 md:px-5 py-2 hover:bg-slate-100 rounded-full transition">Tạo báo cáo</a>
+        <nav class="flex items-center gap-1 bg-white/80 backdrop-blur-md px-1.5 py-1.5 rounded-full shadow-sm border border-white/50 text-xs font-semibold text-slate-600 shrink-0 mx-2">
+            <a href="javascript:void(0)" class="px-4 py-1.5 hover:bg-slate-100 rounded-full transition">Mở đầu</a>
+            <a href="javascript:void(0)" onclick="triggerStart()" class="px-4 py-1.5 hover:bg-slate-100 rounded-full transition">Nạp file</a>
+            <a href="javascript:void(0)" onclick="triggerStart()" class="px-4 py-1.5 hover:bg-slate-100 rounded-full transition">Làm sạch</a>
+            <a href="javascript:void(0)" onclick="triggerStart()" class="px-4 py-1.5 hover:bg-slate-100 rounded-full transition">Tạo báo cáo</a>
         </nav>
 
-        <div class="bg-white/80 backdrop-blur-md text-slate-700 font-semibold px-4 md:px-6 py-2 rounded-full shadow-sm border border-white/50 text-xs md:text-sm shrink-0">
+        <div class="bg-white/80 backdrop-blur-md text-slate-700 font-semibold px-4 py-1.5 rounded-full shadow-sm border border-white/50 text-xs shrink-0">
             Hỗ trợ CSV, Excel, Google Sheet
         </div>
     </header>
 
     <!-- 3. NỘI DUNG CHÍNH (2 CỘT) -->
-    <main class="relative z-10 flex-1 flex flex-col md:flex-row items-center justify-between px-6 md:px-10 py-8 md:py-10 gap-6 md:gap-8">
+    <main class="relative z-10 flex-1 flex flex-col md:flex-row items-center justify-between px-8 py-4 gap-6">
         
         <!-- CỘT TRÁI: Tiêu đề & Nút -->
-        <div class="w-full md:w-[44%] flex flex-col items-start gap-6 md:gap-7 z-10">
-            <div class="text-xs md:text-sm font-bold text-slate-600 uppercase tracking-widest bg-white/60 backdrop-blur-sm px-5 py-2 rounded-full shadow-sm border border-white/50">
+        <div class="w-full md:w-[46%] flex flex-col items-start gap-4 z-10">
+            <div class="text-[11px] font-bold text-slate-600 uppercase tracking-widest bg-white/60 backdrop-blur-sm px-4 py-1.5 rounded-full shadow-sm border border-white/50">
                 Nền tảng Quản trị Dữ liệu
             </div>
 
-            <h1 class="text-[2.7rem] md:text-[3.5rem] xl:text-[4.3rem] font-extrabold text-slate-900 leading-[1.1] tracking-tight">
+            <h1 class="text-[2.4rem] lg:text-[2.85rem] font-extrabold text-slate-900 leading-[1.12] tracking-tight">
                 Dữ liệu thông minh.<br>
                 Báo cáo tức thì.
             </h1>
 
-            <div class="flex items-center gap-4">
-                <button onclick="triggerStart()" class="bg-white text-slate-900 font-bold px-8 py-4 rounded-full shadow-lg border border-slate-100 tracking-wider hover:shadow-xl hover:-translate-y-1 transition duration-300 cursor-pointer">
+            <div class="flex items-center gap-3">
+                <button onclick="triggerStart()" class="bg-white text-slate-900 font-bold text-sm px-6 py-2.5 rounded-full shadow-lg border border-slate-100 tracking-wider hover:shadow-xl hover:-translate-y-0.5 transition duration-300 cursor-pointer">
                     BẮT ĐẦU
                 </button>
-                <button onclick="triggerStart()" class="w-14 h-14 bg-yellow-400 text-slate-900 rounded-full flex items-center justify-center shadow-lg hover:scale-105 hover:-translate-y-1 transition duration-300 cursor-pointer">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                <button onclick="triggerStart()" class="w-11 h-11 bg-yellow-400 text-slate-900 rounded-full flex items-center justify-center shadow-lg hover:scale-105 hover:-translate-y-0.5 transition duration-300 cursor-pointer">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                 </button>
             </div>
 
-            <p class="text-base md:text-lg text-slate-600 max-w-xl leading-relaxed glass-panel p-5 rounded-2xl">
+            <p class="text-sm text-slate-600 max-w-lg leading-relaxed glass-panel p-4 rounded-2xl">
                 Tự động kiểm tra, làm sạch, và điều phối chính xác dữ liệu từ tệp CSV, Excel hoặc Google Sheet. Hỗ trợ tổng hợp số liệu và tạo báo cáo Dashboard trực quan.
             </p>
         </div>
 
         <!-- CỘT PHẢI: 3 Thẻ xếp so le -->
-        <div class="w-full md:w-[56%] flex flex-row items-center justify-center md:justify-end gap-3 md:gap-4 mt-10 md:mt-0 z-10">
+        <div class="w-full md:w-[54%] flex flex-row items-center justify-center md:justify-end gap-3.5 z-10">
             
             <!-- Thẻ 1 (Thấp) -->
-            <div onclick="triggerStart()" class="flex-1 min-w-[175px] max-w-[240px] glass-panel rounded-[2rem] p-5 md:p-6 shadow-xl flex flex-col relative translate-y-8 hover:-translate-y-2 transition duration-500 cursor-pointer">
-                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mb-6 font-bold text-xl">1</div>
-                <h3 class="text-xl font-bold text-slate-800 mb-2">Nhập dữ liệu</h3>
-                <p class="text-sm text-slate-500 font-medium">CSV, Excel, Google Sheet</p>
-                <div class="mt-8">
-                    <div class="text-xs font-bold text-blue-600 bg-blue-50 py-1.5 px-4 rounded-full inline-block uppercase tracking-wide">Đồng bộ</div>
+            <div onclick="triggerStart()" class="w-44 lg:w-48 glass-panel rounded-[1.5rem] p-4 shadow-xl flex flex-col relative translate-y-4 hover:-translate-y-1 transition duration-500 cursor-pointer">
+                <div class="w-9 h-9 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mb-3 font-bold text-base">1</div>
+                <h3 class="text-base font-bold text-slate-800 mb-1">Nhập dữ liệu</h3>
+                <p class="text-xs text-slate-500 font-medium">CSV, Excel, Google Sheet</p>
+                <div class="mt-5">
+                    <div class="text-[11px] font-bold text-blue-600 bg-blue-50 py-1 px-3 rounded-full inline-block uppercase tracking-wide">Đồng bộ</div>
                 </div>
             </div>
 
             <!-- Thẻ 2 (Nhô cao, nổi bật) -->
-            <div onclick="triggerStart()" class="flex-1 min-w-[175px] max-w-[240px] bg-white rounded-[2rem] p-5 md:p-6 shadow-2xl border border-blue-50 flex flex-col relative -translate-y-8 scale-105 z-20 hover:-translate-y-12 transition duration-500 cursor-pointer">
-                <div class="absolute -top-4 -right-4 w-20 h-20 bg-yellow-400 rounded-full mix-blend-multiply opacity-30 blur-2xl pointer-events-none"></div>
-                <div class="flex justify-between items-start mb-6">
-                    <div class="w-12 h-12 bg-blue-600 text-white rounded-xl flex items-center justify-center font-bold text-xl shadow-lg shadow-blue-200">2</div>
-                    <span class="text-[10px] font-bold tracking-wider text-amber-600 bg-amber-50 border border-amber-100 px-3 py-1.5 rounded-full uppercase">Tiến trình</span>
+            <div onclick="triggerStart()" class="w-44 lg:w-48 bg-white rounded-[1.5rem] p-4 shadow-2xl border border-blue-50 flex flex-col relative -translate-y-4 scale-105 z-20 hover:-translate-y-7 transition duration-500 cursor-pointer">
+                <div class="absolute -top-3 -right-3 w-16 h-16 bg-yellow-400 rounded-full mix-blend-multiply opacity-30 blur-2xl pointer-events-none"></div>
+                <div class="flex justify-between items-start mb-3">
+                    <div class="w-9 h-9 bg-blue-600 text-white rounded-xl flex items-center justify-center font-bold text-base shadow-md shadow-blue-200">2</div>
+                    <span class="text-[10px] font-bold tracking-wider text-amber-600 bg-amber-50 border border-amber-100 px-2.5 py-1 rounded-full uppercase">Tiến trình</span>
                 </div>
-                <h3 class="text-2xl font-bold text-slate-900 mb-2">Làm sạch</h3>
-                <p class="text-sm text-slate-500 font-medium leading-relaxed">Chuẩn hóa &amp; chỉnh sửa lỗi dữ liệu</p>
+                <h3 class="text-lg font-bold text-slate-900 mb-1">Làm sạch</h3>
+                <p class="text-xs text-slate-500 font-medium leading-relaxed">Chuẩn hóa &amp; chỉnh sửa lỗi dữ liệu</p>
                 
-                <div class="mt-8 pt-6 flex items-center justify-between border-t border-slate-100">
+                <div class="mt-4 pt-3.5 flex items-center justify-between border-t border-slate-100">
                     <div class="flex flex-col">
-                        <span class="text-2xl font-black text-slate-800">100%</span>
-                        <span class="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Chính xác</span>
+                        <span class="text-xl font-black text-slate-800">100%</span>
+                        <span class="text-[9px] text-slate-400 uppercase font-bold tracking-widest">Chính xác</span>
                     </div>
-                    <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center">
-                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                    <div class="w-7 h-7 rounded-full bg-slate-50 flex items-center justify-center">
+                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
                     </div>
                 </div>
             </div>
 
             <!-- Thẻ 3 (Thấp) -->
-            <div onclick="triggerStart()" class="flex-1 min-w-[175px] max-w-[240px] bg-amber-400/90 backdrop-blur-md rounded-[2rem] p-5 md:p-6 shadow-xl border border-amber-300 flex flex-col relative text-slate-900 translate-y-8 hover:-translate-y-2 transition duration-500 cursor-pointer">
-                <div class="w-12 h-12 bg-white/40 text-slate-900 rounded-xl flex items-center justify-center mb-6 font-bold text-xl shadow-sm">3</div>
-                <h3 class="text-xl font-bold mb-2">Tạo báo cáo</h3>
-                <p class="text-sm text-slate-800/80 font-medium">Dashboard &amp; Xuất HTML</p>
-                <div class="mt-8 flex text-sm items-center gap-2">
-                    <svg class="w-5 h-5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    <span class="font-bold tracking-wide uppercase text-xs">Xuất báo cáo</span>
+            <div onclick="triggerStart()" class="w-44 lg:w-48 bg-amber-400/90 backdrop-blur-md rounded-[1.5rem] p-4 shadow-xl border border-amber-300 flex flex-col relative text-slate-900 translate-y-4 hover:-translate-y-1 transition duration-500 cursor-pointer">
+                <div class="w-9 h-9 bg-white/40 text-slate-900 rounded-xl flex items-center justify-center mb-3 font-bold text-base shadow-sm">3</div>
+                <h3 class="text-base font-bold mb-1">Tạo báo cáo</h3>
+                <p class="text-xs text-slate-800/80 font-medium">Dashboard &amp; Xuất HTML</p>
+                <div class="mt-5 flex text-xs items-center gap-1.5">
+                    <svg class="w-4 h-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    <span class="font-bold tracking-wide uppercase text-[11px]">Xuất báo cáo</span>
                 </div>
             </div>
 
@@ -980,9 +980,9 @@ try:
     </main>
 
     <!-- 4. FOOTER (MARQUEE) -->
-    <footer class="relative z-10 w-full bg-[#1e293b] text-white/60 py-3 mt-auto">
+    <footer class="relative z-10 w-full bg-white/90 backdrop-blur-md border-t border-blue-100 text-blue-700 py-2.5 shadow-sm mt-auto">
         <div class="marquee-container">
-            <div class="marquee-content gap-12 font-semibold text-xs tracking-widest uppercase">
+            <div class="marquee-content gap-10 font-bold text-xs tracking-widest uppercase">
                 <span>✦ XỬ LÝ DỮ LIỆU THÔNG MINH</span>
                 <span>✦ CHUẨN HÓA FORMAT</span>
                 <span>✦ LOẠI BỎ TRÙNG LẶP</span>
@@ -1001,7 +1001,7 @@ try:
 
 </body>
 </html>"""
-            _landing_comp.html(_landing_html, height=820, scrolling=False)
+            _landing_comp.html(_landing_html, height=660, scrolling=False)
 
     # ============================================================
     # BƯỚC 1: NHẬP DỮ LIỆU (CSV / EXCEL / GOOGLE SHEET)
