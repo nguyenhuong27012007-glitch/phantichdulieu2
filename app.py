@@ -2307,9 +2307,17 @@ try:
                     margin-bottom: 0.6rem !important;
                 }
                 .st-key-zone_step2_audit_card,
-                .st-key-zone_step2_audit_card * {
+                .st-key-zone_step2_audit_card *,
+                .st-key-zone_step2_audit_card span,
+                .st-key-zone_step2_audit_card div,
+                .st-key-zone_step2_audit_card p,
+                .st-key-zone_step2_audit_card label,
+                .st-key-zone_step2_audit_card input {
                     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
                     font-size: 0.9rem !important;
+                }
+                .st-key-zone_step2_audit_card div[data-testid="stCheckbox"] label p {
+                    font-weight: 400 !important;
                 }
                 .st-key-zone_step2_audit_card .s2-subhead-lg {
                     font-size: 1.08rem !important;
@@ -2506,7 +2514,7 @@ try:
                                     c_top_left, c_top_badge = st.columns([5.65, 1.35])
                                     with c_top_left:
                                         is_checked = st.checkbox(
-                                            f"**{s2_iss['type']}** · {s2_iss['count']:,} {unit_lbl}",
+                                            f"{s2_iss['type']} · {s2_iss['count']:,} {unit_lbl}",
                                             value=is_selected_card,
                                             key=f"chk_s2_{selected_file}_{s2_iss['id']}"
                                         )
