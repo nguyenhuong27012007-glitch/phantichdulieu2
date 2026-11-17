@@ -346,8 +346,10 @@ st.markdown("""
     [data-testid="stMetric"]:hover,
     [data-testid="stAlert"]:hover,
     [data-testid="stExpander"]:hover {
-        transform: scale(1.015) translateY(-2px) !important;
-        box-shadow: 0 14px 32px rgba(37, 99, 235, 0.12) !important;
+        transform: scale(1.04) translateY(-4px) !important;
+        box-shadow: 0 20px 42px rgba(37, 99, 235, 0.18) !important;
+        position: relative !important;
+        z-index: 20 !important;
     }
     div.stButton > button,
     div.stDownloadButton > button {
@@ -355,39 +357,59 @@ st.markdown("""
     }
     div.stButton > button:hover,
     div.stDownloadButton > button:hover {
-        transform: scale(1.025) translateY(-1px) !important;
+        transform: scale(1.06) translateY(-2px) !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
 # ============================================================
-# HIỆU ỨNG GẠT CẢ TRANG KHI CHUYỂN BƯỚC (GIỐNG CANVA WIPE/SLIDE)
+# HIỆU ỨNG CHUYỂN TRANG RÕ NÉT (MÀN RÈM QUÉT + PHÓNG TO TRANG MỚI)
 # ============================================================
 _prev_step_anim = st.session_state.get("_last_rendered_step", st.session_state.current_step)
 _cur_step_anim = st.session_state.current_step
 if _cur_step_anim != _prev_step_anim:
     _is_forward = (_cur_step_anim > _prev_step_anim)
-    _from_x = "100vw" if _is_forward else "-100vw"
-    _clip_from = "inset(0 0 0 100%)" if _is_forward else "inset(0 100% 0 0)"
+    _curtain_start = "100%" if _is_forward else "-100%"
+    _curtain_end = "-100%" if _is_forward else "100%"
     st.markdown(f"""
     <style>
-        @keyframes canvaPageWipe {{
+        @keyframes pageCurtainSweep {{
             0% {{
-                opacity: 0.25;
-                transform: translateX({_from_x});
-                clip-path: {_clip_from};
+                transform: translateX({_curtain_start});
+                opacity: 0.95;
+            }}
+            45% {{
+                transform: translateX(0%);
+                opacity: 0.92;
+            }}
+            100% {{
+                transform: translateX({_curtain_end});
+                opacity: 0;
+            }}
+        }}
+        @keyframes pageZoomReveal {{
+            0% {{
+                opacity: 0;
+                transform: scale(0.94) translateY(18px);
             }}
             100% {{
                 opacity: 1;
-                transform: translateX(0);
-                clip-path: inset(0 0 0 0);
+                transform: scale(1) translateY(0);
             }}
         }}
+        .hp-page-curtain {{
+            position: fixed;
+            inset: 0;
+            z-index: 9999999;
+            pointer-events: none;
+            background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 50%, #dbeafe 100%);
+            animation: pageCurtainSweep 0.85s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+        }}
         .main .block-container, [data-testid="stMainBlockContainer"] {{
-            animation: canvaPageWipe 0.52s cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
-            will-change: transform, clip-path, opacity;
+            animation: pageZoomReveal 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
         }}
     </style>
+    <div class="hp-page-curtain"></div>
     """, unsafe_allow_html=True)
 st.session_state._last_rendered_step = _cur_step_anim
 
@@ -2110,7 +2132,8 @@ try:
                                         biz_parts.append("- **Đánh giá chung:** Dữ liệu phản ánh hoạt động vận hành ổn định, đủ điều kiện tổng hợp báo cáo và Dashboard ở Bước 3.")
                                         ai_text = "\n".join(biz_parts)
                                 st.session_state.step1_ai_summaries[cache_key] = ai_text
-                            st.info(f"🤖 **Nhận xét nhanh về `{item['file']}`:**\n\n{st.session_state.step1_ai_summaries[cache_key]}")
+                            if not detected_issues:
+                                st.info(f"🤖 **Nhận xét nhanh về `{item['file']}`:**\n\n{st.session_state.step1_ai_summaries[cache_key]}")
                     else:
                         st.error(f"❌ **Lỗi đọc tệp '{item['file']}':** {item['msg']}\n\n*💡 Hướng dẫn khắc phục: Kiểm tra xem tệp có đang mở hoặc bị khóa bởi phần mềm khác không, hoặc lưu lại tệp dưới định dạng chuẩn CSV (UTF-8) / Excel (.xlsx).*")
 
