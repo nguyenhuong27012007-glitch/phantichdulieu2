@@ -1791,10 +1791,37 @@ try:
                 Nền tảng Quản trị Dữ liệu
             </span>
 
-            <h1 class="text-4xl md:text-[2.75rem] font-extrabold text-slate-900 leading-[1.18] tracking-tight">
-                Dữ liệu thông minh<br>
-                <span class="text-slate-900">Báo cáo tức thì</span>
+            <h1 class="text-4xl md:text-[2.75rem] font-extrabold text-slate-900 leading-[1.18] tracking-tight min-h-[6.5rem]">
+                <span id="tw-line1"></span><br>
+                <span id="tw-line2" class="text-slate-900"></span><span id="tw-caret" style="display:inline-block; width:3px; height:0.9em; background:#2563eb; margin-left:4px; vertical-align:middle; animation: twBlink 0.75s step-end infinite;"></span>
             </h1>
+            <style>
+                @keyframes twBlink { 50% { opacity: 0; } }
+            </style>
+            <script>
+                (function() {
+                    const l1 = "Dữ liệu thông minh";
+                    const l2 = "Báo cáo tức thì";
+                    const el1 = document.getElementById("tw-line1");
+                    const el2 = document.getElementById("tw-line2");
+                    let i = 0, j = 0;
+                    function typeL1() {
+                        if (i <= l1.length) {
+                            el1.textContent = l1.slice(0, i++);
+                            setTimeout(typeL1, 45);
+                        } else {
+                            setTimeout(typeL2, 120);
+                        }
+                    }
+                    function typeL2() {
+                        if (j <= l2.length) {
+                            el2.textContent = l2.slice(0, j++);
+                            setTimeout(typeL2, 45);
+                        }
+                    }
+                    typeL1();
+                })();
+            </script>
 
             <div class="flex items-center space-x-3 pt-1">
                 <button onclick="triggerStart()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm px-7 py-3.5 rounded-full shadow-lg shadow-blue-500/30 transition transform hover:-translate-y-0.5 cursor-pointer">
@@ -2458,20 +2485,6 @@ try:
                                     with c_top_badge:
                                         st.markdown(
                                             f"<div style='display:flex; justify-content:flex-end;'>"
-                                            f"<span style='display:inline-flex; align-items:center; gap:5px; background:{sev_bg}; color:{see[f"{s2_issue_key_prefix}_selected"]:
-                                            st.session_state[f"{s2_issue_key_prefix}_selected"].append(s2_iss["id"])
-                                        elif not is_checked and s2_iss["id"] in st.session_state[f"{s2_issue_key_prefix}_selected"]:
-                                            st.session_state[f"{s2_issue_key_prefix}_selected"].remove(s2_iss["id"])
-                                    with c_top_title:
-                                        st.markdown(
-                                            f"<div style='padding-top:2px; font-size:0.95rem; color:#0f172a;'>"
-                                            f"<b>{s2_iss['type']}</b> <span style='color:#64748b; font-weight:500; font-size:0.86rem;'>· {s2_iss['count']:,} {unit_lbl}</span>"
-                                            f"</div>",
-                                            unsafe_allow_html=True
-                                        )
-                                    with c_top_badge:
-                                        st.markdown(
-                                            f"<div style='display:flex; justify-content:flex-end;'>"
                                             f"<span style='display:inline-flex; align-items:center; gap:5px; background:{sev_bg}; color:{sev_fg}; border:1px solid {sev_bd}; font-size:0.74rem; font-weight:700; padding:2px 10px; border-radius:999px; white-space:nowrap;'>"
                                             f"<span style='width:6px; height:6px; border-radius:50%; background:{sev_dot}; display:inline-block;'></span>{sev_label}</span></div>",
                                             unsafe_allow_html=True
@@ -3122,4 +3135,34 @@ try:
                     new_df = new_df.sort_values(by="Điểm tổng hợp", ascending=False).reset_index(drop=True)
                     new_df["Xếp hạng"] = [f"Hạng {i+1}" for i in range(len(new_df))]
                     new_df["Trạng thái"] = ["✅ Ưu tiên" if i < 2 else "📌 Theo dõi" for i in range(len(new_df))]
-                    st.session_sta
+                    st.session_state.dashboard_scores_df = new_df
+                    st.session_state.show_edit_dashboard = False
+                    st.rerun()
+
+            with col_btn_dash2:
+                if st.button("🤖 Phân tích lại bằng AI", use_container_width=True):
+                    with st.spinner("AI đang phân tích sâu dữ liệu..."):
+                        ai_res = orch.run_full_analysis()
+                        st.session_state.analysis_results = ai_res
+                        if ai_res.get("report"):
+                            st.session_state.editable_report = ai_res["report"]
+                        if ai_res.get("survey_plan"):
+                            st.session_state.editable_plan = ai_res["survey_plan"]
+                        st.session_state.dashboard_scores_df = None
+                        st.session_state.show_edit_dashboard = False
+                        st.rerun()
+
+except Exception as _global_exc:
+    import traceback
+    traceback.print_exc()
+    st.error(_vietnamese_error_message(_global_exc))
+
+import streamlit.components.v1 as _cleanup_comp
+_cleanup_comp.html("""
+<script>
+try {
+    const oldBanner = window.parent.document.getElementById('hp-instant-loading-banner');
+    if (oldBanner) oldBanner.remove();
+} catch(e) {}
+</script>
+""", height=0, width=0)
