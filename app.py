@@ -1394,7 +1394,10 @@ try:
                     border: none !important;
                     border-radius: 0 !important;
                     box-shadow: none !important;
-                    background: #F4F7FB !important;
+                    background: radial-gradient(circle at 12% 18%, rgba(147, 197, 253, 0.55) 0%, transparent 45%),
+                                radial-gradient(circle at 85% 22%, rgba(96, 165, 250, 0.42) 0%, transparent 48%),
+                                radial-gradient(circle at 52% 85%, rgba(186, 230, 253, 0.65) 0%, transparent 50%),
+                                linear-gradient(135deg, #eff6ff 0%, #dbeafe 52%, #e0f2fe 100%) !important;
                 }
                 .st-key-landing_stage_container div[data-testid="stVerticalBlock"] {
                     gap: 0 !important;
@@ -1505,7 +1508,7 @@ try:
         });
     </script>
 </head>
-<body class="bg-[#F4F7FB] text-slate-800 h-screen max-h-[660px] flex flex-col justify-between relative overflow-hidden">
+<body class="text-slate-800 h-screen max-h-[660px] flex flex-col justify-between relative overflow-hidden" style="background: radial-gradient(circle at 12% 18%, rgba(147, 197, 253, 0.55) 0%, transparent 45%), radial-gradient(circle at 85% 22%, rgba(96, 165, 250, 0.42) 0%, transparent 48%), radial-gradient(circle at 52% 85%, rgba(186, 230, 253, 0.65) 0%, transparent 50%), linear-gradient(135deg, #eff6ff 0%, #dbeafe 52%, #e0f2fe 100%);">
 
     <div id="cursor-glow"></div>
     <div id="cursor-dot"></div>
@@ -1592,7 +1595,6 @@ try:
                 <div onclick="triggerStart()" class="hover-card cursor-pointer bg-gradient-to-br from-blue-500 to-blue-600 p-5 rounded-3xl shadow-xl text-white flex flex-col justify-between h-64 transform translate-y-6">
                     <div class="flex justify-between items-start">
                         <span class="w-9 h-9 rounded-full bg-white/20 text-white font-bold flex items-center justify-center text-base backdrop-blur-sm">2</span>
-                        <span class="bg-yellow-400 text-slate-900 text-[10px] font-bold px-2.5 py-1 rounded-full">Tự động AI</span>
                     </div>
                     <div>
                         <span class="text-[11px] text-blue-100 font-semibold uppercase">Bước 2</span>
