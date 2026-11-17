@@ -499,25 +499,33 @@ st.markdown(f"""
         margin-top: 1.25rem !important;
     }}
 
-    /* Nút AI Gợi Ý Tone Vàng/Cam Gradient Nổi Bật */
+    /* Nút AI Gợi Ý Tone Xanh Dương Nhạt Thanh Lịch */
     .st-key-btn_ai_suggest_ctx button {{
-        background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%) !important;
-        color: #0f172a !important;
+        background: #e0f2fe !important;
+        color: #0284c7 !important;
         font-weight: 700 !important;
-        border: none !important;
+        border: 1.5px solid #bae6fd !important;
         border-radius: 9999px !important;
         padding: 0.55rem 1.4rem !important;
-        box-shadow: 0 4px 14px rgba(245, 158, 11, 0.28) !important;
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.12) !important;
         transition: all 0.2s ease !important;
     }}
     .st-key-btn_ai_suggest_ctx button p,
     .st-key-btn_ai_suggest_ctx button span {{
-        color: #0f172a !important;
+        color: #0284c7 !important;
         font-weight: 700 !important;
     }}
     .st-key-btn_ai_suggest_ctx button:hover {{
-        filter: brightness(1.05) !important;
+        background: #bae6fd !important;
+        color: #0369a1 !important;
+        border-color: #7dd3fc !important;
         transform: translateY(-1px) !important;
+    }}
+
+    /* Ẩn chữ '200MB per file' và icon phụ trong Streamlit file uploader */
+    div[data-testid="stFileUploader"] small,
+    div[data-testid="stFileUploader"] [data-testid="stFileUploaderDropzoneInstructions"] > div > small {{
+        display: none !important;
     }}
 
     /* Hộp thông báo chờ ở giữa màn hình */
@@ -1306,8 +1314,16 @@ try:
                     st.session_state.show_step1_uploader = not st.session_state.show_step1_uploader
                     st.rerun()
         else:
-            st.markdown("### Bước 1: Nhập dữ liệu")
-            st.caption("Tải lên tệp CSV / Excel hoặc dán đường dẫn Google Sheet công khai để bắt đầu.")
+            st.markdown("""
+            <div style="margin-bottom:0.8rem;">
+                <h2 style="font-size:1.85rem; font-weight:800; color:#1e3a8a; margin:0 0 4px 0; letter-spacing:-0.02em;">
+                    Bước 1: Nhập dữ liệu
+                </h2>
+                <div style="font-size:0.92rem; color:#64748b; font-weight:500;">
+                    Tải lên tệp CSV / Excel hoặc dán đường dẫn Google Sheet công khai để bắt đầu.
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
 
         if (not has_loaded_files) or st.session_state.show_step1_uploader:
             col_up1, col_divider, col_up2 = st.columns([1, 0.12, 1])
@@ -1320,7 +1336,7 @@ try:
                     </div>
                     """, unsafe_allow_html=True)
                     uploaded_files = st.file_uploader(
-                        "Kéo thả tệp CSV, Excel vào đây hoặc Nhấn để tải lên (200MB per file)",
+                        "Kéo thả tệp CSV, Excel vào đây hoặc Nhấn để tải lên",
                         type=["csv", "xlsx", "xls"],
                         accept_multiple_files=True,
                         label_visibility="visible",
@@ -1353,6 +1369,9 @@ try:
                     <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; font-weight:700; color:#1e3a8a; font-size:1.02rem;">
                         <span style="color:#10b981; font-size:1.15rem;">🔗</span> Đường dẫn Google Sheet
                     </div>
+                    <div style="font-size:0.875rem; font-weight:600; color:#1e3a8a; margin-bottom:6px; line-height:1.4;">
+                        ● Đảm bảo liên kết đang ở chế độ xem công khai.
+                    </div>
                     """, unsafe_allow_html=True)
                     with st.container(key="step1_gsheet_inner_box"):
                         with st.container(key="step1_gsheet_box"):
@@ -1361,11 +1380,6 @@ try:
                                 placeholder="https://docs.google.com/spreadsheets/d/.../edit",
                                 label_visibility="collapsed"
                             )
-                        st.markdown("""
-                        <div style="display:flex; align-items:center; gap:6px; font-size:0.8rem; color:#d97706; font-weight:500;">
-                            <span>●</span> Đảm bảo liên kết đang ở chế độ xem công khai.
-                        </div>
-                        """, unsafe_allow_html=True)
                     if sheet_url:
                         if st.button("Đọc Google Sheet ➔", type="primary", use_container_width=True, key="btn_verify_gsheet"):
                             with st.spinner("⏳ Đang kết nối Google Sheet..."):
@@ -1388,10 +1402,10 @@ try:
             col_b_head, col_b_btn = st.columns([2.5, 1.5])
             with col_b_head:
                 st.markdown("""
-                <div style="display:flex; align-items:center; gap:8px; font-weight:700; color:#1e3a8a; font-size:1.05rem;">
-                    <span style="color:#2563eb; font-size:1.15rem;">📄</span> Bối cảnh doanh nghiệp
+                <div style="display:flex; align-items:center; gap:8px; font-weight:800; color:#1e3a8a; font-size:1.35rem; letter-spacing:-0.01em;">
+                    <span style="color:#2563eb; font-size:1.4rem;">📄</span> Bối cảnh doanh nghiệp
                 </div>
-                <div style="font-size:0.85rem; color:#64748b; margin-top:2px; margin-bottom:14px;">
+                <div style="font-size:0.88rem; color:#64748b; margin-top:3px; margin-bottom:14px; font-weight:500;">
                     Mô tả ngắn gọn về mô hình kinh doanh và mục tiêu phân tích.
                 </div>
                 """, unsafe_allow_html=True)
