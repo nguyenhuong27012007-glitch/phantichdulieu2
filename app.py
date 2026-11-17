@@ -1569,57 +1569,55 @@ try:
             </div>
         </div>
 
-        <!-- CỘT PHẢI: 3 BƯỚC QUY TRÌNH (BỐ CỤC SO LE) -->
+        <!-- CỘT PHẢI: 3 THẺ DỌC SO LE NHAU -->
         <div class="w-full md:w-[55%] relative h-[410px] flex items-center justify-center">
             <div class="absolute w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-2xl opacity-60 animate-pulse"></div>
             
-            <div class="relative w-full h-full grid grid-cols-2 gap-x-5 gap-y-6 items-start pt-4">
+            <div class="relative w-full grid grid-cols-3 gap-4 items-center">
                 
-                <!-- Bước 1 (Cao hơn - Trái) -->
-                <div onclick="triggerStart()" class="hover-card cursor-pointer glass-panel p-5 rounded-3xl shadow-lg border border-white flex flex-col justify-between h-44 transform -translate-y-2">
+                <!-- Bước 1 (Thẻ dọc - Cao) -->
+                <div onclick="triggerStart()" class="hover-card cursor-pointer glass-panel p-5 rounded-3xl shadow-lg border border-white flex flex-col justify-between h-64 transform -translate-y-6">
                     <div class="flex justify-between items-start">
                         <span class="w-9 h-9 rounded-full bg-blue-100 text-blue-600 font-bold flex items-center justify-center text-base">1</span>
                         <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                     </div>
                     <div>
                         <span class="text-[11px] text-slate-400 font-semibold uppercase">Bước 1</span>
-                        <h3 class="text-lg font-bold text-slate-800 mt-0.5">Nhập dữ liệu</h3>
-                        <p class="text-[11px] text-slate-500 mt-0.5">Kết nối đa nguồn nhanh chóng</p>
+                        <h3 class="text-lg font-bold text-slate-800 mt-0.5 leading-snug">Nhập dữ liệu</h3>
+                        <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">Kết nối đa nguồn nhanh chóng</p>
                     </div>
                 </div>
 
-                <!-- Bước 2 (Thấp hơn - Phải) -->
-                <div onclick="triggerStart()" class="hover-card cursor-pointer bg-gradient-to-br from-blue-500 to-blue-600 p-5 rounded-3xl shadow-xl text-white flex flex-col justify-between h-44 transform translate-y-6">
+                <!-- Bước 2 (Thẻ dọc - Thấp so le) -->
+                <div onclick="triggerStart()" class="hover-card cursor-pointer bg-gradient-to-br from-blue-500 to-blue-600 p-5 rounded-3xl shadow-xl text-white flex flex-col justify-between h-64 transform translate-y-6">
                     <div class="flex justify-between items-start">
                         <span class="w-9 h-9 rounded-full bg-white/20 text-white font-bold flex items-center justify-center text-base backdrop-blur-sm">2</span>
-                        <span class="bg-yellow-400 text-slate-900 text-[11px] font-bold px-2.5 py-1 rounded-full">Tự động AI</span>
+                        <span class="bg-yellow-400 text-slate-900 text-[10px] font-bold px-2.5 py-1 rounded-full">Tự động AI</span>
                     </div>
                     <div>
                         <span class="text-[11px] text-blue-100 font-semibold uppercase">Bước 2</span>
-                        <h3 class="text-xl font-bold mt-0.5">Làm sạch</h3>
-                        <div class="mt-2 bg-white/10 p-2 rounded-xl backdrop-blur-sm flex items-center space-x-2">
-                            <div class="w-2 h-2 rounded-full bg-green-400"></div>
+                        <h3 class="text-lg font-bold mt-0.5 leading-snug">Làm sạch</h3>
+                        <div class="mt-3 bg-white/10 p-2 rounded-xl backdrop-blur-sm flex items-center space-x-2">
+                            <div class="w-2 h-2 rounded-full bg-green-400 shrink-0"></div>
                             <span class="text-[11px] font-medium">100% Chính xác</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Bước 3 (So le lệch trái phía dưới) -->
-                <div onclick="triggerStart()" class="hover-card cursor-pointer col-span-2 glass-panel p-5 rounded-3xl shadow-lg border border-white flex items-center justify-between h-32 w-[88%] mr-auto ml-2 transform translate-y-2">
-                    <div class="flex items-center space-x-4">
-                        <span class="w-11 h-11 rounded-2xl bg-yellow-400 text-slate-900 font-black flex items-center justify-center text-lg shadow-md">3</span>
-                        <div>
-                            <span class="text-[11px] text-slate-400 font-semibold uppercase">Bước 3</span>
-                            <h3 class="text-lg font-bold text-slate-800">Tạo báo cáo</h3>
-                            <p class="text-[11px] text-slate-500">Biểu đồ trực quan &amp; xuất file dễ dàng</p>
+                <!-- Bước 3 (Thẻ dọc - Cao so le) -->
+                <div onclick="triggerStart()" class="hover-card cursor-pointer glass-panel p-5 rounded-3xl shadow-lg border border-white flex flex-col justify-between h-64 transform -translate-y-4">
+                    <div class="flex justify-between items-start">
+                        <span class="w-9 h-9 rounded-2xl bg-yellow-400 text-slate-900 font-black flex items-center justify-center text-base shadow-md">3</span>
+                        <div class="flex items-end space-x-1 h-8 p-1.5 bg-blue-50 rounded-lg border border-blue-100">
+                            <div class="w-1.5 bg-blue-300 h-2.5 rounded-t-sm"></div>
+                            <div class="w-1.5 bg-blue-500 h-4 rounded-t-sm"></div>
+                            <div class="w-1.5 bg-yellow-400 h-5 rounded-t-sm"></div>
                         </div>
                     </div>
-                    <div class="hidden sm:flex items-end space-x-1.5 h-14 p-2 bg-blue-50 rounded-xl border border-blue-100">
-                        <div class="w-2.5 bg-blue-300 h-5 rounded-t-sm"></div>
-                        <div class="w-2.5 bg-blue-400 h-8 rounded-t-sm"></div>
-                        <div class="w-2.5 bg-blue-600 h-11 rounded-t-sm"></div>
-                        <div class="w-2.5 bg-yellow-400 h-9 rounded-t-sm"></div>
-                        <span class="text-[11px] font-bold text-blue-700 ml-2 self-center px-1.5">Xuất báo cáo</span>
+                    <div>
+                        <span class="text-[11px] text-slate-400 font-semibold uppercase">Bước 3</span>
+                        <h3 class="text-lg font-bold text-slate-800 mt-0.5 leading-snug">Tạo báo cáo</h3>
+                        <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">Biểu đồ trực quan &amp; xuất file</p>
                     </div>
                 </div>
 
