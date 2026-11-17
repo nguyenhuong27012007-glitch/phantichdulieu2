@@ -2627,7 +2627,7 @@ try:
                             col_s2_btn_apply, col_s2_btn_undo = st.columns([2.5, 1.1])
                             with col_s2_btn_apply:
                                 btn_s2_fix_label = f"🛠️ Duyệt & Sửa ngay ({len(s2_chosen_fixes)} mục đã chọn)" if s2_chosen_fixes else "⚠️ Chưa chọn mục nào để sửa"
-                                if st.button(btn_s2_fix_label, type="primary", use_container_width=True, key=f"btn_apply_fixes_s2_{selected_file}", disabled=(not s2_chosen_fixes)):
+                                if st.button(btn_s2_fix_label, type="primary", use_container_width=False, key=f"btn_apply_fixes_s2_{selected_file}", disabled=(not s2_chosen_fixes)):
                                     with st.spinner(f"Đang áp dụng các sửa đổi do bạn duyệt trên tệp {selected_file}..."):
                                         fixed_df, fix_reps = apply_data_issue_fixes(df_current, s2_chosen_fixes, custom_instructions=s2_custom_instrs)
                                         orch.data_agent.raw_dataframes[selected_file] = fixed_df
