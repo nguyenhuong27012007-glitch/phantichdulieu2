@@ -1337,7 +1337,8 @@ if st.session_state.current_step != 0:
         .st-key-floating_left_dock {
             position: fixed !important;
             left: 18px !important;
-            top: 86px !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
             width: 58px !important;
             z-index: 99999 !important;
             background: rgba(255, 255, 255, 0.86) !important;
