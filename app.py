@@ -445,23 +445,52 @@ st.markdown(f"""
         justify-content: flex-start !important;
     }}
 
-    /* Vùng Upload Kéo Thả Viền Nét Đứt Xanh Dương */
-    div[data-testid="stFileUploader"] section {{
-        background: #ffffff !important;
+    /* Khung Viền Nét Đứt Xanh Dương Cho Ô Tải Tệp */
+    .st-key-step1_file_inner_box {{
         border: 2px dashed #93c5fd !important;
         border-radius: 16px !important;
         min-height: 145px !important;
-        padding: 1.2rem 1rem !important;
-        text-align: center !important;
+        padding: 1.5rem 1.2rem !important;
+        background: #ffffff !important;
         display: flex !important;
         flex-direction: column !important;
-        align-items: center !important;
         justify-content: center !important;
+        gap: 8px !important;
+    }}
+
+    /* Vùng Upload Kéo Thả */
+    div[data-testid="stFileUploader"] section {{
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 10px !important;
+        min-height: 44px !important;
+        height: 44px !important;
+        padding: 0 14px !important;
+        text-align: left !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
         transition: all 0.25s ease !important;
+        box-sizing: border-box !important;
     }}
     div[data-testid="stFileUploader"] section:hover {{
         border-color: #3b82f6 !important;
         background: #f8fbff !important;
+    }}
+    div[data-testid="stFileUploader"] section [data-testid="stFileUploaderDropzoneInstructions"] {{
+        text-align: left !important;
+        display: flex !important;
+        align-items: center !important;
+    }}
+    div[data-testid="stFileUploader"] section [data-testid="stFileUploaderDropzoneInstructions"] > div {{
+        display: flex !important;
+        align-items: center !important;
+    }}
+    div[data-testid="stFileUploader"] section [data-testid="stFileUploaderDropzoneInstructions"] span {{
+        color: #94a3b8 !important;
+        font-weight: 500 !important;
+        font-size: 0.92rem !important;
     }}
     div[data-testid="stFileUploader"] button {{
         display: none !important;
@@ -1353,14 +1382,18 @@ try:
                     <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; font-weight:800; color:#2563eb; font-size:1.1rem; letter-spacing:-0.01em;">
                         <span style="font-size:1.25rem;">📄</span> Tải tệp
                     </div>
+                    <div class="gsheet-hint-text" style="font-family:'Plus Jakarta Sans',sans-serif; font-size:0.95rem; font-weight:700; color:#0f172a; margin-bottom:8px; line-height:1.4;">
+                        Kéo thả tệp CSV, Excel vào đây hoặc Nhấn để tải lên
+                    </div>
                     """, unsafe_allow_html=True)
-                    uploaded_files = st.file_uploader(
-                        "Kéo thả tệp CSV, Excel vào đây hoặc Nhấn để tải lên",
-                        type=["csv", "xlsx", "xls"],
-                        accept_multiple_files=True,
-                        label_visibility="visible",
-                        key="s1_file_uploader"
-                    )
+                    with st.container(key="step1_file_inner_box"):
+                        uploaded_files = st.file_uploader(
+                            "Chọn file CSV, Excel...",
+                            type=["csv", "xlsx", "xls"],
+                            accept_multiple_files=True,
+                            label_visibility="collapsed",
+                            key="s1_file_uploader"
+                        )
                     if uploaded_files:
                         if st.button("Nạp tệp đã chọn ➔", type="primary", use_container_width=True, key="btn_verify_upload"):
                             with st.spinner("⏳ Đang đọc và kiểm tra dữ liệu..."):
