@@ -903,11 +903,11 @@ try:
             Phân tích dữ liệu
         </div>
         
-        <nav class="flex items-center gap-1 bg-white/80 backdrop-blur-md px-1.5 py-1.5 rounded-full shadow-sm border border-white/50 text-xs font-semibold text-slate-600 shrink-0 mx-2">
-            <a href="javascript:void(0)" class="px-4 py-1.5 hover:bg-slate-100 rounded-full transition">Mở đầu</a>
-            <a href="javascript:void(0)" onclick="triggerStart()" class="px-4 py-1.5 hover:bg-slate-100 rounded-full transition">Nạp file</a>
-            <a href="javascript:void(0)" onclick="triggerStart()" class="px-4 py-1.5 hover:bg-slate-100 rounded-full transition">Làm sạch</a>
-            <a href="javascript:void(0)" onclick="triggerStart()" class="px-4 py-1.5 hover:bg-slate-100 rounded-full transition">Tạo báo cáo</a>
+        <nav class="flex items-center gap-2 bg-white/85 backdrop-blur-md px-2 py-1.5 rounded-full shadow-sm border border-slate-200/60 text-xs font-semibold text-slate-700 shrink-0 mx-2">
+            <a href="javascript:void(0)" class="bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-900 font-bold px-4 py-1.5 rounded-full shadow-sm">1. Giới thiệu</a>
+            <a href="javascript:void(0)" onclick="triggerStart()" class="px-3 py-1.5 hover:text-amber-600 rounded-full transition">2. Quy trình</a>
+            <a href="javascript:void(0)" onclick="triggerStart()" class="px-3 py-1.5 hover:text-amber-600 rounded-full transition">3. Xử lý Dữ liệu</a>
+            <a href="javascript:void(0)" onclick="triggerStart()" class="px-3 py-1.5 hover:text-amber-600 rounded-full transition">4. Báo cáo & Dashboard</a>
         </nav>
 
         <div class="bg-white/80 backdrop-blur-md text-slate-700 font-semibold px-4 py-1.5 rounded-full shadow-sm border border-white/50 text-xs shrink-0">
