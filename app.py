@@ -531,10 +531,17 @@ st.markdown(f"""
         visibility: hidden !important;
         opacity: 0 !important;
     }}
-    div[data-testid="stFileUploader"] [data-testid="stFileUploaderDropzoneInstructions"] {{
+    /* Chữ 'Kéo thả tệp...' bên cột tải tệp đổi sang màu đen */
+    div[data-testid="stFileUploader"] label p,
+    div[data-testid="stFileUploader"] label span,
+    div[data-testid="stFileUploader"] label,
+    div[data-testid="stFileUploader"] [data-testid="stWidgetLabel"] p {{
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
         font-size: 0.95rem !important;
         font-weight: 700 !important;
         color: #0f172a !important;
+        line-height: 1.4 !important;
+        margin: 0 !important;
     }}
 
     /* Hộp thông báo chờ ở giữa màn hình */
@@ -1343,8 +1350,8 @@ try:
             with col_up1:
                 with st.container(key="zone_upload_left"):
                     st.markdown("""
-                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; font-weight:700; color:#1e3a8a; font-size:1.02rem;">
-                        <span style="color:#2563eb; font-size:1.15rem;">📄</span> Tải tệp
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; font-weight:800; color:#2563eb; font-size:1.1rem; letter-spacing:-0.01em;">
+                        <span style="font-size:1.25rem;">📄</span> Tải tệp
                     </div>
                     """, unsafe_allow_html=True)
                     uploaded_files = st.file_uploader(
@@ -1378,8 +1385,8 @@ try:
             with col_up2:
                 with st.container(key="zone_gsheet_right"):
                     st.markdown("""
-                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; font-weight:700; color:#1e3a8a; font-size:1.02rem;">
-                        <span style="color:#10b981; font-size:1.15rem;">🔗</span> Đường dẫn Google Sheet
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; font-weight:800; color:#2563eb; font-size:1.1rem; letter-spacing:-0.01em;">
+                        <span style="font-size:1.25rem;">🔗</span> Đường dẫn Google Sheet
                     </div>
                     <div class="gsheet-hint-text" style="font-family:'Plus Jakarta Sans',sans-serif; font-size:0.95rem; font-weight:700; color:#0f172a; margin-bottom:8px; line-height:1.4;">
                         Đảm bảo liên kết đang ở chế độ xem công khai.
