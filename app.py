@@ -1866,8 +1866,8 @@ try:
                 with col_hdr_l:
                     st.markdown(f"""
                     <div style="margin-bottom:4px;">
-                        <span style="display:inline-flex; align-items:center; gap:6px; background:#fef3c7; color:#92400e; border:1px solid #fde68a; border-radius:999px; padding:3px 12px; font-size:0.76rem; font-weight:700;">
-                            <span style="width:7px; height:7px; border-radius:50%; background:#f59e0b; display:inline-block;"></span>
+                        <span style="display:inline-flex; align-items:center; gap:6px; background:linear-gradient(90deg, #ffffff 0%, #eff6ff 100%); color:#1e3a8a; border:1px solid #bfdbfe; border-radius:999px; padding:3px 12px; font-size:0.76rem; font-weight:700;">
+                            <span style="width:7px; height:7px; border-radius:50%; background:#2563eb; display:inline-block;"></span>
                             Cần phê duyệt trước khi phân tích
                         </span>
                     </div>
@@ -1914,7 +1914,7 @@ try:
                         if is_selected_card else
                         "0 10px 24px -6px rgba(15, 23, 42, 0.10), 0 4px 8px -2px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.95)"
                     )
-                    sug_bg = "#fef9c3" if (is_selected_card or sev_label == "Cảnh báo") else ("#ecfeff" if sev_label == "Nhẹ" else "#f1f5f9")
+                    sug_bg = "#eff6ff" if is_selected_card else ("#eff6ff" if sev_label == "Nhẹ" else "#f1f5f9")
                     clean_desc = str(iss["desc"]).replace("`", "")
                     unit_lbl = "dòng" if "trùng" in iss["type"].lower() or "dòng" in iss["type"].lower() else "ô"
                     card_key = f"err_card_{idx_iss}"
