@@ -525,14 +525,14 @@ st.markdown(f"""
     /* Định dạng nhãn và chữ bên trong ô Upload và Google Sheet hoàn toàn đồng nhất */
     div[data-testid="stFileUploader"] label p,
     div[data-testid="stFileUploader"] label span,
-    .gsheet-hint-text {
+    .gsheet-hint-text {{
         font-family: 'Plus Jakarta Sans', sans-serif !important;
         font-size: 0.95rem !important;
         font-weight: 700 !important;
         color: #0f172a !important;
         line-height: 1.4 !important;
         margin: 0 !important;
-    }
+    }}
 
     /* Hộp thông báo chờ ở giữa màn hình */
     div[data-testid="stSpinner"] {{
