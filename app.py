@@ -458,10 +458,11 @@ st.markdown(f"""
         gap: 8px !important;
     }}
 
-    /* Vùng Upload Kéo Thả */
+    /* Vùng Upload Kéo Thả Trình Bày Y Hệt Khung Input Google Sheet */
     div[data-testid="stFileUploader"] section {{
         background: #ffffff !important;
-        border: 1px solid #cbd5e1 !important;
+        border: 1px solid rgba(203, 213, 225, 0.8) !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05) !important;
         border-radius: 10px !important;
         min-height: 44px !important;
         height: 44px !important;
@@ -476,21 +477,19 @@ st.markdown(f"""
     }}
     div[data-testid="stFileUploader"] section:hover {{
         border-color: #3b82f6 !important;
-        background: #f8fbff !important;
+        background: #ffffff !important;
     }}
-    div[data-testid="stFileUploader"] section [data-testid="stFileUploaderDropzoneInstructions"] {{
-        text-align: left !important;
-        display: flex !important;
-        align-items: center !important;
-    }}
-    div[data-testid="stFileUploader"] section [data-testid="stFileUploaderDropzoneInstructions"] > div {{
-        display: flex !important;
-        align-items: center !important;
-    }}
-    div[data-testid="stFileUploader"] section [data-testid="stFileUploaderDropzoneInstructions"] span {{
+    div[data-testid="stFileUploader"] section::after {{
+        content: "file CSV, Excel" !important;
         color: #94a3b8 !important;
-        font-weight: 500 !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
         font-size: 0.92rem !important;
+        font-weight: 500 !important;
+        pointer-events: none !important;
+    }}
+    div[data-testid="stFileUploader"] section [data-testid="stFileUploaderDropzoneInstructions"],
+    div[data-testid="stFileUploader"] section [data-testid="stFileUploaderDropzoneInstructions"] * {{
+        display: none !important;
     }}
     div[data-testid="stFileUploader"] button {{
         display: none !important;
