@@ -2297,7 +2297,37 @@ try:
                 st.rerun()
         else:
             file_list = list(orch.data_agent.raw_dataframes.keys())
-            st.markdown("### Bước 2: Làm sạch & kiểm tra dữ liệu")
+            st.markdown("""
+            <style>
+                .s2-unified-h3 {
+                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+                    font-size: 1.32rem !important;
+                    font-weight: 800 !important;
+                    color: #0f172a !important;
+                    margin-bottom: 0.6rem !important;
+                }
+                .st-key-zone_step2_audit_card,
+                .st-key-zone_step2_audit_card * {
+                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+                    font-size: 0.9rem !important;
+                }
+                .st-key-zone_step2_audit_card .s2-subhead-lg {
+                    font-size: 1.08rem !important;
+                    font-weight: 800 !important;
+                }
+                .st-key-btn_toggle_pv_s2 button,
+                .st-key-btn_toggle_pv_s2 button p {
+                    font-size: 1.02rem !important;
+                    font-weight: 700 !important;
+                }
+                div[class*="st-key-btn_apply_fixes_s2_"] button,
+                div[class*="st-key-btn_apply_fixes_s2_"] button p {
+                    font-size: 1.05rem !important;
+                    font-weight: 800 !important;
+                }
+            </style>
+            <div class="s2-unified-h3">Bước 2: Làm sạch &amp; kiểm tra dữ liệu</div>
+            """, unsafe_allow_html=True)
 
             top_bar_c1, top_bar_c2, top_bar_c3 = st.columns([1.8, 2.4, 1.8])
             with top_bar_c1:
@@ -2572,7 +2602,7 @@ try:
                                                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
                                             </div>
                                             <div>
-                                                <div style="font-size:0.92rem; color:#0f172a;"><b>Xem trước các dòng dữ liệu có lỗi</b> <span style="color:#64748b; font-size:0.84rem;">· {len(s2_err_preview)} dòng mẫu</span></div>
+                                                <div style="color:#0f172a;"><b class="s2-subhead-lg">Xem trước các dòng dữ liệu có lỗi</b> <span style="color:#64748b;">· {len(s2_err_preview)} dòng mẫu</span></div>
                                                 <div style="font-size:0.8rem; color:#64748b; margin-top:1px;">Đối chiếu trực tiếp các ô bị khuyết, số âm và chuỗi dư khoảng trắng trước khi sửa</div>
                                             </div>
                                         </div>
