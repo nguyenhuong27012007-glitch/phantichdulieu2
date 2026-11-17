@@ -1342,8 +1342,11 @@ with st.sidebar:
         <span style="color:#64748b; font-size:0.9rem;">◫</span>
     </div>
     <div class="sb-search-fake">
-        <span>🔍 &nbsp;Tìm kiếm nhanh...</span>
-        <span><span class="sb-kbd">⌘</span> <span class="sb-kbd">K</span></span>
+        <span style="display:inline-flex; align-items:center; gap:7px; white-space:nowrap;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <span>Tìm kiếm...</span>
+        </span>
+        <span style="display:inline-flex; gap:3px;"><span class="sb-kbd">⌘</span><span class="sb-kbd">K</span></span>
     </div>
     <div class="sb-sec-title">Điều hướng</div>
     """, unsafe_allow_html=True)
@@ -1353,13 +1356,13 @@ with st.sidebar:
         st.session_state.current_step = 0
         st.rerun()
 
-    lbl_nav1 = f"📥   Nhập dữ liệu ({_sb_files_cnt})" if _sb_files_cnt > 0 else "📥   Nhập dữ liệu"
+    lbl_nav1 = f"◫   Nhập dữ liệu ({_sb_files_cnt})" if _sb_files_cnt > 0 else "◫   Nhập dữ liệu"
     if st.button(lbl_nav1, use_container_width=True, type="primary" if _sb_cur == 1 else "secondary", key="sb_nav_1"):
         set_spinner_msg("⏳ Đang chuyển sang Bước 1: Nhập Dữ Liệu...")
         st.session_state.current_step = 1
         st.rerun()
 
-    lbl_nav2 = f"🧹   Làm sạch ({_sb_err_cnt} lỗi)" if _sb_err_cnt > 0 else "🧹   Làm sạch dữ liệu"
+    lbl_nav2 = f"◈   Làm sạch ({_sb_err_cnt} lỗi)" if _sb_err_cnt > 0 else "◈   Làm sạch dữ liệu"
     if st.button(lbl_nav2, use_container_width=True, type="primary" if _sb_cur == 2 else "secondary", key="sb_nav_2"):
         if st.session_state.step1_approved:
             set_spinner_msg("⏳ Đang mở Bước 2: Làm Sạch...")
@@ -1368,7 +1371,7 @@ with st.sidebar:
         else:
             st.toast("⚠️ Vui lòng nạp file và Duyệt Bước 1 trước!", icon="⚠️")
 
-    if st.button("📊   Báo cáo & Dashboard", use_container_width=True, type="primary" if _sb_cur == 3 else "secondary", key="sb_nav_3"):
+    if st.button("↗   Báo cáo & Dashboard", use_container_width=True, type="primary" if _sb_cur == 3 else "secondary", key="sb_nav_3"):
         if st.session_state.step2_approved:
             set_spinner_msg("⏳ Đang mở Bước 3: Tạo Báo Cáo...")
             st.session_state.current_step = 3
@@ -1376,7 +1379,7 @@ with st.sidebar:
         else:
             st.toast("⚠️ Vui lòng Duyệt Bước 2 trước!", icon="⚠️")
 
-    if st.button("🔄   Làm mới phiên", use_container_width=True, key="sb_reset_session"):
+    if st.button("↻   Làm mới phiên", use_container_width=True, key="sb_reset_session"):
         for k in ["files_loaded", "file_messages", "analysis_results", "editable_report", "editable_plan", "dashboard_scores_df"]:
             if k in st.session_state:
                 st.session_state[k] = [] if k in ["files_loaded", "file_messages"] else None
