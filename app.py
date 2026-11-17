@@ -522,11 +522,17 @@ st.markdown(f"""
         transform: translateY(-1px) !important;
     }}
 
-    /* Ẩn chữ '200MB per file' và icon phụ trong Streamlit file uploader */
-    div[data-testid="stFileUploader"] small,
-    div[data-testid="stFileUploader"] [data-testid="stFileUploaderDropzoneInstructions"] > div > small {{
-        display: none !important;
-    }}
+    /* Định dạng nhãn và chữ bên trong ô Upload và Google Sheet hoàn toàn đồng nhất */
+    div[data-testid="stFileUploader"] label p,
+    div[data-testid="stFileUploader"] label span,
+    .gsheet-hint-text {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-size: 0.95rem !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+        line-height: 1.4 !important;
+        margin: 0 !important;
+    }
 
     /* Hộp thông báo chờ ở giữa màn hình */
     div[data-testid="stSpinner"] {{
@@ -1315,11 +1321,11 @@ try:
                     st.rerun()
         else:
             st.markdown("""
-            <div style="margin-bottom:0.8rem;">
-                <h2 style="font-size:1.85rem; font-weight:800; color:#1e3a8a; margin:0 0 4px 0; letter-spacing:-0.02em;">
-                    Bước 1: Nhập dữ liệu
+            <div style="margin-bottom:1.2rem; padding-bottom:0.6rem; border-bottom:3px solid #2563eb; display:inline-block;">
+                <h2 style="font-size:2.2rem; font-weight:800; color:#0f172a; margin:0 0 6px 0; letter-spacing:-0.03em; line-height:1.2;">
+                    🚀 Bước 1: Nhập dữ liệu
                 </h2>
-                <div style="font-size:0.92rem; color:#64748b; font-weight:500;">
+                <div style="font-size:1rem; color:#475569; font-weight:600;">
                     Tải lên tệp CSV / Excel hoặc dán đường dẫn Google Sheet công khai để bắt đầu.
                 </div>
             </div>
@@ -1369,7 +1375,7 @@ try:
                     <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; font-weight:700; color:#1e3a8a; font-size:1.02rem;">
                         <span style="color:#10b981; font-size:1.15rem;">🔗</span> Đường dẫn Google Sheet
                     </div>
-                    <div style="font-size:0.875rem; font-weight:600; color:#1e3a8a; margin-bottom:6px; line-height:1.4;">
+                    <div class="gsheet-hint-text" style="margin-bottom:8px;">
                         ● Đảm bảo liên kết đang ở chế độ xem công khai.
                     </div>
                     """, unsafe_allow_html=True)
@@ -1402,10 +1408,10 @@ try:
             col_b_head, col_b_btn = st.columns([2.5, 1.5])
             with col_b_head:
                 st.markdown("""
-                <div style="display:flex; align-items:center; gap:8px; font-weight:800; color:#1e3a8a; font-size:1.35rem; letter-spacing:-0.01em;">
-                    <span style="color:#2563eb; font-size:1.4rem;">📄</span> Bối cảnh doanh nghiệp
+                <div style="display:flex; align-items:center; gap:10px; font-weight:800; color:#0f172a; font-size:1.6rem; letter-spacing:-0.02em; padding-bottom:4px; border-bottom:2.5px solid #3b82f6; display:inline-flex;">
+                    <span style="color:#2563eb; font-size:1.7rem;">📄</span> Bối cảnh doanh nghiệp
                 </div>
-                <div style="font-size:0.88rem; color:#64748b; margin-top:3px; margin-bottom:14px; font-weight:500;">
+                <div style="font-size:0.95rem; color:#475569; margin-top:6px; margin-bottom:14px; font-weight:600;">
                     Mô tả ngắn gọn về mô hình kinh doanh và mục tiêu phân tích.
                 </div>
                 """, unsafe_allow_html=True)
