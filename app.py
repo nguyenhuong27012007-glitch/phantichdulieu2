@@ -1907,13 +1907,42 @@ try:
                     else:
                         sev_bg, sev_fg, sev_dot, sev_bd = "#e0f2fe", "#0284c7", "#38bdf8", "#bae6fd"
 
-                    card_bg = "#fffbeb" if (sev_label == "Cảnh báo" and not is_selected_card) else "#ffffff"
-                    card_border = "2px solid #2563eb" if is_selected_card else ("1px solid #fde68a" if sev_label == "Cảnh báo" else "1px solid #e2e8f0")
+                    card_bg = "#f0f7ff" if is_selected_card else ("#fffbeb" if sev_label == "Cảnh báo" else "rgba(255, 255, 255, 0.92)")
+                    card_border = "2px solid #2563eb" if is_selected_card else ("1.5px solid #fde68a" if sev_label == "Cảnh báo" else "1px solid #e2e8f0")
+                    card_shadow = "0 4px 16px rgba(37, 99, 235, 0.12)" if is_selected_card else "0 2px 8px rgba(15, 23, 42, 0.04)"
                     sug_bg = "#fef9c3" if (is_selected_card or sev_label == "Cảnh báo") else ("#ecfeff" if sev_label == "Nhẹ" else "#f1f5f9")
                     clean_desc = str(iss["desc"]).replace("`", "")
                     unit_lbl = "dòng" if "trùng" in iss["type"].lower() or "dòng" in iss["type"].lower() else "ô"
+                    card_key = f"err_card_{idx_iss}"
 
-                    with st.container(border=True):
+                    st.markdown(f"""
+                    <style>
+                        .st-key-{card_key} {{
+                            background: {card_bg} !important;
+                            border: {card_border} !important;
+                            border-radius: 16px !important;
+                            padding: 14px 18px !important;
+                            margin-bottom: 10px !important;
+                            box-shadow: {card_shadow} !important;
+                        }}
+                        .st-key-{card_key} div[data-testid="stCheckbox"] label span[data-baseweb="checkbox"] > div {{
+                            background-color: {"#2563eb" if is_selected_card else "#ffffff"} !important;
+                            border-color: {"#2563eb" if is_selected_card else "#cbd5e1"} !important;
+                        }}
+                        .st-key-{card_key} div[data-testid="stTextInput"] div[data-baseweb="input"] {{
+                            background: {sug_bg} !important;
+                            border: 1px solid #e2e8f0 !important;
+                            border-radius: 8px !important;
+                        }}
+                        .st-key-{card_key} div[data-testid="stTextInput"] input {{
+                            background: transparent !important;
+                            color: #0f172a !important;
+                            font-size: 0.84rem !important;
+                        }}
+                    </style>
+                    """, unsafe_allow_html=True)
+
+                    with st.container(key=card_key):
                         c_top_chk, c_top_title, c_top_badge = st.columns([0.45, 5.2, 1.35])
                         with c_top_chk:
                             is_chk = st.checkbox(
