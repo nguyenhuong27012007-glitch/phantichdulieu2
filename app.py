@@ -543,6 +543,107 @@ st.markdown(f"""
         font-family: inherit !important;
         font-weight: 600 !important;
     }}
+
+    /* ============================================================
+       SIDEBAR THU GỌN CHỈ HIỂN THỊ ICON DỌC, HOVER DI CHUỘT LÀ TỰ MỞ RA
+       ============================================================ */
+    section[data-testid="stSidebar"] {{
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        height: 100vh !important;
+        width: 68px !important;
+        min-width: 68px !important;
+        max-width: 68px !important;
+        background: rgba(240, 246, 255, 0.85) !important;
+        backdrop-filter: blur(16px) !important;
+        -webkit-backdrop-filter: blur(16px) !important;
+        border-right: 1.5px solid rgba(191, 219, 254, 0.8) !important;
+        box-shadow: 4px 0 24px rgba(37, 99, 235, 0.06) !important;
+        transition: width 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+                    max-width 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+                    min-width 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+                    box-shadow 0.32s ease,
+                    background 0.32s ease !important;
+        overflow-x: hidden !important;
+        overflow-y: hidden !important;
+        z-index: 99999 !important;
+        transform: none !important;
+        visibility: visible !important;
+    }}
+
+    /* Khi rê chuột vào Sidebar: Tự động trượt mở rộng ra như menu bay */
+    section[data-testid="stSidebar"]:hover {{
+        width: 290px !important;
+        min-width: 290px !important;
+        max-width: 290px !important;
+        background: rgba(255, 255, 255, 0.98) !important;
+        box-shadow: 12px 0 40px rgba(30, 58, 138, 0.16) !important;
+        overflow-y: auto !important;
+    }}
+
+    /* Bố trí nội dung bên trong sidebar */
+    section[data-testid="stSidebar"] > div:first-child {{
+        width: 290px !important;
+        padding: 1.2rem 0.75rem !important;
+        box-sizing: border-box !important;
+    }}
+
+    /* Ẩn nút mũi tên đóng/mở mặc định của Streamlit vì đã có hover tự mở */
+    [data-testid="stSidebarCollapseButton"],
+    button[data-testid="baseButton-headerNoPadding"],
+    [data-testid="collapsedControl"] {{
+        display: none !important;
+    }}
+
+    /* Nút bấm trong Sidebar: Thu gọn thành Icon khi chưa hover */
+    section[data-testid="stSidebar"] .stButton > button {{
+        overflow: hidden !important;
+        white-space: nowrap !important;
+        text-align: left !important;
+        justify-content: flex-start !important;
+        border-radius: 12px !important;
+        padding: 0.65rem 0.85rem !important;
+        border: 1px solid transparent !important;
+        background: transparent !important;
+        transition: all 0.2s ease !important;
+        color: #334155 !important;
+        font-weight: 600 !important;
+        font-size: 0.95rem !important;
+        width: 100% !important;
+    }}
+    section[data-testid="stSidebar"] .stButton > button:hover {{
+        background: #e0f2fe !important;
+        color: #0284c7 !important;
+        border-color: #bae6fd !important;
+    }}
+
+    /* Hiệu ứng hiển thị chữ mượt mà khi sidebar mở rộng */
+    section[data-testid="stSidebar"] h3,
+    section[data-testid="stSidebar"] h4,
+    section[data-testid="stSidebar"] hr,
+    section[data-testid="stSidebar"] [data-testid="stSelectbox"],
+    section[data-testid="stSidebar"] [data-testid="stExpander"],
+    section[data-testid="stSidebar"] [data-testid="stCaptionContainer"] {{
+        opacity: 0 !important;
+        transition: opacity 0.2s ease !important;
+        pointer-events: none !important;
+    }}
+    section[data-testid="stSidebar"]:hover h3,
+    section[data-testid="stSidebar"]:hover h4,
+    section[data-testid="stSidebar"]:hover hr,
+    section[data-testid="stSidebar"]:hover [data-testid="stSelectbox"],
+    section[data-testid="stSidebar"]:hover [data-testid="stExpander"],
+    section[data-testid="stSidebar"]:hover [data-testid="stCaptionContainer"] {{
+        opacity: 1 !important;
+        pointer-events: auto !important;
+    }}
+
+    /* Giữ khoảng cách lề trái cho nội dung chính không bị che bởi thanh icon 68px */
+    .main, [data-testid="stMain"] {{
+        margin-left: 68px !important;
+        transition: margin-left 0.32s ease !important;
+    }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -598,17 +699,17 @@ if step != 0:
 with st.sidebar:
     st.markdown("<h3 style='color:#1e3a8a; font-size:1.1rem; margin-bottom:0.6rem;'>🧭 Điều hướng nhanh</h3>", unsafe_allow_html=True)
 
-    if st.button("🏠 Trang Mở Đầu", use_container_width=True, key="sb_nav_0"):
+    if st.button("⊞   Tổng quan", use_container_width=True, key="sb_nav_0"):
         set_spinner_msg("⏳ Đang quay lại Trang Mở Đầu...")
         st.session_state.current_step = 0
         st.rerun()
 
-    if st.button("📥 Bước 1: Nhập Dữ Liệu", use_container_width=True, key="sb_nav_1"):
+    if st.button("🗂   Nhập bảng tính", use_container_width=True, key="sb_nav_1"):
         set_spinner_msg("⏳ Đang chuyển sang Bước 1: Nhập Dữ Liệu...")
         st.session_state.current_step = 1
         st.rerun()
 
-    if st.button("🧹 Bước 2: Làm Sạch", use_container_width=True, key="sb_nav_2"):
+    if st.button("🗄   Xử lý dữ liệu", use_container_width=True, key="sb_nav_2"):
         if st.session_state.step1_approved:
             set_spinner_msg("⏳ Đang mở Bước 2: Làm Sạch...")
             st.session_state.current_step = 2
@@ -616,7 +717,7 @@ with st.sidebar:
         else:
             st.toast("⚠️ Vui lòng nạp file và Duyệt Bước 1 trước!", icon="⚠️")
 
-    if st.button("📊 Bước 3: Tạo Báo Cáo", use_container_width=True, key="sb_nav_3"):
+    if st.button("📈   Báo cáo & Dashboard", use_container_width=True, key="sb_nav_3"):
         if st.session_state.step2_approved:
             set_spinner_msg("⏳ Đang mở Bước 3: Tạo Báo Cáo...")
             st.session_state.current_step = 3
@@ -624,7 +725,7 @@ with st.sidebar:
         else:
             st.toast("⚠️ Vui lòng Duyệt Bước 2 trước!", icon="⚠️")
 
-    if st.button("🔄 Làm Mới Phiên Làm Việc", use_container_width=True, key="sb_reset_session"):
+    if st.button("🔄   Làm mới phiên", use_container_width=True, key="sb_reset_session"):
         for k in ["files_loaded", "file_messages", "analysis_results", "editable_report", "editable_plan", "dashboard_scores_df"]:
             if k in st.session_state:
                 st.session_state[k] = [] if k in ["files_loaded", "file_messages"] else None
@@ -794,6 +895,12 @@ try:
             <style>
                 header[data-testid="stHeader"] {
                     background: transparent !important;
+                }
+                .main, [data-testid="stMain"] {
+                    margin-left: 0 !important;
+                }
+                section[data-testid="stSidebar"] {
+                    display: none !important;
                 }
                 .main .block-container, [data-testid="stMainBlockContainer"] {
                     padding: 2.6rem 0 0 0 !important;
