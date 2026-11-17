@@ -319,6 +319,78 @@ def get_orchestrator() -> AgentOrchestrator:
 
 orch = get_orchestrator()
 
+st.markdown("""
+<style>
+    /* Hiệu ứng phóng to mượt mà khi di chuột vào các ô, khung, thẻ và nút */
+    .st-key-zone_upload_left,
+    .st-key-zone_gsheet_right,
+    .st-key-zone_biz_context,
+    .st-key-zone_step2_audit_card,
+    .st-key-zone_step2_workspace,
+    .st-key-zone_step3_preview,
+    .st-key-err_preview_card,
+    .st-key-s2_err_preview_card,
+    [data-testid="stMetric"],
+    [data-testid="stAlert"],
+    [data-testid="stExpander"] {
+        transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s ease !important;
+    }
+    .st-key-zone_upload_left:hover,
+    .st-key-zone_gsheet_right:hover,
+    .st-key-zone_biz_context:hover,
+    .st-key-zone_step2_audit_card:hover,
+    .st-key-zone_step2_workspace:hover,
+    .st-key-zone_step3_preview:hover,
+    .st-key-err_preview_card:hover,
+    .st-key-s2_err_preview_card:hover,
+    [data-testid="stMetric"]:hover,
+    [data-testid="stAlert"]:hover,
+    [data-testid="stExpander"]:hover {
+        transform: scale(1.015) translateY(-2px) !important;
+        box-shadow: 0 14px 32px rgba(37, 99, 235, 0.12) !important;
+    }
+    div.stButton > button,
+    div.stDownloadButton > button {
+        transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.18s ease !important;
+    }
+    div.stButton > button:hover,
+    div.stDownloadButton > button:hover {
+        transform: scale(1.025) translateY(-1px) !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# ============================================================
+# HIỆU ỨNG GẠT CẢ TRANG KHI CHUYỂN BƯỚC (GIỐNG CANVA WIPE/SLIDE)
+# ============================================================
+_prev_step_anim = st.session_state.get("_last_rendered_step", st.session_state.current_step)
+_cur_step_anim = st.session_state.current_step
+if _cur_step_anim != _prev_step_anim:
+    _is_forward = (_cur_step_anim > _prev_step_anim)
+    _from_x = "100vw" if _is_forward else "-100vw"
+    _clip_from = "inset(0 0 0 100%)" if _is_forward else "inset(0 100% 0 0)"
+    st.markdown(f"""
+    <style>
+        @keyframes canvaPageWipe {{
+            0% {{
+                opacity: 0.25;
+                transform: translateX({_from_x});
+                clip-path: {_clip_from};
+            }}
+            100% {{
+                opacity: 1;
+                transform: translateX(0);
+                clip-path: inset(0 0 0 0);
+            }}
+        }}
+        .main .block-container, [data-testid="stMainBlockContainer"] {{
+            animation: canvaPageWipe 0.52s cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
+            will-change: transform, clip-path, opacity;
+        }}
+    </style>
+    """, unsafe_allow_html=True)
+st.session_state._last_rendered_step = _cur_step_anim
+
 if not st.session_state.api_key_set and DEFAULT_GEMINI_API_KEY:
     try:
         success, _ = orch.initialize_ai(DEFAULT_GEMINI_API_KEY, model_name=st.session_state.selected_ai_model)
@@ -774,8 +846,7 @@ st.markdown(f"""
         color: #334155 !important;
     }}
 
-    /* Thẻ Bối Cảnh Doanh Nghiệp Viền Trắng Bo Tròn Đẹp */
-    .st-key-zone_biz_context {{
+    /* Thẻ Bối Cảnh Doanh Nghiệp Viền Trắ    .st-key-zone_biz_context {{
         background: #ffffff !important;
         border: 1px solid rgba(226, 232, 240, 0.9) !important;
         border-radius: 20px !important;
@@ -1668,10 +1739,10 @@ try:
         </div>
         
         <nav class="hidden md:flex items-center space-x-1 glass-panel px-2 py-1.5 rounded-full shadow-sm text-xs font-medium text-slate-600">
-            <a href="javascript:void(0)" class="bg-slate-900 text-white px-4 py-1.5 rounded-full transition">1. Giới thiệu</a>
-            <a href="javascript:void(0)" onclick="triggerStart()" class="px-4 py-1.5 hover:text-slate-900 transition">2. Quy trình</a>
-            <a href="javascript:void(0)" onclick="triggerStart()" class="px-4 py-1.5 hover:text-slate-900 transition">3. Xử lý Dữ liệu</a>
-            <a href="javascript:void(0)" onclick="triggerStart()" class="px-4 py-1.5 hover:text-slate-900 transition">4. Báo cáo &amp; Dashboard</a>
+            <a href="javascript:void(0)" class="bg-slate-900 text-white px-4 py-1.5 rounded-full transition">Giới thiệu</a>
+            <a href="javascript:void(0)" onclick="triggerStart()" class="px-4 py-1.5 hover:text-slate-900 transition">Nhập dữ liệu</a>
+            <a href="javascript:void(0)" onclick="triggerStart()" class="px-4 py-1.5 hover:text-slate-900 transition">Xử lý Dữ liệu</a>
+            <a href="javascript:void(0)" onclick="triggerStart()" class="px-4 py-1.5 hover:text-slate-900 transition">Báo cáo &amp; Dashboard</a>
         </nav>
 
         <div class="w-24 hidden md:block"></div>
@@ -1940,6 +2011,109 @@ try:
         # ============================================================
         # BỐI CẢNH DOANH NGHIỆP (CHỈ HIỆN SAU KHI ĐÃ XỬ LÝ/BỎ QUA LỖI)
         # ============================================================
+        if st.session_state.file_messages:
+            if "step1_ai_summaries" not in st.session_state:
+                st.session_state.step1_ai_summaries = {}
+            st.markdown(f"#### 📋 Chi tiết kiểm tra & Phê duyệt xử lý lỗi ({len(st.session_state.file_messages)} tệp)")
+            with st.container():
+                for item in st.session_state.file_messages[-6:]:
+                    if item["success"]:
+                        df_chk = orch.data_agent.raw_dataframes.get(item["file"])
+                        if df_chk is not None and not df_chk.empty:
+                            health_info = compute_data_health_metrics(df_chk)
+                            detected_issues = detect_data_issues(df_chk, item["file"])
+                            f_info_item = orch.data_agent.file_infos.get(item["file"], {})
+                            has_backup = "original_df" in f_info_item and f_info_item["original_df"] is not None
+                            user_logs_s1 = f_info_item.get("user_action_log", [])
+
+                            if detected_issues:
+                                _short_err_lines = "\n".join(
+                                    f"- **{iss['type']}:** {iss['count']:,} {'dòng' if 'trùng' in iss['type'].lower() or 'dòng' in iss['type'].lower() else 'ô'}"
+                                    for iss in detected_issues
+                                )
+                                st.warning(
+                                    f"⚠️ **Phát hiện {len(detected_issues)} nhóm lỗi trong tệp `{item['file']}`:**\n\n"
+                                    f"{_short_err_lines}\n\n"
+                                    f"👉 Vui lòng bấm **✅ Duyệt & Sang Bước 2 ➔** để kiểm tra chi tiết và xử lý làm sạch."
+                                )
+                            else:
+                                st.success(
+                                    f"✅ **Tệp `{item['file']}` đạt chuẩn chất lượng 100% ({len(df_chk):,} dòng × {len(df_chk.columns)} cột):** "
+                                    f"Không có ô trống, không có bản ghi trùng lặp và định dạng hoàn toàn hợp lệ."
+                                )
+                                if has_backup and user_logs_s1:
+                                    with st.expander(f"📜 Nhật ký các mục bạn đã duyệt sửa trên `{item['file']}` ({len(user_logs_s1)} thao tác)", expanded=False):
+                                        for u_l in user_logs_s1:
+                                            st.markdown(f"- ✅ {u_l}")
+                                        if st.button("↩️ Hoàn tác & Khôi phục dữ liệu gốc ban đầu", key=f"btn_undo_clean_s1_{item['file']}"):
+                                            orig_copy = f_info_item["original_df"].copy()
+                                            orch.data_agent.raw_dataframes[item["file"]] = orig_copy
+                                            f_info_item["rows"] = len(orig_copy)
+                                            f_info_item["user_action_log"] = []
+                                            st.rerun()
+                            
+                            cache_key = f"v2_{item['file']}_{len(df_chk)}_{len(df_chk.columns)}"
+                            if cache_key not in st.session_state.step1_ai_summaries:
+                                null_cnt = int(df_chk.isna().sum().sum())
+                                dup_cnt = int(df_chk.duplicated().sum())
+                                null_cols = df_chk.columns[df_chk.isna().any()].tolist()
+                                neg_cols = []
+                                for nc in df_chk.select_dtypes(include=["number"]).columns:
+                                    if (df_chk[nc].dropna() < 0).any():
+                                        neg_cols.append(str(nc))
+                                has_issues = (null_cnt > 0) or (dup_cnt > 0) or bool(neg_cols)
+
+                                ai_text = ""
+                                if getattr(orch.analysis_agent, "model", None) is not None:
+                                    try:
+                                        cols_preview = ", ".join(str(c) for c in df_chk.columns[:18])
+                                        sample_csv = df_chk.head(3).to_csv(index=False)
+                                        if has_issues:
+                                            prompt_s1 = (
+                                                f"Hãy nhận xét ngắn gọn bằng tiếng Việt (2-3 gạch đầu dòng, không đếm số dòng/cột) về vấn đề của tệp '{item['file']}':\n"
+                                                f"- Số ô trống: {null_cnt:,} (tại các cột: {', '.join(str(c) for c in null_cols[:5])})\n"
+                                                f"- Số dòng trùng lặp: {dup_cnt:,}\n"
+                                                f"- Cột có giá trị âm: {', '.join(neg_cols[:5]) if neg_cols else 'Không'}\n"
+                                                f"Các cột: {cols_preview}\nMẫu:\n{sample_csv}\n"
+                                                f"Nêu rõ tệp đang gặp lỗi gì và gợi ý ngắn gọn cách xử lý."
+                                            )
+                                        else:
+                                            prompt_s1 = (
+                                                f"Tệp '{item['file']}' không có lỗi dữ liệu. Hãy nhận xét ngắn gọn bằng tiếng Việt (2-3 gạch đầu dòng, không đếm số dòng/cột) "
+                                                f"về tình hình hoạt động / kinh doanh của doanh nghiệp dựa trên các cột ({cols_preview}) và mẫu sau:\n{sample_csv}"
+                                            )
+                                        resp = orch.analysis_agent.model.generate_content(prompt_s1, request_options={"timeout": 5})
+                                        ai_text = (getattr(resp, "text", "") or "").strip()
+                                    except Exception:
+                                        ai_text = ""
+                                if not ai_text:
+                                    if has_issues:
+                                        issues_parts = []
+                                        if null_cnt > 0:
+                                            cols_str = ", ".join(str(c) for c in null_cols[:4])
+                                            more_c = f" (+{len(null_cols)-4} cột)" if len(null_cols) > 4 else ""
+                                            issues_parts.append(f"- **Dữ liệu bị thiếu:** Có **{null_cnt:,} ô trống** rải rác ở các cột `{cols_str}`{more_c}.")
+                                        if dup_cnt > 0:
+                                            issues_parts.append(f"- **Trùng lặp bản ghi:** Phát hiện **{dup_cnt:,} dòng trùng lặp** cần rà soát.")
+                                        if neg_cols:
+                                            issues_parts.append(f"- **Giá trị bất thường:** Cột `{', '.join(neg_cols[:4])}` có chứa số âm.")
+                                        issues_parts.append("- **Gợi ý xử lý:** Tích chọn các mục sửa lỗi bên trên và bấm **Duyệt & Sửa ngay**, hoặc sửa trực tiếp tại bảng bên dưới.")
+                                        ai_text = "\n".join(issues_parts)
+                                    else:
+                                        rev_cols = [c for c in df_chk.columns if any(k in str(c).lower() for k in ["revenue", "doanh_thu", "doanhthu", "sales", "amount", "profit", "loi_nhuan"])]
+                                        biz_parts = [f"- **Tình trạng dữ liệu:** Tệp sạch, không phát hiện ô trống hay dòng trùng lặp."]
+                                        if rev_cols:
+                                            rc = rev_cols[0]
+                                            s_val = pd.to_numeric(df_chk[rc], errors="coerce").dropna()
+                                            if len(s_val) > 0:
+                                                biz_parts.append(f"- **Tình hình kinh doanh:** Chỉ số `{rc}` đạt tổng **{s_val.sum():,.0f}** (trung bình **{s_val.mean():,.1f}**/giao dịch).")
+                                        biz_parts.append("- **Đánh giá chung:** Dữ liệu phản ánh hoạt động vận hành ổn định, đủ điều kiện tổng hợp báo cáo và Dashboard ở Bước 3.")
+                                        ai_text = "\n".join(biz_parts)
+                                st.session_state.step1_ai_summaries[cache_key] = ai_text
+                            st.info(f"🤖 **Nhận xét nhanh về `{item['file']}`:**\n\n{st.session_state.step1_ai_summaries[cache_key]}")
+                    else:
+                        st.error(f"❌ **Lỗi đọc tệp '{item['file']}':** {item['msg']}\n\n*💡 Hướng dẫn khắc phục: Kiểm tra xem tệp có đang mở hoặc bị khóa bởi phần mềm khác không, hoặc lưu lại tệp dưới định dạng chuẩn CSV (UTF-8) / Excel (.xlsx).*")
+
         with st.container(key="zone_biz_context"):
             col_b_head, col_b_btn = st.columns([2.4, 1.6])
             with col_b_head:
@@ -2028,104 +2202,6 @@ try:
                     st.session_state.current_step = 2
                     st.rerun()
 
-        if st.session_state.file_messages:
-            if "step1_ai_summaries" not in st.session_state:
-                st.session_state.step1_ai_summaries = {}
-            st.markdown(f"#### 📋 Chi tiết kiểm tra & Phê duyệt xử lý lỗi ({len(st.session_state.file_messages)} tệp)")
-            with st.container():
-                for item in st.session_state.file_messages[-6:]:
-                    if item["success"]:
-                        df_chk = orch.data_agent.raw_dataframes.get(item["file"])
-                        if df_chk is not None and not df_chk.empty:
-                            health_info = compute_data_health_metrics(df_chk)
-                            detected_issues = detect_data_issues(df_chk, item["file"])
-                            f_info_item = orch.data_agent.file_infos.get(item["file"], {})
-                            has_backup = "original_df" in f_info_item and f_info_item["original_df"] is not None
-                            user_logs_s1 = f_info_item.get("user_action_log", [])
-
-                            if detected_issues:
-                                st.warning(
-                                    f"⚠️ **Phát hiện {len(detected_issues)} nhóm lỗi trong tệp `{item['file']}`.** "
-                                    f"Vui lòng bấm **✅ Duyệt & Sang Bước 2 ➔** để kiểm tra chi tiết và xử lý làm sạch."
-                                )
-                            else:
-                                st.success(
-                                    f"✅ **Tệp `{item['file']}` đạt chuẩn chất lượng 100% ({len(df_chk):,} dòng × {len(df_chk.columns)} cột):** "
-                                    f"Không có ô trống, không có bản ghi trùng lặp và định dạng hoàn toàn hợp lệ."
-                                )
-                                if has_backup and user_logs_s1:
-                                    with st.expander(f"📜 Nhật ký các mục bạn đã duyệt sửa trên `{item['file']}` ({len(user_logs_s1)} thao tác)", expanded=False):
-                                        for u_l in user_logs_s1:
-                                            st.markdown(f"- ✅ {u_l}")
-                                        if st.button("↩️ Hoàn tác & Khôi phục dữ liệu gốc ban đầu", key=f"btn_undo_clean_s1_{item['file']}"):
-                                            orig_copy = f_info_item["original_df"].copy()
-                                            orch.data_agent.raw_dataframes[item["file"]] = orig_copy
-                                            f_info_item["rows"] = len(orig_copy)
-                                            f_info_item["user_action_log"] = []
-                                            st.rerun()
-                            
-                            cache_key = f"v2_{item['file']}_{len(df_chk)}_{len(df_chk.columns)}"
-                            if cache_key not in st.session_state.step1_ai_summaries:
-                                null_cnt = int(df_chk.isna().sum().sum())
-                                dup_cnt = int(df_chk.duplicated().sum())
-                                null_cols = df_chk.columns[df_chk.isna().any()].tolist()
-                                neg_cols = []
-                                for nc in df_chk.select_dtypes(include=["number"]).columns:
-                                    if (df_chk[nc].dropna() < 0).any():
-                                        neg_cols.append(str(nc))
-                                has_issues = (null_cnt > 0) or (dup_cnt > 0) or bool(neg_cols)
-
-                                ai_text = ""
-                                if getattr(orch.analysis_agent, "model", None) is not None:
-                                    try:
-                                        cols_preview = ", ".join(str(c) for c in df_chk.columns[:18])
-                                        sample_csv = df_chk.head(3).to_csv(index=False)
-                                        if has_issues:
-                                            prompt_s1 = (
-                                                f"Hãy nhận xét ngắn gọn bằng tiếng Việt (2-3 gạch đầu dòng, không đếm số dòng/cột) về vấn đề của tệp '{item['file']}':\n"
-                                                f"- Số ô trống: {null_cnt:,} (tại các cột: {', '.join(str(c) for c in null_cols[:5])})\n"
-                                                f"- Số dòng trùng lặp: {dup_cnt:,}\n"
-                                                f"- Cột có giá trị âm: {', '.join(neg_cols[:5]) if neg_cols else 'Không'}\n"
-                                                f"Các cột: {cols_preview}\nMẫu:\n{sample_csv}\n"
-                                                f"Nêu rõ tệp đang gặp lỗi gì và gợi ý ngắn gọn cách xử lý."
-                                            )
-                                        else:
-                                            prompt_s1 = (
-                                                f"Tệp '{item['file']}' không có lỗi dữ liệu. Hãy nhận xét ngắn gọn bằng tiếng Việt (2-3 gạch đầu dòng, không đếm số dòng/cột) "
-                                                f"về tình hình hoạt động / kinh doanh của doanh nghiệp dựa trên các cột ({cols_preview}) và mẫu sau:\n{sample_csv}"
-                                            )
-                                        resp = orch.analysis_agent.model.generate_content(prompt_s1, request_options={"timeout": 5})
-                                        ai_text = (getattr(resp, "text", "") or "").strip()
-                                    except Exception:
-                                        ai_text = ""
-                                if not ai_text:
-                                    if has_issues:
-                                        issues_parts = []
-                                        if null_cnt > 0:
-                                            cols_str = ", ".join(str(c) for c in null_cols[:4])
-                                            more_c = f" (+{len(null_cols)-4} cột)" if len(null_cols) > 4 else ""
-                                            issues_parts.append(f"- **Dữ liệu bị thiếu:** Có **{null_cnt:,} ô trống** rải rác ở các cột `{cols_str}`{more_c}.")
-                                        if dup_cnt > 0:
-                                            issues_parts.append(f"- **Trùng lặp bản ghi:** Phát hiện **{dup_cnt:,} dòng trùng lặp** cần rà soát.")
-                                        if neg_cols:
-                                            issues_parts.append(f"- **Giá trị bất thường:** Cột `{', '.join(neg_cols[:4])}` có chứa số âm.")
-                                        issues_parts.append("- **Gợi ý xử lý:** Tích chọn các mục sửa lỗi bên trên và bấm **Duyệt & Sửa ngay**, hoặc sửa trực tiếp tại bảng bên dưới.")
-                                        ai_text = "\n".join(issues_parts)
-                                    else:
-                                        rev_cols = [c for c in df_chk.columns if any(k in str(c).lower() for k in ["revenue", "doanh_thu", "doanhthu", "sales", "amount", "profit", "loi_nhuan"])]
-                                        biz_parts = [f"- **Tình trạng dữ liệu:** Tệp sạch, không phát hiện ô trống hay dòng trùng lặp."]
-                                        if rev_cols:
-                                            rc = rev_cols[0]
-                                            s_val = pd.to_numeric(df_chk[rc], errors="coerce").dropna()
-                                            if len(s_val) > 0:
-                                                biz_parts.append(f"- **Tình hình kinh doanh:** Chỉ số `{rc}` đạt tổng **{s_val.sum():,.0f}** (trung bình **{s_val.mean():,.1f}**/giao dịch).")
-                                        biz_parts.append("- **Đánh giá chung:** Dữ liệu phản ánh hoạt động vận hành ổn định, đủ điều kiện tổng hợp báo cáo và Dashboard ở Bước 3.")
-                                        ai_text = "\n".join(biz_parts)
-                                st.session_state.step1_ai_summaries[cache_key] = ai_text
-                            st.info(f"🤖 **Nhận xét nhanh về `{item['file']}`:**\n\n{st.session_state.step1_ai_summaries[cache_key]}")
-                    else:
-                        st.error(f"❌ **Lỗi đọc tệp '{item['file']}':** {item['msg']}\n\n*💡 Hướng dẫn khắc phục: Kiểm tra xem tệp có đang mở hoặc bị khóa bởi phần mềm khác không, hoặc lưu lại tệp dưới định dạng chuẩn CSV (UTF-8) / Excel (.xlsx).*")
-
         if orch.data_agent.raw_dataframes:
             st.markdown("#### ✏️ Sửa nhanh dữ liệu ngay tại Bước 1")
             with st.container():
@@ -2211,8 +2287,7 @@ try:
 
             with top_bar_c2:
                 total_records = sum(len(df) for df in orch.data_agent.raw_dataframes.values())
-                st.markdown(f"<div style='margin-top:0.35rem;'><b>{total_rows:,} dòng × {len(df_current.columns)} cột</b> · {len(detected_groups)} nhóm</div>", unsafe_allow_html=True)
-                st.caption(f"Nhóm chính: {_format_groups_preview(detected_groups, 3)}")
+                st.markdown(f"<div style='margin-top:1.75rem; font-size:0.95rem; color:#0f172a;'><b>{total_rows:,} dòng × {len(df_current.columns)} cột</b></div>", unsafe_allow_html=True)
 
             with top_bar_c3:
                 csv_clean_bytes = df_current.to_csv(index=False).encode("utf-8-sig")
@@ -2224,12 +2299,6 @@ try:
                     use_container_width=True,
                     key=f"dl_cleaned_csv_s2_{selected_file}"
                 )
-
-            hc1, hc2, hc3, hc4 = st.columns(4)
-            hc1.metric("Điểm chất lượng tệp", f"{s2_health['health_score']}%")
-            hc2.metric("Độ đầy đủ (Không trống)", f"{s2_health['completeness_pct']}%")
-            hc3.metric("Tỷ lệ bản ghi duy nhất", f"{s2_health['unique_pct']}%")
-            hc4.metric("Mục lỗi chờ duyệt", len(s2_issues))
 
             if total_records > 0:
                 with st.container(key="floating_approve_step2"):
@@ -2428,7 +2497,7 @@ try:
                                         )
                                         s2_custom_instrs[s2_iss["id"]] = s2_custom_txt
 
-                            s2_err_preview = get_issue_preview_rows(df_current, max_rows=25)
+                            s2_err_preview = get_issue_preview_rows(df_current, max_rows=100)
                             if not s2_err_preview.empty:
                                 s2_pv_key = f"s2_pv_open_{selected_file}"
                                 if s2_pv_key not in st.session_state:
@@ -2473,7 +2542,7 @@ try:
                                             st.session_state[s2_pv_key] = not st.session_state[s2_pv_key]
                                             st.rerun()
                                     if st.session_state[s2_pv_key]:
-                                        st.dataframe(s2_err_preview, use_container_width=True, height=230)
+                                        st.dataframe(s2_err_preview, use_container_width=True, height=460)
 
                             st.write("")
                             col_s2_btn_apply, col_s2_btn_undo = st.columns([2.5, 1.1])
