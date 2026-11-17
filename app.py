@@ -1235,35 +1235,50 @@ if st.session_state.current_step != 0:
             top: 86px !important;
             width: 58px !important;
             z-index: 99999 !important;
-            background: rgba(255, 255, 255, 0.82) !important;
+            background: rgba(255, 255, 255, 0.86) !important;
             backdrop-filter: blur(14px) !important;
             border: 1px solid rgba(255, 255, 255, 0.96) !important;
             border-radius: 999px !important;
             padding: 12px 8px !important;
             box-shadow: 0 12px 32px rgba(37, 99, 235, 0.14), 0 4px 12px rgba(15, 23, 42, 0.06) !important;
+            transition: width 0.24s cubic-bezier(0.22, 1, 0.36, 1), border-radius 0.24s ease !important;
+            overflow: hidden !important;
+        }
+        .st-key-floating_left_dock:hover {
+            width: 215px !important;
+            border-radius: 22px !important;
+            padding: 12px 10px !important;
         }
         .st-key-floating_left_dock [data-testid="stVerticalBlock"] {
             gap: 6px !important;
-            align-items: center !important;
+            align-items: stretch !important;
         }
         .st-key-floating_left_dock button {
             width: 40px !important;
             height: 40px !important;
             min-height: 40px !important;
-            padding: 0 !important;
+            padding: 0 0 0 12px !important;
             border-radius: 50% !important;
             display: flex !important;
             align-items: center !important;
-            justify-content: center !important;
-            font-size: 1.05rem !important;
+            justify-content: flex-start !important;
+            font-size: 0.9rem !important;
+            font-weight: 600 !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
             border: none !important;
             background: transparent !important;
             color: #475569 !important;
             box-shadow: none !important;
-            transition: all 0.18s ease !important;
+            transition: all 0.2s ease !important;
+        }
+        .st-key-floating_left_dock:hover button {
+            width: 100% !important;
+            border-radius: 12px !important;
+            padding: 0 12px !important;
         }
         .st-key-floating_left_dock button:hover {
-            background: rgba(255, 255, 255, 0.95) !important;
+            background: rgba(239, 246, 255, 0.95) !important;
             color: #1e3a8a !important;
         }
         .st-key-floating_left_dock button[kind="primary"] {
@@ -1278,22 +1293,26 @@ if st.session_state.current_step != 0:
             margin: 4px auto !important;
             width: 24px !important;
             border-color: #cbd5e1 !important;
+            transition: width 0.2s ease !important;
+        }
+        .st-key-floating_left_dock:hover hr {
+            width: 100% !important;
         }
     </style>
     """, unsafe_allow_html=True)
 
     with st.container(key="floating_left_dock"):
-        if st.button("⊞", help="Tổng quan", type="primary" if _sb_cur == 0 else "secondary", key="sb_nav_0"):
+        if st.button("⊞   Tổng quan", type="primary" if _sb_cur == 0 else "secondary", key="sb_nav_0"):
             set_spinner_msg("⏳ Đang quay lại Trang Mở Đầu...")
             st.session_state.current_step = 0
             st.rerun()
 
-        if st.button("◫", help="Bước 1: Nhập dữ liệu", type="primary" if _sb_cur == 1 else "secondary", key="sb_nav_1"):
+        if st.button("◫   Nhập dữ liệu", type="primary" if _sb_cur == 1 else "secondary", key="sb_nav_1"):
             set_spinner_msg("⏳ Đang chuyển sang Bước 1: Nhập Dữ Liệu...")
             st.session_state.current_step = 1
             st.rerun()
 
-        if st.button("◈", help="Bước 2: Làm sạch dữ liệu", type="primary" if _sb_cur == 2 else "secondary", key="sb_nav_2"):
+        if st.button("◈   Làm sạch", type="primary" if _sb_cur == 2 else "secondary", key="sb_nav_2"):
             if st.session_state.step1_approved:
                 set_spinner_msg("⏳ Đang mở Bước 2: Làm Sạch...")
                 st.session_state.current_step = 2
@@ -1301,7 +1320,7 @@ if st.session_state.current_step != 0:
             else:
                 st.toast("⚠️ Vui lòng nạp file và Duyệt Bước 1 trước!", icon="⚠️")
 
-        if st.button("↗", help="Bước 3: Báo cáo & Dashboard", type="primary" if _sb_cur == 3 else "secondary", key="sb_nav_3"):
+        if st.button("↗   Báo cáo", type="primary" if _sb_cur == 3 else "secondary", key="sb_nav_3"):
             if st.session_state.step2_approved:
                 set_spinner_msg("⏳ Đang mở Bước 3: Tạo Báo Cáo...")
                 st.session_state.current_step = 3
@@ -1311,7 +1330,7 @@ if st.session_state.current_step != 0:
 
         st.divider()
 
-        if st.button("↻", help="Làm mới phiên làm việc", key="sb_reset_session"):
+        if st.button("↻   Làm mới phiên", key="sb_reset_session"):
             for k in ["files_loaded", "file_messages", "analysis_results", "editable_report", "editable_plan", "dashboard_scores_df"]:
                 if k in st.session_state:
                     st.session_state[k] = [] if k in ["files_loaded", "file_messages"] else None
@@ -1326,7 +1345,7 @@ if st.session_state.current_step != 0:
             set_spinner_msg("⏳ Đang làm mới toàn bộ phiên làm việc...")
             st.rerun()
 
-        if st.button("?", help="Hướng dẫn sử dụng", key="sb_help_btn"):
+        if st.button("?   Hướng dẫn", key="sb_help_btn"):
             st.toast("💡 Quy trình 3 bước: Nhập dữ liệu ➔ Làm sạch & Duyệt lỗi ➔ Xuất Báo cáo & Dashboard.", icon="💡")
 
 with st.sidebar:
