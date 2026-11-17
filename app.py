@@ -752,8 +752,160 @@ st.markdown(f"""
         margin-left: 64px !important;
         transition: margin-left 0.3s ease !important;
     }}
+
+    /* ============================================================
+       HIỆU ỨNG CHUỘT & MÀU SẮC ĐỒNG BỘ TRANG MỞ ĐẦU (ALL PAGES)
+       ============================================================ */
+    .app-cursor-glow {{
+        position: fixed;
+        width: 380px;
+        height: 380px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(59, 130, 246, 0.16) 0%, rgba(99, 102, 241, 0.07) 45%, transparent 70%);
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        z-index: 99998;
+        mix-blend-mode: multiply;
+        transition: width 0.3s ease, height 0.3s ease, background 0.3s ease;
+    }}
+    .app-cursor-dot {{
+        position: fixed;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #2563eb;
+        box-shadow: 0 0 10px rgba(37, 99, 235, 0.6);
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        z-index: 999999;
+        transition: transform 0.12s ease-out, background-color 0.2s ease;
+    }}
+
+    /* Hiệu ứng di chuột vào vùng nào là vùng đó đậm màu & có chiều sâu */
+    .st-key-zone_upload_left,
+    .st-key-zone_gsheet_right,
+    .st-key-zone_biz_context,
+    .st-key-zone_step1_summary,
+    .st-key-zone_step2_workspace,
+    .st-key-zone_step3_preview,
+    [data-testid="stVerticalBlockBorderWrapper"],
+    div[data-testid="stMetric"],
+    .st-key-top_wizard_bar {{
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }}
+    .st-key-zone_upload_left:hover,
+    .st-key-zone_gsheet_right:hover,
+    .st-key-zone_biz_context:hover,
+    .st-key-zone_step1_summary:hover,
+    .st-key-zone_step2_workspace:hover,
+    .st-key-zone_step3_preview:hover,
+    [data-testid="stVerticalBlockBorderWrapper"]:hover {{
+        background: #ffffff !important;
+        box-shadow: 0 14px 34px rgba(30, 58, 138, 0.11) !important;
+        border-color: rgba(59, 130, 246, 0.45) !important;
+        transform: translateY(-2px) !important;
+    }}
 </style>
 """, unsafe_allow_html=True)
+
+# Injected mouse glow & cursor script for all pages
+import streamlit.components.v1 as _cursor_comp
+_cursor_comp.html("""
+<style>
+    .app-cursor-glow {
+        position: fixed;
+        width: 380px;
+        height: 380px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(59, 130, 246, 0.16) 0%, rgba(99, 102, 241, 0.07) 45%, transparent 70%);
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        z-index: 999998;
+        mix-blend-mode: multiply;
+        transition: width 0.3s ease, height 0.3s ease, background 0.3s ease;
+    }
+    .app-cursor-dot {
+        position: fixed;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #2563eb;
+        box-shadow: 0 0 10px rgba(37, 99, 235, 0.6);
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        z-index: 999999;
+        transition: transform 0.12s ease-out, background-color 0.2s ease;
+    }
+</style>
+<div id="app-cursor-glow" class="app-cursor-glow"></div>
+<div id="app-cursor-dot" class="app-cursor-dot"></div>
+<script>
+    (function() {
+        const parentDoc = window.parent.document;
+        let glow = parentDoc.getElementById('app-cursor-glow');
+        let dot = parentDoc.getElementById('app-cursor-dot');
+        
+        if (!glow) {
+            glow = document.createElement('div');
+            glow.id = 'app-cursor-glow';
+            glow.className = 'app-cursor-glow';
+            parentDoc.body.appendChild(glow);
+        }
+        if (!dot) {
+            dot = document.createElement('div');
+            dot.id = 'app-cursor-dot';
+            dot.className = 'app-cursor-dot';
+            parentDoc.body.appendChild(dot);
+        }
+
+        let mX = -100, mY = -100, cX = -100, cY = -100;
+        parentDoc.addEventListener('mousemove', function(e) {
+            mX = e.clientX;
+            mY = e.clientY;
+            if (dot) {
+                dot.style.left = mX + 'px';
+                dot.style.top = mY + 'px';
+            }
+        });
+
+        function renderGlow() {
+            cX += (mX - cX) * 0.15;
+            cY += (mY - cY) * 0.15;
+            if (glow) {
+                glow.style.left = cX + 'px';
+                glow.style.top = cY + 'px';
+            }
+            requestAnimationFrame(renderGlow);
+        }
+        renderGlow();
+
+        parentDoc.querySelectorAll('button, a, input, textarea, select, [data-testid="stMetric"], section').forEach(function(el) {
+            el.addEventListener('mouseenter', function() {
+                if (glow) {
+                    glow.style.width = '480px';
+                    glow.style.height = '480px';
+                    glow.style.background = 'radial-gradient(circle, rgba(245, 158, 11, 0.22) 0%, rgba(59, 130, 246, 0.12) 45%, transparent 70%)';
+                }
+                if (dot) {
+                    dot.style.transform = 'translate(-50%, -50%) scale(1.6)';
+                    dot.style.backgroundColor = '#d97706';
+                }
+            });
+            el.addEventListener('mouseleave', function() {
+                if (glow) {
+                    glow.style.width = '380px';
+                    glow.style.height = '380px';
+                    glow.style.background = 'radial-gradient(circle, rgba(59, 130, 246, 0.16) 0%, rgba(99, 102, 241, 0.07) 45%, transparent 70%)';
+                }
+                if (dot) {
+                    dot.style.transform = 'translate(-50%, -50%) scale(1)';
+                    dot.style.backgroundColor = '#2563eb';
+                }
+            });
+        });
+    })();
+</script>
+""", height=0)
 
 # ============================================================
 # CHỈ HIỂN THỊ THANH ĐIỀU HƯỚNG NGANG KHI ĐÃ VÀO BƯỚC 1, 2, 3 (ẨN Ở TRANG MỞ ĐẦU)
