@@ -1217,153 +1217,96 @@ if step != 0:
                     st.toast("⚠️ Vui lòng duyệt Bước 2 trước khi sang Bước 3!", icon="⚠️")
 
 # ============================================================
-# SIDEBAR ĐIỀU HƯỚNG NHANH & CÀI ĐẶT ẨN GỌN (THEO MẪU TIẾNG VIỆT)
+# SIDEBAR DẠNG DOCK ICON DỌC NỔI BO TRÒN (Y HỆT ẢNH MẪU)
 # ============================================================
 with st.sidebar:
-    _sb_files_cnt = len(orch.data_agent.raw_dataframes)
-    _sb_rows_cnt = sum(len(df) for df in orch.data_agent.raw_dataframes.values())
-    _sb_groups_cnt = len(orch.data_agent.get_regions_detected()) if _sb_files_cnt > 0 else 0
-    _sb_err_cnt = sum(len(detect_data_issues(df, fn)) for fn, df in orch.data_agent.raw_dataframes.items() if df is not None and not df.empty)
     _sb_cur = st.session_state.current_step
 
     st.markdown("""
     <style>
         section[data-testid="stSidebar"] {
-            background: linear-gradient(180deg, #f8fbff 0%, #eff6ff 100%) !important;
-            border-right: 1px solid #dbeafe !important;
-            z-index: 999999 !important;
-            position: relative !important;
-            width: 260px !important;
-            min-width: 260px !important;
-            max-width: 260px !important;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            width: 82px !important;
+            min-width: 82px !important;
+            max-width: 82px !important;
             transform: none !important;
             opacity: 1 !important;
             visibility: visible !important;
+            z-index: 999999 !important;
+            padding: 16px 10px !important;
+        }
+        section[data-testid="stSidebar"] > div:first-child {
+            background: rgba(255, 255, 255, 0.78) !important;
+            backdrop-filter: blur(14px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.95) !important;
+            border-radius: 999px !important;
+            padding: 12px 8px !important;
+            box-shadow: 0 12px 32px rgba(37, 99, 235, 0.12), 0 4px 12px rgba(15, 23, 42, 0.05) !important;
+            width: 60px !important;
+            margin: 12px auto 0 auto !important;
+            height: auto !important;
+            min-height: 0 !important;
+        }
+        section[data-testid="stSidebar"] [data-testid="stSidebarHeader"],
+        section[data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"] {
+            display: none !important;
+        }
+        section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
+            gap: 6px !important;
+            align-items: center !important;
+        }
+        section[data-testid="stSidebar"] button {
+            width: 40px !important;
+            height: 40px !important;
+            min-height: 40px !important;
+            padding: 0 !important;
+            border-radius: 50% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 1.05rem !important;
+            border: none !important;
+            background: transparent !important;
+            color: #475569 !important;
+            box-shadow: none !important;
+            transition: all 0.18s ease !important;
+        }
+        section[data-testid="stSidebar"] button:hover {
+            background: rgba(255, 255, 255, 0.9) !important;
+            color: #1e3a8a !important;
         }
         section[data-testid="stSidebar"] button[kind="primary"] {
-            background: #2563eb !important;
-            color: #ffffff !important;
-            border: none !important;
+            background: #ffffff !important;
+            color: #1e3a8a !important;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.18), 0 1px 3px rgba(15, 23, 42, 0.08) !important;
         }
         section[data-testid="stSidebar"] button[kind="primary"] p {
-            color: #ffffff !important;
+            color: #1e3a8a !important;
+        }
+        section[data-testid="stSidebar"] hr {
+            margin: 4px auto !important;
+            width: 24px !important;
+            border-color: #cbd5e1 !important;
         }
         [data-testid="stMain"], .main {
             z-index: 1 !important;
         }
-        .sb-brand {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 4px 2px 12px 2px;
-        }
-        .sb-brand-left {
-            display: flex;
-            align-items: center;
-            gap: 9px;
-            font-weight: 800;
-            font-size: 1.05rem;
-            color: #0f172a;
-        }
-        .sb-logo-dot {
-            width: 24px;
-            height: 24px;
-            border-radius: 7px;
-            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            color: #ffffff;
-            font-size: 0.78rem;
-            font-weight: 900;
-            box-shadow: 0 2px 6px rgba(37,99,235,0.28);
-        }
-        .sb-search-fake {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 7px 10px;
-            margin-bottom: 14px;
-            color: #64748b;
-            font-size: 0.82rem;
-            box-shadow: 0 1px 3px rgba(15,23,42,0.03);
-        }
-        .sb-kbd {
-            background: #f1f5f9;
-            border: 1px solid #e2e8f0;
-            border-radius: 5px;
-            padding: 1px 5px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            color: #475569;
-        }
-        .sb-sec-title {
-            font-size: 0.73rem;
-            font-weight: 700;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            margin: 6px 4px 8px 4px;
-        }
-        .sb-stat-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 6px 6px;
-            font-size: 0.84rem;
-            color: #334155;
-            font-weight: 500;
-        }
-        .sb-stat-left {
-            display: flex;
-            align-items: center;
-            gap: 9px;
-        }
-        .sb-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-        }
-        .sb-stat-val {
-            font-weight: 700;
-            color: #0f172a;
-            font-size: 0.82rem;
-        }
     </style>
-    <div class="sb-brand">
-        <div class="sb-brand-left">
-            <span class="sb-logo-dot">✦</span>
-            <span>Phân tích Dữ liệu</span>
-        </div>
-        <span style="color:#64748b; font-size:0.9rem;">◫</span>
-    </div>
-    <div class="sb-search-fake">
-        <span style="display:inline-flex; align-items:center; gap:7px; white-space:nowrap;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <span>Tìm kiếm...</span>
-        </span>
-        <span style="display:inline-flex; gap:3px;"><span class="sb-kbd">⌘</span><span class="sb-kbd">K</span></span>
-    </div>
-    <div class="sb-sec-title">Điều hướng</div>
     """, unsafe_allow_html=True)
 
-    if st.button("⊞   Tổng quan", use_container_width=True, type="primary" if _sb_cur == 0 else "secondary", key="sb_nav_0"):
+    if st.button("⊞", help="Tổng quan", type="primary" if _sb_cur == 0 else "secondary", key="sb_nav_0"):
         set_spinner_msg("⏳ Đang quay lại Trang Mở Đầu...")
         st.session_state.current_step = 0
         st.rerun()
 
-    lbl_nav1 = f"◫   Nhập dữ liệu ({_sb_files_cnt})" if _sb_files_cnt > 0 else "◫   Nhập dữ liệu"
-    if st.button(lbl_nav1, use_container_width=True, type="primary" if _sb_cur == 1 else "secondary", key="sb_nav_1"):
+    if st.button("◫", help="Bước 1: Nhập dữ liệu", type="primary" if _sb_cur == 1 else "secondary", key="sb_nav_1"):
         set_spinner_msg("⏳ Đang chuyển sang Bước 1: Nhập Dữ Liệu...")
         st.session_state.current_step = 1
         st.rerun()
 
-    lbl_nav2 = f"◈   Làm sạch ({_sb_err_cnt} lỗi)" if _sb_err_cnt > 0 else "◈   Làm sạch dữ liệu"
-    if st.button(lbl_nav2, use_container_width=True, type="primary" if _sb_cur == 2 else "secondary", key="sb_nav_2"):
+    if st.button("◈", help="Bước 2: Làm sạch dữ liệu", type="primary" if _sb_cur == 2 else "secondary", key="sb_nav_2"):
         if st.session_state.step1_approved:
             set_spinner_msg("⏳ Đang mở Bước 2: Làm Sạch...")
             st.session_state.current_step = 2
@@ -1371,7 +1314,7 @@ with st.sidebar:
         else:
             st.toast("⚠️ Vui lòng nạp file và Duyệt Bước 1 trước!", icon="⚠️")
 
-    if st.button("↗   Báo cáo & Dashboard", use_container_width=True, type="primary" if _sb_cur == 3 else "secondary", key="sb_nav_3"):
+    if st.button("↗", help="Bước 3: Báo cáo & Dashboard", type="primary" if _sb_cur == 3 else "secondary", key="sb_nav_3"):
         if st.session_state.step2_approved:
             set_spinner_msg("⏳ Đang mở Bước 3: Tạo Báo Cáo...")
             st.session_state.current_step = 3
@@ -1379,7 +1322,9 @@ with st.sidebar:
         else:
             st.toast("⚠️ Vui lòng Duyệt Bước 2 trước!", icon="⚠️")
 
-    if st.button("↻   Làm mới phiên", use_container_width=True, key="sb_reset_session"):
+    st.divider()
+
+    if st.button("↻", help="Làm mới phiên làm việc", key="sb_reset_session"):
         for k in ["files_loaded", "file_messages", "analysis_results", "editable_report", "editable_plan", "dashboard_scores_df"]:
             if k in st.session_state:
                 st.session_state[k] = [] if k in ["files_loaded", "file_messages"] else None
@@ -1394,28 +1339,8 @@ with st.sidebar:
         set_spinner_msg("⏳ Đang làm mới toàn bộ phiên làm việc...")
         st.rerun()
 
-    st.divider()
-    st.markdown(f"""
-    <div class="sb-sec-title">Trạng thái dữ liệu</div>
-    <div class="sb-stat-row">
-        <span class="sb-stat-left"><span class="sb-dot" style="background:#f59e0b;"></span>Tệp đã nạp</span>
-        <span class="sb-stat-val">{_sb_files_cnt}</span>
-    </div>
-    <div class="sb-stat-row">
-        <span class="sb-stat-left"><span class="sb-dot" style="background:#10b981;"></span>Tổng số dòng</span>
-        <span class="sb-stat-val">{_sb_rows_cnt:,}</span>
-    </div>
-    <div class="sb-stat-row">
-        <span class="sb-stat-left"><span class="sb-dot" style="background:#3b82f6;"></span>Nhóm phân tích</span>
-        <span class="sb-stat-val">{_sb_groups_cnt}</span>
-    </div>
-    <div class="sb-stat-row">
-        <span class="sb-stat-left"><span class="sb-dot" style="background:#8b5cf6;"></span>Lỗi chờ duyệt</span>
-        <span class="sb-stat-val">{_sb_err_cnt}</span>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.divider()
+    if st.button("?", help="Hướng dẫn: Nạp tệp CSV/Excel/Google Sheet -> Duyệt sửa lỗi -> Tạo Báo cáo & Dashboard", key="sb_help_btn"):
+        st.toast("💡 Quy trình 3 bước: Nhập dữ liệu ➔ Làm sạch & Duyệt lỗi ➔ Xuất Báo cáo & Dashboard.", icon="💡")
 
     st.markdown("#### 🤖 Chọn Phiên Bản Model AI")
     ai_model_options = {
