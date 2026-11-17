@@ -792,60 +792,212 @@ try:
 
         with st.container(key="landing_stage_container"):
             st.markdown("""
-            <div style="position:relative; overflow:hidden; border-radius:20px; padding:28px 24px 12px 24px; background: radial-gradient(circle at 50% 18%, rgba(219,234,254,0.75) 0%, rgba(248,250,252,0) 62%), radial-gradient(circle at 15% 80%, rgba(191,219,254,0.45) 0%, transparent 45%), radial-gradient(circle at 85% 75%, rgba(224,242,254,0.6) 0%, transparent 45%);">
-                <div style="position:absolute; inset:0; background-image: radial-gradient(#bfdbfe 1.2px, transparent 1.2px); background-size: 26px 26px; opacity:0.45; pointer-events:none;"></div>
-                <div style="position:relative; z-index:1;">
-                    <div style="display:flex; align-items:center; justify-content:space-between; padding-bottom:18px; margin-bottom:36px; border-bottom:1px solid rgba(191,219,254,0.7);">
-                        <div style="display:inline-flex; align-items:center; gap:9px; background:rgba(255,255,255,0.9); border:1px solid #bfdbfe; padding:7px 16px; border-radius:999px; font-weight:800; color:#1e3a8a; font-size:0.95rem; box-shadow:0 2px 10px rgba(37,99,235,0.08);">
-                            <span>📊</span>
-                            <span>SmartData Studio</span>
-                        </div>
-                        <div style="font-size:0.86rem; color:#475569; font-weight:600; background:rgba(255,255,255,0.75); padding:5px 12px; border-radius:999px; border:1px solid #e2e8f0;">Quy trình 3 bước chuẩn hóa</div>
+            <style>
+                .main .block-container, [data-testid="stMainBlockContainer"] {
+                    padding: 0 !important;
+                    overflow: hidden !important;
+                    border-top: none !important;
+                    background: #F4F7FB !important;
+                }
+                .st-key-btn_hero_start {
+                    position: fixed !important;
+                    left: -9999px !important;
+                    top: -9999px !important;
+                    opacity: 0 !important;
+                    pointer-events: none !important;
+                }
+                iframe[title="streamlit_components_v1.html_v1"] {
+                    display: block !important;
+                    border: none !important;
+                }
+            </style>
+            """, unsafe_allow_html=True)
+
+            if st.button("Bắt đầu ➔", key="btn_hero_start", type="primary"):
+                set_spinner_msg("⏳ Đang mở Bước 1...")
+                st.session_state.current_step = 1
+                st.rerun()
+
+            import streamlit.components.v1 as _landing_comp
+            _landing_html = """<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            margin: 0;
+        }
+        .marquee-container { 
+            overflow: hidden; 
+            white-space: nowrap; 
+            width: 100%; 
+            display: flex; 
+        }
+        .marquee-content { 
+            display: flex; 
+            animation: marquee 20s linear infinite; 
+        }
+        @keyframes marquee { 
+            0% { transform: translateX(0); } 
+            100% { transform: translateX(-50%); } 
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+    </style>
+    <script>
+        function triggerStart() {
+            try {
+                const parentDoc = window.parent.document;
+                const btn = parentDoc.querySelector('.st-key-btn_hero_start button') || parentDoc.querySelector('button[kind="primary"]');
+                if (btn) btn.click();
+            } catch (e) {
+                console.error(e);
+            }
+        }
+    </script>
+</head>
+<body class="bg-[#F4F7FB] text-slate-800 min-h-screen flex flex-col relative overflow-hidden">
+    
+    <!-- 1. CÁC HỌA TIẾT NỀN ĐÈ DƯỚI NỘI DUNG -->
+    <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-200 rounded-full mix-blend-multiply filter blur-[120px] opacity-60 z-0 pointer-events-none"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-200 rounded-full mix-blend-multiply filter blur-[120px] opacity-60 z-0 pointer-events-none"></div>
+
+    <!-- Ngôi sao 8 cánh đè dưới Tiêu đề (Cột Trái) -->
+    <svg class="absolute top-[10%] left-[-5%] w-[500px] h-[500px] text-blue-300 opacity-30 z-0 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2v20M17 5l-10 14M22 12H2M19 19L5 5"/>
+    </svg>
+    
+    <!-- Ngôi sao 8 cánh đè dưới 3 Thẻ Quy trình (Cột Phải) -->
+    <svg class="absolute top-[15%] right-[2%] w-[600px] h-[600px] text-blue-300 opacity-30 z-0 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2v20M17 5l-10 14M22 12H2M19 19L5 5"/>
+    </svg>
+
+    <!-- 2. THANH ĐIỀU HƯỚNG (NAVBAR) -->
+    <header class="relative z-10 p-6 flex justify-between items-center whitespace-nowrap overflow-x-auto no-scrollbar">
+        <div class="bg-yellow-400 text-slate-900 font-bold px-6 py-2 rounded-full shadow-sm flex items-center gap-2 shrink-0">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12z"/></svg>
+            Phân tích dữ liệu
+        </div>
+        
+        <nav class="hidden lg:flex items-center gap-2 bg-white/80 backdrop-blur-md px-2 py-2 rounded-full shadow-sm border border-white/50 text-sm font-semibold text-slate-600 shrink-0 mx-4">
+            <a href="javascript:void(0)" class="px-5 py-2 hover:bg-slate-100 rounded-full transition">Mở đầu</a>
+            <a href="javascript:void(0)" onclick="triggerStart()" class="px-5 py-2 hover:bg-slate-100 rounded-full transition">Nạp file</a>
+            <a href="javascript:void(0)" onclick="triggerStart()" class="px-5 py-2 hover:bg-slate-100 rounded-full transition">Làm sạch</a>
+            <a href="javascript:void(0)" onclick="triggerStart()" class="px-5 py-2 hover:bg-slate-100 rounded-full transition">Tạo báo cáo</a>
+        </nav>
+
+        <div class="bg-white/80 backdrop-blur-md text-slate-700 font-semibold px-6 py-2 rounded-full shadow-sm border border-white/50 text-sm shrink-0">
+            Hỗ trợ CSV, Excel, Google Sheet
+        </div>
+    </header>
+
+    <!-- 3. NỘI DUNG CHÍNH (2 CỘT) -->
+    <main class="relative z-10 flex-1 flex flex-col lg:flex-row items-center justify-between px-8 lg:px-12 py-10 gap-8">
+        
+        <!-- CỘT TRÁI: Tiêu đề & Nút -->
+        <div class="w-full lg:w-[45%] flex flex-col items-start gap-8 z-10">
+            <div class="text-sm font-bold text-slate-600 uppercase tracking-widest bg-white/60 backdrop-blur-sm px-5 py-2 rounded-full shadow-sm border border-white/50">
+                Nền tảng Quản trị Dữ liệu
+            </div>
+
+            <h1 class="text-[3.5rem] lg:text-[4.5rem] font-extrabold text-slate-900 leading-[1.1] tracking-tight">
+                Dữ liệu thông minh.<br>
+                Báo cáo tức thì.
+            </h1>
+
+            <div class="flex items-center gap-4">
+                <button onclick="triggerStart()" class="bg-white text-slate-900 font-bold px-8 py-4 rounded-full shadow-lg border border-slate-100 tracking-wider hover:shadow-xl hover:-translate-y-1 transition duration-300 cursor-pointer">
+                    BẮT ĐẦU
+                </button>
+                <button onclick="triggerStart()" class="w-14 h-14 bg-yellow-400 text-slate-900 rounded-full flex items-center justify-center shadow-lg hover:scale-105 hover:-translate-y-1 transition duration-300 cursor-pointer">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                </button>
+            </div>
+
+            <p class="text-lg text-slate-600 max-w-xl leading-relaxed glass-panel p-5 rounded-2xl">
+                Tự động kiểm tra, làm sạch, và điều phối chính xác dữ liệu từ tệp CSV, Excel hoặc Google Sheet. Hỗ trợ tổng hợp số liệu và tạo báo cáo Dashboard trực quan.
+            </p>
+        </div>
+
+        <!-- CỘT PHẢI: 3 Thẻ xếp so le -->
+        <div class="w-full lg:w-[55%] flex flex-row items-center justify-end gap-5 mt-16 lg:mt-0 z-10">
+            
+            <!-- Thẻ 1 (Thấp) -->
+            <div onclick="triggerStart()" class="w-64 glass-panel rounded-[2rem] p-6 shadow-xl flex flex-col relative translate-y-8 hover:-translate-y-2 transition duration-500 cursor-pointer">
+                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mb-6 font-bold text-xl">1</div>
+                <h3 class="text-xl font-bold text-slate-800 mb-2">Nhập dữ liệu</h3>
+                <p class="text-sm text-slate-500 font-medium">CSV, Excel, Google Sheet</p>
+                <div class="mt-8">
+                    <div class="text-xs font-bold text-blue-600 bg-blue-50 py-1.5 px-4 rounded-full inline-block uppercase tracking-wide">Đồng bộ</div>
+                </div>
+            </div>
+
+            <!-- Thẻ 2 (Nhô cao, nổi bật) -->
+            <div onclick="triggerStart()" class="w-64 bg-white rounded-[2rem] p-6 shadow-2xl border border-blue-50 flex flex-col relative -translate-y-8 scale-105 z-20 hover:-translate-y-12 transition duration-500 cursor-pointer">
+                <div class="absolute -top-4 -right-4 w-20 h-20 bg-yellow-400 rounded-full mix-blend-multiply opacity-30 blur-2xl pointer-events-none"></div>
+                <div class="flex justify-between items-start mb-6">
+                    <div class="w-12 h-12 bg-blue-600 text-white rounded-xl flex items-center justify-center font-bold text-xl shadow-lg shadow-blue-200">2</div>
+                    <span class="text-[10px] font-bold tracking-wider text-amber-600 bg-amber-50 border border-amber-100 px-3 py-1.5 rounded-full uppercase">Tiến trình</span>
+                </div>
+                <h3 class="text-2xl font-bold text-slate-900 mb-2">Làm sạch</h3>
+                <p class="text-sm text-slate-500 font-medium leading-relaxed">Chuẩn hóa &amp; chỉnh sửa lỗi dữ liệu</p>
+                
+                <div class="mt-8 pt-6 flex items-center justify-between border-t border-slate-100">
+                    <div class="flex flex-col">
+                        <span class="text-2xl font-black text-slate-800">100%</span>
+                        <span class="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Chính xác</span>
                     </div>
-                    <div style="text-align:center; max-width:860px; margin:0 auto;">
-                        <div style="font-size:clamp(2.8rem, 5.5vw, 4.3rem); font-weight:900; line-height:1.12; letter-spacing:-0.035em; color:#0f172a; margin-bottom:20px;">
-                            Dữ liệu thông minh.<br/>
-                            <span style="background:linear-gradient(135deg, #1d4ed8 0%, #2563eb 45%, #0284c7 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Báo cáo tức thì.</span>
-                        </div>
-                        <div style="font-size:1.08rem; color:#475569; line-height:1.7; max-width:650px; margin:0 auto 28px auto; font-weight:400;">
-                            Hỗ trợ xử lý dữ liệu từ tệp CSV, Excel hoặc Google Sheet một cách nhanh chóng, từ khâu kiểm tra và làm sạch sai sót đến tổng hợp số liệu và tạo báo cáo Dashboard trực quan.
-                        </div>
+                    <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
                     </div>
                 </div>
             </div>
-            """, unsafe_allow_html=True)
 
-            _, col_start_btn, _ = st.columns([1.45, 1.1, 1.45])
-            with col_start_btn:
-                if st.button("Bắt đầu ➔", key="btn_hero_start", type="primary", use_container_width=True):
-                    set_spinner_msg("⏳ Đang mở Bước 1...")
-                    st.session_state.current_step = 1
-                    st.rerun()
-
-            st.markdown("""
-            <div style="position:relative; max-width:780px; margin:2.8rem auto 0.8rem auto; padding:18px 10px;">
-                <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:88%; height:110px; border:1.5px dashed #bfdbfe; border-radius:999px; pointer-events:none; opacity:0.85;"></div>
-                <div style="position:relative; z-index:1; display:flex; align-items:center; justify-content:center; gap:18px; flex-wrap:wrap;">
-                    <div style="flex:1; min-width:185px; background:rgba(255,255,255,0.95); border:1px solid #dbeafe; border-radius:18px; padding:18px 16px; text-align:center; box-shadow:0 8px 24px rgba(37,99,235,0.07);">
-                        <div style="font-size:1.55rem; margin-bottom:8px;">📥</div>
-                        <div style="font-weight:800; color:#1e3a8a; font-size:0.98rem;">1. Nhập dữ liệu</div>
-                        <div style="color:#64748b; font-size:0.83rem; margin-top:3px;">CSV, Excel, Google Sheet</div>
-                    </div>
-                    <div style="width:10px; height:10px; border-radius:50%; background:#3b82f6; box-shadow:0 0 0 4px #dbeafe;"></div>
-                    <div style="flex:1.15; min-width:200px; background:linear-gradient(145deg, #eff6ff 0%, #dbeafe 100%); border:1.5px solid #60a5fa; border-radius:20px; padding:24px 18px; text-align:center; box-shadow:0 14px 32px rgba(37,99,235,0.16);">
-                        <div style="font-size:1.8rem; margin-bottom:8px;">🧹</div>
-                        <div style="font-weight:800; color:#1d4ed8; font-size:1.05rem;">2. Làm sạch</div>
-                        <div style="color:#334155; font-size:0.85rem; margin-top:3px;">Chuẩn hóa &amp; chỉnh sửa</div>
-                    </div>
-                    <div style="width:10px; height:10px; border-radius:50%; background:#3b82f6; box-shadow:0 0 0 4px #dbeafe;"></div>
-                    <div style="flex:1; min-width:185px; background:rgba(255,255,255,0.95); border:1px solid #dbeafe; border-radius:18px; padding:18px 16px; text-align:center; box-shadow:0 8px 24px rgba(37,99,235,0.07);">
-                        <div style="font-size:1.55rem; margin-bottom:8px;">📊</div>
-                        <div style="font-weight:800; color:#1e3a8a; font-size:0.98rem;">3. Tạo báo cáo</div>
-                        <div style="color:#64748b; font-size:0.83rem; margin-top:3px;">Dashboard &amp; Xuất HTML</div>
-                    </div>
+            <!-- Thẻ 3 (Thấp) -->
+            <div onclick="triggerStart()" class="w-64 bg-amber-400/90 backdrop-blur-md rounded-[2rem] p-6 shadow-xl border border-amber-300 flex flex-col relative text-slate-900 translate-y-8 hover:-translate-y-2 transition duration-500 cursor-pointer">
+                <div class="w-12 h-12 bg-white/40 text-slate-900 rounded-xl flex items-center justify-center mb-6 font-bold text-xl shadow-sm">3</div>
+                <h3 class="text-xl font-bold mb-2">Tạo báo cáo</h3>
+                <p class="text-sm text-slate-800/80 font-medium">Dashboard &amp; Xuất HTML</p>
+                <div class="mt-8 flex text-sm items-center gap-2">
+                    <svg class="w-5 h-5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    <span class="font-bold tracking-wide uppercase text-xs">Xuất báo cáo</span>
                 </div>
             </div>
-            """, unsafe_allow_html=True)
+
+        </div>
+    </main>
+
+    <!-- 4. FOOTER (MARQUEE) -->
+    <footer class="relative z-10 w-full bg-[#1e293b] text-white/60 py-3 mt-auto">
+        <div class="marquee-container">
+            <div class="marquee-content gap-12 font-semibold text-xs tracking-widest uppercase">
+                <span>✦ XỬ LÝ DỮ LIỆU THÔNG MINH</span>
+                <span>✦ CHUẨN HÓA FORMAT</span>
+                <span>✦ LOẠI BỎ TRÙNG LẶP</span>
+                <span>✦ DASHBOARD TRỰC QUAN</span>
+                <span>✦ XUẤT HTML BÁO CÁO</span>
+                <span>✦ KIỂM TOÁN DỮ LIỆU</span>
+                <span>✦ XỬ LÝ DỮ LIỆU THÔNG MINH</span>
+                <span>✦ CHUẨN HÓA FORMAT</span>
+                <span>✦ LOẠI BỎ TRÙNG LẶP</span>
+                <span>✦ DASHBOARD TRỰC QUAN</span>
+                <span>✦ XUẤT HTML BÁO CÁO</span>
+                <span>✦ KIỂM TOÁN DỮ LIỆU</span>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>"""
+            _landing_comp.html(_landing_html, height=820, scrolling=False)
 
     # ============================================================
     # BƯỚC 1: NHẬP DỮ LIỆU (CSV / EXCEL / GOOGLE SHEET)
