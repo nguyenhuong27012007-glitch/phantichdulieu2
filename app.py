@@ -364,57 +364,62 @@ st.markdown("""
     div.stDownloadButton > button:hover {
         transform: scale(1.06) translateY(-2px) !important;
     }
+    /* Đồng bộ khung nhập Google Sheet bên phải giống hệt khung file CSV, Excel bên trái */
+    .st-key-step1_gsheet_box div[data-baseweb="input"] {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 10px !important;
+        height: 44px !important;
+        box-shadow: none !important;
+    }
+    .st-key-step1_gsheet_box div[data-baseweb="base-input"] {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+    .st-key-step1_gsheet_box input {
+        background: transparent !important;
+        border: none !important;
+        color: #334155 !important;
+        font-size: 0.92rem !important;
+        font-family: inherit !important;
+        padding: 0 14px !important;
+        height: 42px !important;
+    }
+    .st-key-step1_gsheet_box input::placeholder {
+        color: #64748b !important;
+        opacity: 1 !important;
+        font-size: 0.92rem !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 # ============================================================
-# HIỆU ỨNG CHUYỂN TRANG RÕ NÉT (MÀN RÈM QUÉT + PHÓNG TO TRANG MỚI)
+# HIỆU ỨNG CHUYỂN TRANG DỊU MẮT & TINH TẾ (SLIDE + BLUR-TO-CLEAR)
 # ============================================================
 _prev_step_anim = st.session_state.get("_last_rendered_step", st.session_state.current_step)
 _cur_step_anim = st.session_state.current_step
 if _cur_step_anim != _prev_step_anim:
     _is_forward = (_cur_step_anim > _prev_step_anim)
-    _curtain_start = "100%" if _is_forward else "-100%"
-    _curtain_end = "-100%" if _is_forward else "100%"
+    _slide_x = "48px" if _is_forward else "-48px"
     st.markdown(f"""
     <style>
-        @keyframes pageCurtainSweep {{
-            0% {{
-                transform: translateX({_curtain_start});
-                opacity: 0.95;
-            }}
-            45% {{
-                transform: translateX(0%);
-                opacity: 0.92;
-            }}
-            100% {{
-                transform: translateX({_curtain_end});
-                opacity: 0;
-            }}
-        }}
-        @keyframes pageZoomReveal {{
+        @keyframes smoothPageReveal {{
             0% {{
                 opacity: 0;
-                transform: scale(0.94) translateY(18px);
+                filter: blur(8px);
+                transform: translateX({_slide_x}) scale(0.97);
             }}
             100% {{
                 opacity: 1;
-                transform: scale(1) translateY(0);
+                filter: blur(0px);
+                transform: translateX(0) scale(1);
             }}
         }}
-        .hp-page-curtain {{
-            position: fixed;
-            inset: 0;
-            z-index: 9999999;
-            pointer-events: none;
-            background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 50%, #dbeafe 100%);
-            animation: pageCurtainSweep 0.85s cubic-bezier(0.77, 0, 0.175, 1) forwards;
-        }}
         .main .block-container, [data-testid="stMainBlockContainer"] {{
-            animation: pageZoomReveal 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
+            animation: smoothPageReveal 0.62s cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
         }}
     </style>
-    <div class="hp-page-curtain"></div>
     """, unsafe_allow_html=True)
 st.session_state._last_rendered_step = _cur_step_anim
 
