@@ -1232,6 +1232,10 @@ with st.sidebar:
             background: linear-gradient(180deg, #f8fbff 0%, #eff6ff 100%) !important;
             border-right: 1px solid #dbeafe !important;
             z-index: 999999 !important;
+            position: relative !important;
+        }
+        [data-testid="stMain"], .main {
+            z-index: 1 !important;
         }
         .sb-brand {
             display: flex;
