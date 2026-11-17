@@ -2473,25 +2473,17 @@ try:
                                 """, unsafe_allow_html=True)
 
                                 with st.container(key=card_key):
-                                    c_top_chk, c_top_title, c_top_badge = st.columns([0.45, 5.2, 1.35])
-                                    with c_top_chk:
+                                    c_top_left, c_top_badge = st.columns([5.65, 1.35])
+                                    with c_top_left:
                                         is_checked = st.checkbox(
-                                            "Chọn",
+                                            f"**{s2_iss['type']}** · {s2_iss['count']:,} {unit_lbl}",
                                             value=is_selected_card,
-                                            label_visibility="collapsed",
                                             key=f"chk_s2_{selected_file}_{s2_iss['id']}"
                                         )
                                         if is_checked and s2_iss["id"] not in st.session_state[f"{s2_issue_key_prefix}_selected"]:
                                             st.session_state[f"{s2_issue_key_prefix}_selected"].append(s2_iss["id"])
                                         elif not is_checked and s2_iss["id"] in st.session_state[f"{s2_issue_key_prefix}_selected"]:
                                             st.session_state[f"{s2_issue_key_prefix}_selected"].remove(s2_iss["id"])
-                                    with c_top_title:
-                                        st.markdown(
-                                            f"<div style='padding-top:2px; font-size:0.95rem; color:#0f172a;'>"
-                                            f"<b>{s2_iss['type']}</b> <span style='color:#64748b; font-weight:500; font-size:0.86rem;'>· {s2_iss['count']:,} {unit_lbl}</span>"
-                                            f"</div>",
-                                            unsafe_allow_html=True
-                                        )
                                     with c_top_badge:
                                         st.markdown(
                                             f"<div style='display:flex; justify-content:flex-end;'>"
@@ -2516,11 +2508,15 @@ try:
                                             padding: 6px 12px 4px 12px !important;
                                         }}
                                         .st-key-{sug_box_key} div[data-testid="stTextInput"] > div,
+                                        .st-key-{sug_box_key} div[data-testid="stTextInput"] > div > div,
+                                        .st-key-{sug_box_key} div[data-testid="stTextInput"] > div > div > div,
                                         .st-key-{sug_box_key} div[data-baseweb="input"],
-                                        .st-key-{sug_box_key} div[data-baseweb="base-input"] {{
+                                        .st-key-{sug_box_key} div[data-baseweb="base-input"],
+                                        .st-key-{sug_box_key} input {{
                                             background: transparent !important;
                                             border: none !important;
                                             box-shadow: none !important;
+                                            outline: none !important;
                                         }}
                                         .st-key-{sug_box_key} div[data-testid="stTextInput"] label {{
                                             font-size: 0.78rem !important;
@@ -2624,7 +2620,7 @@ try:
                         details.append(f"- 📊 **Quy mô hiện tại:** **{len(df_current):,} dòng × {len(df_current.columns)} cột**.")
                         details.append(f"- 🔢 **Cột số ({len(num_cols)} cột):** {num_cols_str if num_cols else 'Không có'}.")
                         details.append(f"- 🏷️ **Cột phân loại / văn bản ({len(txt_cols)} cột):** {txt_cols_str if txt_cols else 'Không có'}.")
-                        details.append(f"- 🔗 **Ánh xạ trường ({len(mapped_dict)} trường):** {mapped_str if mapped_dict else 'Tự động nhận diện'}.")
+                        details.append(f"- 🔗 **Chuẩn hóa tên cột ({len(mapped_dict)} cột):** {mapped_str if mapped_dict else 'Tự động nhận diện'}.")
                         for u_log in user_edits:
                             details.append(f"- ✅ **Đã phê duyệt & thực thi:** {u_log}")
                         st.info("\n".join(details))
