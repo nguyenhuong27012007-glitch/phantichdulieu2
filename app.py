@@ -3188,48 +3188,6 @@ try:
 
         unified_html = st.session_state._uni_html_cached
 
-        # Thanh Xuất Báo Cáo Đa Định Dạng (HTML, Word, PDF, CSV)
-        exp_c1, exp_c2, exp_c3, exp_c4 = st.columns(4)
-        with exp_c1:
-            st.download_button(
-                label="🌐 Tải Báo cáo Web (.html)",
-                data=unified_html.encode("utf-8"),
-                file_name="Bao_Cao_Dashboard_Phan_Tich.html",
-                mime="text/html",
-                type="primary",
-                use_container_width=True,
-                key="dl_bar_html"
-            )
-        with exp_c2:
-            if st.session_state.get("_uni_docx_cached"):
-                st.download_button(
-                    label="📄 Tải Báo cáo Word (.docx)",
-                    data=st.session_state._uni_docx_cached,
-                    file_name="Bao_Cao_Phan_Tich.docx",
-                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                    use_container_width=True,
-                    key="dl_bar_docx"
-                )
-        with exp_c3:
-            if st.session_state.get("_uni_pdf_cached"):
-                st.download_button(
-                    label="📑 Tải Báo cáo In ấn (.pdf)",
-                    data=st.session_state._uni_pdf_cached,
-                    file_name="Bao_Cao_Phan_Tich.pdf",
-                    mime="application/pdf",
-                    use_container_width=True,
-                    key="dl_bar_pdf"
-                )
-        with exp_c4:
-            st.download_button(
-                label="📊 Tải Bảng điểm (.csv)",
-                data=df_scores.to_csv(index=False).encode("utf-8-sig"),
-                file_name="Bang_Xep_Hang_Diem.csv",
-                mime="text/csv",
-                use_container_width=True,
-                key="dl_bar_csv"
-            )
-
         with st.container(key="zone_step3_preview"):
             components.html(unified_html, height=840, scrolling=True)
 
