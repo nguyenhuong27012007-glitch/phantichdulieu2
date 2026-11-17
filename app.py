@@ -27,6 +27,10 @@ def detect_data_issues(df: pd.DataFrame, filename: str = "Tệp dữ liệu") ->
     """Quét và phát hiện toàn diện các lỗi dữ liệu để thông báo và chờ người dùng phê duyệt sửa."""
     if df is None or df.empty:
         return []
+    _cache_k = (filename, len(df), len(df.columns), int(df.isna().sum().sum()))
+    _iss_cache = st.session_state.setdefault("_detect_issues_cache", {})
+    if _cache_k in _iss_cache:
+        return _iss_cache[_cache_k]
     issues = []
 
     # 1. Dòng hoàn toàn trống
@@ -92,7 +96,7 @@ def detect_data_issues(df: pd.DataFrame, filename: str = "Tệp dữ liệu") ->
     space_cols = []
     for c in obj_cols:
         s = df[c].dropna().astype(str)
-        mask = s.str.startswith(" ") | s.str.endswith(" ") | s.str.contains(r"  +")
+        mask = s.str.startswith(" ") | s.str.endswith(" ") | s.str.contains("  ", regex=False)
         c_cnt = int(mask.sum())
         if c_cnt > 0:
             space_issue_count += c_cnt
@@ -130,6 +134,7 @@ def detect_data_issues(df: pd.DataFrame, filename: str = "Tệp dữ liệu") ->
             "action_label": f"Đổi số âm thành dương ({neg_issue_count:,} ô)"
         })
 
+    _iss_cache[_cache_k] = issues
     return issues
 
 
