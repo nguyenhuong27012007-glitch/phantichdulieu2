@@ -792,8 +792,11 @@ try:
         with st.container(key="landing_stage_container"):
             st.markdown("""
             <style>
+                header[data-testid="stHeader"] {
+                    background: transparent !important;
+                }
                 .main .block-container, [data-testid="stMainBlockContainer"] {
-                    padding: 0 !important;
+                    padding: 2.6rem 0 0 0 !important;
                     margin: 0 !important;
                     max-width: 100% !important;
                     width: 100% !important;
@@ -802,6 +805,9 @@ try:
                     border-radius: 0 !important;
                     box-shadow: none !important;
                     background: #F4F7FB !important;
+                }
+                .st-key-landing_stage_container div[data-testid="stVerticalBlock"] {
+                    gap: 0 !important;
                 }
                 .st-key-btn_hero_start {
                     position: fixed !important;
@@ -913,8 +919,8 @@ try:
             </div>
 
             <h1 class="text-[2.4rem] lg:text-[2.85rem] font-extrabold text-slate-900 leading-[1.12] tracking-tight">
-                Dữ liệu thông minh.<br>
-                Báo cáo tức thì.
+                Dữ liệu thông minh<br>
+                Báo cáo tức thì
             </h1>
 
             <div class="flex items-center gap-3">
@@ -939,9 +945,6 @@ try:
                 <div class="w-9 h-9 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mb-3 font-bold text-base">1</div>
                 <h3 class="text-base font-bold text-slate-800 mb-1">Nhập dữ liệu</h3>
                 <p class="text-xs text-slate-500 font-medium">CSV, Excel, Google Sheet</p>
-                <div class="mt-5">
-                    <div class="text-[11px] font-bold text-blue-600 bg-blue-50 py-1 px-3 rounded-full inline-block uppercase tracking-wide">Đồng bộ</div>
-                </div>
             </div>
 
             <!-- Thẻ 2 (Nhô cao, nổi bật) -->
@@ -949,7 +952,6 @@ try:
                 <div class="absolute -top-3 -right-3 w-16 h-16 bg-yellow-400 rounded-full mix-blend-multiply opacity-30 blur-2xl pointer-events-none"></div>
                 <div class="flex justify-between items-start mb-3">
                     <div class="w-9 h-9 bg-blue-600 text-white rounded-xl flex items-center justify-center font-bold text-base shadow-md shadow-blue-200">2</div>
-                    <span class="text-[10px] font-bold tracking-wider text-amber-600 bg-amber-50 border border-amber-100 px-2.5 py-1 rounded-full uppercase">Tiến trình</span>
                 </div>
                 <h3 class="text-lg font-bold text-slate-900 mb-1">Làm sạch</h3>
                 <p class="text-xs text-slate-500 font-medium leading-relaxed">Chuẩn hóa &amp; chỉnh sửa lỗi dữ liệu</p>
