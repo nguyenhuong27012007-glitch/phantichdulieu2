@@ -1937,7 +1937,7 @@ try:
                                             sev_fg = "#991b1b" if iss["severity"] == "Quan trọng" else ("#92400e" if iss["severity"] == "Cảnh báo" else "#075985")
                                             st.markdown(
                                                 f"<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;'>"
-                                                f"<span style='font-weight:800; color:#0f172a; font-size:0.9rem;'>{iss['icon']} {iss['type']}</span>"
+                                                f"<span style='font-weight:800; color:#0f172a; font-size:0.9rem;'>{iss.get('icon', '⚠️')} {iss['type']}</span>"
                                                 f"<span style='background:{sev_bg}; color:{sev_fg}; font-size:0.7rem; font-weight:800; padding:2px 7px; border-radius:999px;'>{iss['severity']}</span>"
                                                 f"</div>",
                                                 unsafe_allow_html=True
@@ -2253,7 +2253,7 @@ try:
                                         sev_fg = "#991b1b" if s2_iss["severity"] == "Quan trọng" else ("#92400e" if s2_iss["severity"] == "Cảnh báo" else "#075985")
                                         st.markdown(
                                             f"<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;'>"
-                                            f"<span style='font-weight:800; color:#0f172a; font-size:0.9rem;'>{s2_iss['icon']} {s2_iss['type']}</span>"
+                                            f"<span style='font-weight:800; color:#0f172a; font-size:0.9rem;'>{s2_iss.get('icon', '⚠️')} {s2_iss['type']}</span>"
                                             f"<span style='background:{sev_bg}; color:{sev_fg}; font-size:0.7rem; font-weight:800; padding:2px 7px; border-radius:999px;'>{s2_iss['severity']}</span>"
                                             f"</div>",
                                             unsafe_allow_html=True
