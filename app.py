@@ -365,24 +365,29 @@ st.markdown("""
         transform: scale(1.06) translateY(-2px) !important;
     }
     /* Đồng bộ khung nhập Google Sheet bên phải giống hệt khung file CSV, Excel bên trái */
-    .st-key-step1_gsheet_box div[data-baseweb="input"] {
+    .st-key-step1_gsheet_box div[data-testid="stTextInput"] > div {
         background: #ffffff !important;
         border: 1px solid #cbd5e1 !important;
         border-radius: 10px !important;
         height: 44px !important;
         box-shadow: none !important;
+        overflow: hidden !important;
     }
+    .st-key-step1_gsheet_box div[data-testid="stTextInput"] > div > div,
+    .st-key-step1_gsheet_box div[data-baseweb="input"],
     .st-key-step1_gsheet_box div[data-baseweb="base-input"] {
         background: transparent !important;
         border: none !important;
         box-shadow: none !important;
+        outline: none !important;
     }
     .st-key-step1_gsheet_box input {
         background: transparent !important;
         border: none !important;
         color: #334155 !important;
         font-size: 0.92rem !important;
-        font-family: inherit !important;
+        font-weight: 400 !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
         padding: 0 14px !important;
         height: 42px !important;
     }
@@ -390,35 +395,32 @@ st.markdown("""
         color: #64748b !important;
         opacity: 1 !important;
         font-size: 0.92rem !important;
+        font-weight: 400 !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
 # ============================================================
-# HIỆU ỨNG CHUYỂN TRANG DỊU MẮT & TINH TẾ (SLIDE + BLUR-TO-CLEAR)
+# HIỆU ỨNG CHUYỂN TRANG CÁC BƯỚC SAU (FADE-UP MƯỢT MÀ)
 # ============================================================
 _prev_step_anim = st.session_state.get("_last_rendered_step", st.session_state.current_step)
 _cur_step_anim = st.session_state.current_step
-if _cur_step_anim != _prev_step_anim:
-    _is_forward = (_cur_step_anim > _prev_step_anim)
-    _slide_x = "48px" if _is_forward else "-48px"
-    st.markdown(f"""
+if _cur_step_anim != _prev_step_anim and _cur_step_anim != 0:
+    st.markdown("""
     <style>
-        @keyframes smoothPageReveal {{
-            0% {{
+        @keyframes fadeUpPageReveal {
+            0% {
                 opacity: 0;
-                filter: blur(8px);
-                transform: translateX({_slide_x}) scale(0.97);
-            }}
-            100% {{
+                transform: translateY(22px);
+            }
+            100% {
                 opacity: 1;
-                filter: blur(0px);
-                transform: translateX(0) scale(1);
-            }}
-        }}
-        .main .block-container, [data-testid="stMainBlockContainer"] {{
-            animation: smoothPageReveal 0.62s cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
-        }}
+                transform: translateY(0);
+            }
+        }
+        .main .block-container, [data-testid="stMainBlockContainer"] {
+            animation: fadeUpPageReveal 0.48s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+        }
     </style>
     """, unsafe_allow_html=True)
 st.session_state._last_rendered_step = _cur_step_anim
@@ -1624,7 +1626,7 @@ try:
                     display: none !important;
                 }
                 .main .block-container, [data-testid="stMainBlockContainer"] {
-                    padding: 2.2rem 0 0 0 !important;
+                    padding: 0.35rem 0 0 0 !important;
                     margin: 0 !important;
                     max-width: 100% !important;
                     width: 100% !important;
@@ -1746,7 +1748,7 @@ try:
         });
     </script>
 </head>
-<body class="text-slate-800 h-screen max-h-[660px] flex flex-col justify-between relative overflow-hidden" style="background: radial-gradient(circle at 12% 18%, rgba(147, 197, 253, 0.55) 0%, transparent 45%), radial-gradient(circle at 85% 22%, rgba(96, 165, 250, 0.42) 0%, transparent 48%), radial-gradient(circle at 52% 85%, rgba(186, 230, 253, 0.65) 0%, transparent 50%), linear-gradient(135deg, #eff6ff 0%, #dbeafe 52%, #e0f2fe 100%);">
+<body class="text-slate-800 h-[585px] flex flex-col justify-between relative overflow-hidden" style="background: radial-gradient(circle at 12% 18%, rgba(147, 197, 253, 0.55) 0%, transparent 45%), radial-gradient(circle at 85% 22%, rgba(96, 165, 250, 0.42) 0%, transparent 48%), radial-gradient(circle at 52% 85%, rgba(186, 230, 253, 0.65) 0%, transparent 50%), linear-gradient(135deg, #eff6ff 0%, #dbeafe 52%, #e0f2fe 100%);">
 
     <div id="cursor-glow"></div>
     <div id="cursor-dot"></div>
@@ -1811,7 +1813,7 @@ try:
         </div>
 
         <!-- CỘT PHẢI: 3 THẺ DỌC SO LE NHAU -->
-        <div class="w-full md:w-[55%] relative h-[410px] flex items-center justify-center">
+        <div class="w-full md:w-[55%] relative h-[350px] flex items-center justify-center">
             <div class="absolute w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-2xl opacity-60 animate-pulse"></div>
             
             <div class="relative w-full grid grid-cols-3 gap-4 items-center">
@@ -1908,7 +1910,7 @@ try:
 
 </body>
 </html>"""
-            _landing_comp.html(_landing_html, height=660, scrolling=False)
+            _landing_comp.html(_landing_html, height=585, scrolling=False)
 
     # ============================================================
     # BƯỚC 1: NHẬP DỮ LIỆU (CSV / EXCEL / GOOGLE SHEET)
@@ -2443,6 +2445,20 @@ try:
                                             key=f"chk_s2_{selected_file}_{s2_iss['id']}"
                                         )
                                         if is_checked and s2_iss["id"] not in st.session_state[f"{s2_issue_key_prefix}_selected"]:
+                                            st.session_state[f"{s2_issue_key_prefix}_selected"].append(s2_iss["id"])
+                                        elif not is_checked and s2_iss["id"] in st.session_state[f"{s2_issue_key_prefix}_selected"]:
+                                            st.session_state[f"{s2_issue_key_prefix}_selected"].remove(s2_iss["id"])
+                                    with c_top_title:
+                                        st.markdown(
+                                            f"<div style='padding-top:2px; font-size:0.95rem; color:#0f172a;'>"
+                                            f"<b>{s2_iss['type']}</b> <span style='color:#64748b; font-weight:500; font-size:0.86rem;'>· {s2_iss['count']:,} {unit_lbl}</span>"
+                                            f"</div>",
+                                            unsafe_allow_html=True
+                                        )
+                                    with c_top_badge:
+                                        st.markdown(
+                                            f"<div style='display:flex; justify-content:flex-end;'>"
+                                            f"<span style='display:inline-flex; align-items:center; gap:5px; background:{sev_bg}; color:{see[f"{s2_issue_key_prefix}_selected"]:
                                             st.session_state[f"{s2_issue_key_prefix}_selected"].append(s2_iss["id"])
                                         elif not is_checked and s2_iss["id"] in st.session_state[f"{s2_issue_key_prefix}_selected"]:
                                             st.session_state[f"{s2_issue_key_prefix}_selected"].remove(s2_iss["id"])
@@ -3106,34 +3122,4 @@ try:
                     new_df = new_df.sort_values(by="Điểm tổng hợp", ascending=False).reset_index(drop=True)
                     new_df["Xếp hạng"] = [f"Hạng {i+1}" for i in range(len(new_df))]
                     new_df["Trạng thái"] = ["✅ Ưu tiên" if i < 2 else "📌 Theo dõi" for i in range(len(new_df))]
-                    st.session_state.dashboard_scores_df = new_df
-                    st.session_state.show_edit_dashboard = False
-                    st.rerun()
-
-            with col_btn_dash2:
-                if st.button("🤖 Phân tích lại bằng AI", use_container_width=True):
-                    with st.spinner("AI đang phân tích sâu dữ liệu..."):
-                        ai_res = orch.run_full_analysis()
-                        st.session_state.analysis_results = ai_res
-                        if ai_res.get("report"):
-                            st.session_state.editable_report = ai_res["report"]
-                        if ai_res.get("survey_plan"):
-                            st.session_state.editable_plan = ai_res["survey_plan"]
-                        st.session_state.dashboard_scores_df = None
-                        st.session_state.show_edit_dashboard = False
-                        st.rerun()
-
-except Exception as _global_exc:
-    import traceback
-    traceback.print_exc()
-    st.error(_vietnamese_error_message(_global_exc))
-
-import streamlit.components.v1 as _cleanup_comp
-_cleanup_comp.html("""
-<script>
-try {
-    const oldBanner = window.parent.document.getElementById('hp-instant-loading-banner');
-    if (oldBanner) oldBanner.remove();
-} catch(e) {}
-</script>
-""", height=0, width=0)
+                    st.session_sta
