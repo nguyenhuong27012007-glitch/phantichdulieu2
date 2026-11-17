@@ -856,10 +856,52 @@ try:
             100% { transform: translateX(-50%); } 
         }
         .glass-panel {
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.75);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .interactive-card {
+            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .interactive-card:hover {
+            filter: brightness(0.97) contrast(1.05);
+            box-shadow: 0 20px 30px -10px rgba(30, 58, 138, 0.22);
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+        /* Custom Glowing Cursor Follower */
+        .cursor-glow {
+            position: fixed;
+            width: 380px;
+            height: 380px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.18) 0%, rgba(99, 102, 241, 0.08) 45%, transparent 70%);
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+            transition: width 0.3s ease, height 0.3s ease, background 0.3s ease;
+            mix-blend-mode: multiply;
+        }
+        .cursor-dot {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #2563eb;
+            box-shadow: 0 0 10px rgba(37, 99, 235, 0.6);
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: 50;
+            transition: transform 0.12s ease-out, background-color 0.2s ease;
+        }
+        .interactive-area {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.25s ease;
+        }
+        .interactive-area:hover {
+            background-color: rgba(255, 255, 255, 0.95);
+            border-color: rgba(37, 99, 235, 0.3);
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.1);
         }
     </style>
     <script>
@@ -872,10 +914,70 @@ try:
                 console.error(e);
             }
         }
+
+        // Mouse motion & interactive hover tracking
+        document.addEventListener('DOMContentLoaded', () => {
+            const glow = document.getElementById('cursor-glow');
+            const dot = document.getElementById('cursor-dot');
+            
+            let mouseX = -100, mouseY = -100;
+            let currentX = -100, currentY = -100;
+
+            window.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+                if (dot) {
+                    dot.style.left = `${mouseX}px`;
+                    dot.style.top = `${mouseY}px`;
+                }
+            });
+
+            function animateGlow() {
+                currentX += (mouseX - currentX) * 0.15;
+                currentY += (mouseY - currentY) * 0.15;
+                if (glow) {
+                    glow.style.left = `${currentX}px`;
+                    glow.style.top = `${currentY}px`;
+                }
+                requestAnimationFrame(animateGlow);
+            }
+            animateGlow();
+
+            // Enlarge glow when hovering interactive elements
+            const hoverTargets = document.querySelectorAll('button, a, .interactive-card, .interactive-area');
+            hoverTargets.forEach(el => {
+                el.addEventListener('mouseenter', () => {
+                    if (glow) {
+                        glow.style.width = '480px';
+                        glow.style.height = '480px';
+                        glow.style.background = 'radial-gradient(circle, rgba(234, 179, 8, 0.22) 0%, rgba(59, 130, 246, 0.12) 45%, transparent 70%)';
+                    }
+                    if (dot) {
+                        dot.style.transform = 'translate(-50%, -50%) scale(1.6)';
+                        dot.style.backgroundColor = '#d97706';
+                    }
+                });
+                el.addEventListener('mouseleave', () => {
+                    if (glow) {
+                        glow.style.width = '380px';
+                        glow.style.height = '380px';
+                        glow.style.background = 'radial-gradient(circle, rgba(59, 130, 246, 0.18) 0%, rgba(99, 102, 241, 0.08) 45%, transparent 70%)';
+                    }
+                    if (dot) {
+                        dot.style.transform = 'translate(-50%, -50%) scale(1)';
+                        dot.style.backgroundColor = '#2563eb';
+                    }
+                });
+            });
+        });
     </script>
 </head>
 <body class="bg-[#F4F7FB] text-slate-800 h-screen max-h-[660px] flex flex-col justify-between relative overflow-x-hidden">
     
+    <!-- Con trỏ chuột phát sáng động (Mouse Glow & Cursor Dot) -->
+    <div id="cursor-glow" class="cursor-glow"></div>
+    <div id="cursor-dot" class="cursor-dot"></div>
+
     <!-- 1. CÁC HỌA TIẾT NỀN ĐÈ DƯỚI NỘI DUNG -->
     <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-200 rounded-full mix-blend-multiply filter blur-[120px] opacity-60 z-0 pointer-events-none"></div>
     <div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-200 rounded-full mix-blend-multiply filter blur-[120px] opacity-60 z-0 pointer-events-none"></div>
@@ -938,7 +1040,7 @@ try:
                 </button>
             </div>
 
-            <p class="text-sm text-slate-600 max-w-lg leading-relaxed glass-panel p-4 rounded-2xl">
+            <p class="text-sm text-slate-600 max-w-lg leading-relaxed glass-panel p-4 rounded-2xl interactive-area hover:text-slate-900 transition-all cursor-default">
                 Tự động kiểm tra, làm sạch, và điều phối chính xác dữ liệu từ tệp CSV, Excel hoặc Google Sheet. Hỗ trợ tổng hợp số liệu và tạo báo cáo Dashboard trực quan.
             </p>
         </div>
@@ -947,14 +1049,14 @@ try:
         <div class="w-full md:w-[54%] flex flex-row items-center justify-center md:justify-end gap-3.5 z-10">
             
             <!-- Thẻ 1 (Thấp) -->
-            <div onclick="triggerStart()" class="w-44 lg:w-48 glass-panel rounded-[1.5rem] p-4 shadow-xl flex flex-col relative translate-y-4 hover:-translate-y-1 transition duration-500 cursor-pointer">
-                <div class="w-9 h-9 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mb-3 font-bold text-base">1</div>
-                <h3 class="text-base font-bold text-slate-800 mb-1">Nhập dữ liệu</h3>
+            <div onclick="triggerStart()" class="w-44 lg:w-48 glass-panel rounded-[1.5rem] p-4 shadow-xl flex flex-col relative translate-y-4 hover:-translate-y-1 interactive-card hover:bg-white hover:border-blue-300 transition duration-300 cursor-pointer">
+                <div class="w-9 h-9 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mb-3 font-bold text-base transition-transform group-hover:scale-110">1</div>
+                <h3 class="text-base font-bold text-slate-800 hover:text-blue-600 mb-1 transition-colors">Nhập dữ liệu</h3>
                 <p class="text-xs text-slate-500 font-medium">CSV, Excel, Google Sheet</p>
             </div>
 
             <!-- Thẻ 2 (Nhô cao, nổi bật) -->
-            <div onclick="triggerStart()" class="w-44 lg:w-48 bg-white rounded-[1.5rem] p-4 shadow-2xl border border-blue-50 flex flex-col relative -translate-y-4 scale-105 z-20 hover:-translate-y-7 transition duration-500 cursor-pointer">
+            <div onclick="triggerStart()" class="w-44 lg:w-48 bg-white rounded-[1.5rem] p-4 shadow-2xl border border-blue-50 flex flex-col relative -translate-y-4 scale-105 z-20 hover:-translate-y-7 interactive-card hover:border-blue-400 hover:shadow-blue-200/50 transition duration-300 cursor-pointer">
                 <div class="absolute -top-3 -right-3 w-16 h-16 bg-yellow-400 rounded-full mix-blend-multiply opacity-30 blur-2xl pointer-events-none"></div>
                 <div class="flex justify-between items-start mb-3">
                     <div class="w-9 h-9 bg-blue-600 text-white rounded-xl flex items-center justify-center font-bold text-base shadow-md shadow-blue-200">2</div>
@@ -974,7 +1076,7 @@ try:
             </div>
 
             <!-- Thẻ 3 (Thấp) -->
-            <div onclick="triggerStart()" class="w-44 lg:w-48 bg-amber-400/90 backdrop-blur-md rounded-[1.5rem] p-4 shadow-xl border border-amber-300 flex flex-col relative text-slate-900 translate-y-4 hover:-translate-y-1 transition duration-500 cursor-pointer">
+            <div onclick="triggerStart()" class="w-44 lg:w-48 bg-amber-400/90 backdrop-blur-md rounded-[1.5rem] p-4 shadow-xl border border-amber-300 flex flex-col relative text-slate-900 translate-y-4 hover:-translate-y-1 interactive-card hover:bg-amber-400 hover:border-amber-400 hover:shadow-amber-300/50 transition duration-300 cursor-pointer">
                 <div class="w-9 h-9 bg-white/40 text-slate-900 rounded-xl flex items-center justify-center mb-3 font-bold text-base shadow-sm">3</div>
                 <h3 class="text-base font-bold mb-1">Tạo báo cáo</h3>
                 <p class="text-xs text-slate-800/80 font-medium">Dashboard &amp; Xuất HTML</p>
