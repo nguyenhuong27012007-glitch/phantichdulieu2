@@ -316,6 +316,27 @@ if "pending_spinner_msg" not in st.session_state:
 if "selected_ai_model" not in st.session_state:
     st.session_state.selected_ai_model = "gemini-2.5-pro"
 
+def _validate_df_meaningful(df: pd.DataFrame):
+    """Kiểm tra tệp có thực sự chứa dữ liệu có ý nghĩa để phân tích hay không."""
+    if df is None or df.empty or len(df) == 0 or len(df.columns) == 0:
+        return False, "Tệp không có dòng hoặc cột dữ liệu nào."
+    non_null_vals = df.dropna(how="all")
+    if non_null_vals.empty:
+        return False, "Toàn bộ các ô trong tệp đều trống."
+    # Kiểm tra xem toàn bộ bảng có chỉ lặp lại 1 giá trị vô nghĩa (vd: toàn 'x') hay không
+    flat_vals = df.astype(str).values.ravel()
+    uniq_vals = set(v.strip() for v in flat_vals if v.strip() not in ("", "nan", "None", "NaN", "NULL"))
+    if len(uniq_vals) <= 1:
+        return False, "Dữ liệu chỉ chứa 1 giá trị duy nhất lặp lại, không có thông tin để phân tích."
+    num_cols = df.select_dtypes(include=["number"]).columns
+    if len(num_cols) == 0:
+        return False, "Tệp không có cột số liệu định lượng nào."
+    has_valid_num = any(df[c].dropna().shape[0] > 0 for c in num_cols)
+    if not has_valid_num:
+        return False, "Các cột số liệu đều trống, không có giá trị để tính toán."
+    return True, ""
+
+
 def set_spinner_msg(msg: str):
     st.session_state.pending_spinner_msg = msg
 
@@ -2114,6 +2135,7 @@ try:
                             has_backup = "original_df" in f_info_item and f_info_item["original_df"] is not None
                             user_logs_s1 = f_info_item.get("user_action_log", [])
 
+                            _is_ok_df, _err_reason_df = _validate_df_meaningful(df_chk)
                             if detected_issues:
                                 _short_err_lines = "\n".join(
                                     f"- **{iss['type']}:** {iss['count']:,} {'dòng' if 'trùng' in iss['type'].lower() or 'dòng' in iss['type'].lower() else 'ô'}"
@@ -2123,10 +2145,10 @@ try:
                                     f"⚠️ **Phát hiện {len(detected_issues)} nhóm lỗi trong tệp `{item['file']}`:**\n\n"
                                     f"{_short_err_lines}"
                                 )
-                            elif len(df_chk.select_dtypes(include=["number"]).columns) == 0:
+                            elif not _is_ok_df:
                                 st.error(
-                                    f"❌ **Tệp `{item['file']}` không có cột số liệu định lượng** (chỉ chứa ký tự chữ). "
-                                    f"Vui lòng nạp tệp có ít nhất 1 cột số liệu để tiếp tục sang Bước 2."
+                                    f"❌ **Tệp `{item['file']}` không đủ dữ liệu có ý nghĩa để phân tích:** {_err_reason_df} "
+                                    f"Vui lòng nạp tệp khác có dữ liệu thực tế."
                                 )
                             else:
                                 if has_backup and user_logs_s1:
@@ -2140,7 +2162,7 @@ try:
                                             f_info_item["user_action_log"] = []
                                             st.rerun()
                             
-                            if not detected_issues:
+                            if (not detected_issues) and _is_ok_df:
                                 cache_key = f"v2_{item['file']}_{len(df_chk)}_{len(df_chk.columns)}"
                                 if cache_key not in st.session_state.step1_ai_summaries:
                                     rev_cols = [c for c in df_chk.columns if any(k in str(c).lower() for k in ["revenue", "doanh_thu", "doanhthu", "sales", "amount", "profit", "loi_nhuan"])]
@@ -2238,7 +2260,7 @@ try:
 
         if orch.data_agent.raw_dataframes:
             _has_num_s1 = any(
-                len(df.select_dtypes(include=["number"]).columns) > 0
+                _validate_df_meaningful(df)[0]
                 for df in orch.data_agent.raw_dataframes.values()
                 if df is not None and not df.empty
             )
