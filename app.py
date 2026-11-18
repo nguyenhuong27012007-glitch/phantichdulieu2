@@ -2998,7 +2998,7 @@ try:
 
         # Tự động làm mới kết quả Bước 3 khi người dùng tải/sửa dữ liệu hoặc đổi tệp
         _current_step3_sig = (
-            "v5_detailed_report",
+            "v6_smart_report_check",
             tuple(_uploaded_file_names),
             tuple(orch.data_agent.get_regions_detected()),
             sum(len(df) for df in orch.data_agent.raw_dataframes.values())
@@ -3101,7 +3101,7 @@ try:
         st.session_state.pending_spinner_msg = ""
         _total_rec = sum(len(df) for df in orch.data_agent.raw_dataframes.values())
         _uni_cache_key = (
-            "v5_detailed_report",
+            "v6_smart_report_check",
             st.session_state.dashboard_title,
             st.session_state.editable_report,
             st.session_state.editable_plan,
