@@ -2650,8 +2650,9 @@ try:
                                         st.session_state[f"{s2_issue_key_prefix}_selected"] = []
                                         st.toast(f"✅ Đã xử lý xong các lỗi trên {selected_file}!")
                                     st.rerun()
-                            with col_s2_btn_undo:
-                                if has_s2_backup and user_edits:
+                            if has_s2_backup and user_edits:
+                                _, col_undo_mid, _ = st.columns([1.3, 1.4, 1.3])
+                                with col_undo_mid:
                                     if st.button("↩️ Khôi phục bản gốc", use_container_width=True, key=f"btn_undo_s2_{selected_file}"):
                                         orig_copy = file_info_cur["original_df"].copy()
                                         orch.data_agent.raw_dataframes[selected_file] = orig_copy
