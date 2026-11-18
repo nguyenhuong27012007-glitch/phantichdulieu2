@@ -2123,6 +2123,11 @@ try:
                                     f"⚠️ **Phát hiện {len(detected_issues)} nhóm lỗi trong tệp `{item['file']}`:**\n\n"
                                     f"{_short_err_lines}"
                                 )
+                            elif len(df_chk.select_dtypes(include=["number"]).columns) == 0:
+                                st.warning(
+                                    f"⚠️ **Tệp `{item['file']}` không có cột số liệu định lượng** (chỉ chứa ký tự chữ). "
+                                    f"Hệ thống chưa đủ dữ liệu số để chấm điểm và tạo Dashboard ở Bước 3."
+                                )
                             else:
                                 if has_backup and user_logs_s1:
                                     with st.expander(f"📜 Nhật ký các mục bạn đã duyệt sửa trên `{item['file']}` ({len(user_logs_s1)} thao tác)", expanded=False):
@@ -2788,11 +2793,11 @@ try:
             for df in orch.data_agent.raw_dataframes.values()
             if df is not None and not df.empty
         )
-        if _total_rows_s3 <= 2 or not _has_any_numeric_s3:
+        if not _has_any_numeric_s3:
             st.warning(
                 f"⚠️ **Dữ liệu chưa đủ điều kiện để phân tích & tạo Dashboard:**\n\n"
-                f"- Hệ thống chỉ ghi nhận **{_total_rows_s3:,} bản ghi** và **không có cột số liệu định lượng** nào hợp lệ (dữ liệu chỉ chứa ký tự chữ hoặc giá trị lặp).\n"
-                f"- Vui lòng tải lên tệp dữ liệu có nhiều dòng hơn (tối thiểu 5–10 dòng) và có ít nhất 1 cột số liệu để hệ thống phân tích, chấm điểm chính xác."
+                f"- Tệp hiện tại **không có cột số liệu định lượng** nào hợp lệ (chỉ chứa ký tự chữ).\n"
+                f"- Vui lòng tải lên tệp có ít nhất 1 cột số liệu để hệ thống phân tích và chấm điểm chính xác."
             )
             if st.button("⬅ Quay lại Bước 1 để nạp tệp khác", type="primary"):
                 st.session_state.current_step = 1
