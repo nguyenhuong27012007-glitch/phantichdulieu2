@@ -401,17 +401,17 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ============================================================
-# HIỆU ỨNG CHUYỂN TRANG CÁC BƯỚC SAU (FADE-UP MƯỢT MÀ)
+# HIỆU ỨNG CHUYỂN TRANG: LƯỚT TỪ DƯỚI LÊN TRÊN
 # ============================================================
 _prev_step_anim = st.session_state.get("_last_rendered_step", st.session_state.current_step)
 _cur_step_anim = st.session_state.current_step
-if _cur_step_anim != _prev_step_anim and _cur_step_anim != 0:
+if _cur_step_anim != _prev_step_anim:
     st.markdown("""
     <style>
-        @keyframes fadeUpPageReveal {
+        @keyframes slideUpPage {
             0% {
                 opacity: 0;
-                transform: translateY(22px);
+                transform: translateY(44px);
             }
             100% {
                 opacity: 1;
@@ -419,7 +419,7 @@ if _cur_step_anim != _prev_step_anim and _cur_step_anim != 0:
             }
         }
         .main .block-container, [data-testid="stMainBlockContainer"] {
-            animation: fadeUpPageReveal 0.48s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            animation: slideUpPage 0.55s cubic-bezier(0.22, 1, 0.36, 1) !important;
         }
     </style>
     """, unsafe_allow_html=True)
@@ -2016,7 +2016,8 @@ try:
                             key="s1_file_uploader"
                         )
                     if uploaded_files:
-                        if st.button("✅ Xác nhận & Kiểm tra tệp đã tải lên", type="primary", use_container_width=True, key="btn_verify_upload"):
+                        _up_sig = tuple((u.name, getattr(u, "size", 0)) for u in uploaded_files)
+                        if st.session_state.get("_last_uploaded_sig") != _up_sig:
                             with st.spinner("Đang đọc và kiểm tra chất lượng dữ liệu..."):
                                 for up in uploaded_files:
                                     content = up.read()
@@ -2027,6 +2028,7 @@ try:
                                             orch.data_agent.file_infos.setdefault(up.name, {})["original_df"] = orch.data_agent.raw_dataframes[up.name].copy()
                                         if up.name not in st.session_state.files_loaded:
                                             st.session_state.files_loaded.append(up.name)
+                                st.session_state._last_uploaded_sig = _up_sig
                                 st.session_state.show_step1_uploader = False
                             st.rerun()
 
@@ -2328,6 +2330,10 @@ try:
                     font-size: 1.02rem !important;
                     font-weight: 700 !important;
                 }
+                div[class*="st-key-btn_apply_fixes_s2_"] {
+                    display: flex !important;
+                    justify-content: center !important;
+                }
                 div[class*="st-key-btn_apply_fixes_s2_"] button,
                 div[class*="st-key-btn_apply_fixes_s2_"] button p {
                     font-size: 1.05rem !important;
@@ -2624,10 +2630,10 @@ try:
                                         st.dataframe(s2_err_preview, use_container_width=True, height=460)
 
                             st.write("")
-                            col_s2_btn_apply, col_s2_btn_undo = st.columns([2.5, 1.1])
+                            _, col_s2_btn_apply, _ = st.columns([1.3, 1.4, 1.3])
                             with col_s2_btn_apply:
                                 btn_s2_fix_label = f"🛠️ Duyệt & Sửa ngay ({len(s2_chosen_fixes)} mục đã chọn)" if s2_chosen_fixes else "⚠️ Chưa chọn mục nào để sửa"
-                                if st.button(btn_s2_fix_label, type="primary", use_container_width=False, key=f"btn_apply_fixes_s2_{selected_file}", disabled=(not s2_chosen_fixes)):
+                                if st.button(btn_s2_fix_label, type="primary", use_container_width=True, key=f"btn_apply_fixes_s2_{selected_file}", disabled=(not s2_chosen_fixes)):
                                     with st.spinner(f"Đang áp dụng các sửa đổi do bạn duyệt trên tệp {selected_file}..."):
                                         fixed_df, fix_reps = apply_data_issue_fixes(df_current, s2_chosen_fixes, custom_instructions=s2_custom_instrs)
                                         orch.data_agent.raw_dataframes[selected_file] = fixed_df
