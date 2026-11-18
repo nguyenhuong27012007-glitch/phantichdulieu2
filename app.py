@@ -1977,6 +1977,7 @@ try:
             with col_s1_h2:
                 btn_lbl = "✖ Đóng khung nạp thêm dữ liệu" if st.session_state.show_step1_uploader else "➕ Nạp thêm tệp / Google Sheet"
                 if st.button(btn_lbl, use_container_width=True, key="btn_toggle_s1_uploader"):
+                    st.session_state.pop("_last_uploaded_sig", None)
                     st.session_state.show_step1_uploader = not st.session_state.show_step1_uploader
                     st.rerun()
         else:
@@ -2017,8 +2018,7 @@ try:
                         )
                     if uploaded_files:
                         _up_sig = tuple((getattr(u, "file_id", u.name), u.name, getattr(u, "size", 0)) for u in uploaded_files)
-                        _has_unloaded = any(u.name not in orch.data_agent.raw_dataframes for u in uploaded_files)
-                        if st.session_state.get("_last_uploaded_sig") != _up_sig or _has_unloaded:
+                        if st.session_state.get("_last_uploaded_sig") != _up_sig:
                             with st.spinner("Đang đọc và kiểm tra chất lượng dữ liệu..."):
                                 for up in uploaded_files:
                                     content = up.getvalue()
