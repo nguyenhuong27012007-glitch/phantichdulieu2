@@ -2782,6 +2782,23 @@ try:
     # BƯỚC 3: BÁO CÁO TỔNG HỢP & DASHBOARD (TÍNH TOÁN THỰC TẾ TỪ DỮ LIỆU)
     # ============================================================
     elif st.session_state.current_step == 3:
+        _total_rows_s3 = sum(len(df) for df in orch.data_agent.raw_dataframes.values() if df is not None)
+        _has_any_numeric_s3 = any(
+            len(df.select_dtypes(include=["number"]).columns) > 0
+            for df in orch.data_agent.raw_dataframes.values()
+            if df is not None and not df.empty
+        )
+        if _total_rows_s3 <= 2 or not _has_any_numeric_s3:
+            st.warning(
+                f"⚠️ **Dữ liệu chưa đủ điều kiện để phân tích & tạo Dashboard:**\n\n"
+                f"- Hệ thống chỉ ghi nhận **{_total_rows_s3:,} bản ghi** và **không có cột số liệu định lượng** nào hợp lệ (dữ liệu chỉ chứa ký tự chữ hoặc giá trị lặp).\n"
+                f"- Vui lòng tải lên tệp dữ liệu có nhiều dòng hơn (tối thiểu 5–10 dòng) và có ít nhất 1 cột số liệu để hệ thống phân tích, chấm điểm chính xác."
+            )
+            if st.button("⬅ Quay lại Bước 1 để nạp tệp khác", type="primary"):
+                st.session_state.current_step = 1
+                st.rerun()
+            st.stop()
+
         import importlib
         import agents.data_ingestion_agent as _dia_mod
         importlib.reload(_dia_mod)
