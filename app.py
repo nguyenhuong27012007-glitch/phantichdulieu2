@@ -2179,7 +2179,7 @@ try:
                                         s_val = pd.to_numeric(df_chk[rc], errors="coerce").dropna()
                                         if len(s_val) > 0:
                                             biz_parts.append(f"- **Tình hình kinh doanh:** Chỉ số `{rc}` đạt tổng **{s_val.sum():,.0f}** (trung bình **{s_val.mean():,.1f}**/giao dịch).")
-                                    biz_parts.append("- **Đánh giá chung:** Dữ liệu phản ánh hoạt động vận hành ổn định, đủ điều kiện tổng hợp báo cáo và Dashboard ở Bước 3.")
+                                    biz_parts.append("- **Đánh giá chung:** Dữ liệu đã sẵn sàng để tổng hợp báo cáo và Dashboard ở Bước 3.")
                                     st.session_state.step1_ai_summaries[cache_key] = "\n".join(biz_parts)
                                 st.info(f"🤖 **Nhận xét nhanh về `{item['file']}`:**\n\n{st.session_state.step1_ai_summaries[cache_key]}")
                     else:
@@ -3004,36 +3004,35 @@ try:
 - Tệp dữ liệu hiện tại chỉ có **1 nhóm đơn lẻ** (chưa có cột phân loại như khu vực, phòng ban, sản phẩm... với từ 2 nhóm trở lên để so sánh và xếp hạng đa chiều).
 - Các chỉ số thống kê trên được tính trực tiếp từ toàn bộ bản ghi trong tệp, không có sự so sánh chéo giữa các nhóm."""
 
-            top_bullets = ""
-            for g in top_2:
-                info = scoring_map.get(g, {})
-                cs = info.get("criteria_scores", {})
-                s_qm = cs.get("market_size", {}).get("score", 0)
-                s_nc = cs.get("wms_demand_fit", {}).get("score", 0)
-                s_kt = cs.get("deployment_feasibility", {}).get("score", 0)
-                top_bullets += (
-                    f"\n  - **{g}** — Điểm tổng hợp **{info.get('weighted_total', 0)}/10** "
-                    f"({info.get('rows', 0):,} bản ghi, độ đầy đủ **{info.get('completeness_pct', 100)}%**; "
-                    f"Quy mô: {s_qm}, Phù hợp: {s_nc}, Khả thi: {s_kt})."
-                )
-
-            dep_bullets = ""
-            for g in dep[:4]:
-                info = scoring_map.get(g, {})
-                dep_bullets += f"\n  - **{g}**: **{info.get('weighted_total', 0)}/10** ({info.get('rows', 0):,} bản ghi, độ đầy đủ {info.get('completeness_pct', 100)}%)."
-            if len(dep) > 4:
-                dep_bullets += f"\n  - *Cùng {len(dep) - 4} nhóm khác có điểm thấp hơn trong bảng xếp hạng.*"
-            if not dep_bullets:
-                dep_bullets = "\n  - Không có nhóm nào bị xếp sau."
+            # Tính số liệu thực tế theo từng chiều phân nhóm có trong dữ liệu (không bịa điểm 5 tiêu chí)
+            dim_sections = ""
+            first_num_col = num_cols_sample[0] if num_cols_sample else None
+            if first_num_col and orch.data_agent.raw_dataframes:
+                df_all_rep = pd.concat(orch.data_agent.raw_dataframes.values(), ignore_index=True)
+                if first_num_col in df_all_rep.columns:
+                    df_all_rep[first_num_col] = pd.to_numeric(df_all_rep[first_num_col], errors="coerce")
+                    cat_cols_rep = [
+                        str(c) for c in df_all_rep.columns
+                        if c not in scoring_data.get("numeric_cols", [])
+                        and 2 <= df_all_rep[c].nunique(dropna=True) <= 20
+                        and not any(tk in str(c).lower() for tk in ["tháng", "month", "ngày", "date", "năm", "year"])
+                    ]
+                    for dim_col in cat_cols_rep[:2]:
+                        grp = df_all_rep.groupby(dim_col, dropna=True)[first_num_col].agg(["sum", "mean", "count"]).sort_values("sum", ascending=False)
+                        grand_tot = grp["sum"].sum()
+                        dim_lines = []
+                        for g_name, g_row in grp.iterrows():
+                            share_pct = (g_row["sum"] / grand_tot * 100) if grand_tot > 0 else 0.0
+                            dim_lines.append(
+                                f"  - **{g_name}**: Tổng **{g_row['sum']:,.1f}** ({share_pct:.1f}%), TB **{g_row['mean']:,.1f}** ({int(g_row['count']):,} bản ghi)."
+                            )
+                        dim_sections += f"\n- **Phân tích theo `{dim_col}` (chỉ số `{first_num_col}`):**\n" + "\n".join(dim_lines)
 
             return f"""### 1. Tổng quan dữ liệu từ các tệp đã nạp
-- **[DỮ LIỆU] Quy mô tổng hợp:** **{len(orch.data_agent.raw_dataframes)} tệp** ({_files_display_str}) với tổng **{total_rows_now:,} bản ghi**, phân tích theo **{len(scoring_map)} nhóm** trên các chỉ số chính ({cols_note}).{file_details_md}
-- **[CHẤT LƯỢNG DỮ LIỆU]:** Toàn bộ hệ thống hiện còn **{total_nulls_all:,} ô trống**; các phép tính đều đã được chuẩn hóa an toàn.
+- **[DỮ LIỆU] Quy mô tổng hợp:** **{len(orch.data_agent.raw_dataframes)} tệp** ({_files_display_str}) với tổng **{total_rows_now:,} bản ghi**, chỉ số chính: {cols_note}.{file_details_md}
+- **[CHẤT LƯỢNG DỮ LIỆU]:** Toàn bộ hệ thống hiện còn **{total_nulls_all:,} ô trống**.
 
-### 2. Đánh giá chi tiết nhóm dẫn đầu & nhóm theo dõi
-- **[ĐỀ XUẤT TRỌNG TÂM]** Hai nhóm đạt hiệu suất cao nhất là **{', '.join(top_2)}** ({rec.get('reason_top', '')}):{top_bullets}
-- **Nhóm cần theo dõi & cải thiện:**{dep_bullets}
-- **[SUY LUẬN]** Các nhóm ưu tiên đang vượt trội về mật độ dữ liệu và giá trị trung bình chỉ số; các nhóm còn lại cần bổ sung thêm dữ liệu hoặc tối ưu các tiêu chí có trọng số cao."""
+### 2. Tổng hợp số liệu thực tế theo các chiều phân loại{dim_sections if dim_sections else chr(10) + "- Chưa phát hiện cột phân loại phù hợp để tách nhóm."}"""
 
         def _build_default_plan_standalone(recommended):
             top_str = ", ".join(recommended) if recommended else "Nhóm ưu tiên"
@@ -3046,10 +3045,9 @@ try:
 - **Bước 2 (Theo dõi chỉ số):** Tiếp tục theo dõi các chỉ số {kpi_str} đã thống kê trực tiếp từ tệp dữ liệu hiện tại."""
             dep_list = scoring_data.get("recommendation", {}).get("deprioritized", []) if "scoring_data" in locals() else []
             dep_note = f" và đối chiếu khoảng cách hiệu suất với nhóm **{', '.join(dep_list[:3])}**" if dep_list else ""
-            return f"""### Kế hoạch hành động đề xuất cho: {top_str}
-- **Giai đoạn 1 (Tuần 1 — Rà soát & Chuẩn hóa):** Kiểm tra lại các bản ghi gốc từ **{_files_display_str}** tại nhóm **{top_str}**, đảm bảo các chỉ số {kpi_str} không còn sai lệch hoặc giá trị khuyết.
-- **Giai đoạn 2 (Tuần 2–3 — Triển khai trọng tâm):** Tập trung nguồn lực mở rộng và tối ưu vận hành tại **{top_str}** dựa trên các chỉ số {kpi_str}{dep_note}.
-- **Giai đoạn 3 (Tuần 4 — Đo lường & Mở rộng):** Theo dõi biến động thực tế hàng tuần trên Dashboard, cập nhật lại bảng điểm để nhân rộng mô hình sang các nhóm tiếp theo."""
+            return f"""### Gợi ý theo dõi từ dữ liệu thực tế ({top_str})
+- **Đối chiếu các nhóm:** Sử dụng bảng số liệu và biểu đồ trên Dashboard để so sánh trực tiếp tổng và trung bình các chỉ số {kpi_str} giữa **{top_str}** với các nhóm còn lại{dep_note}.
+- **Xuất báo cáo:** Bạn có thể chỉnh sửa nhận xét hoặc xuất báo cáo HTML/PDF/DOCX trực tiếp từ các nút phía trên."""
 
         # Tự động làm mới kết quả Bước 3 khi người dùng tải/sửa dữ liệu hoặc đổi tệp
         _current_step3_sig = (
