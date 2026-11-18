@@ -2124,9 +2124,9 @@ try:
                                     f"{_short_err_lines}"
                                 )
                             elif len(df_chk.select_dtypes(include=["number"]).columns) == 0:
-                                st.warning(
-                                    f"⚠️ **Tệp `{item['file']}` không có cột số liệu định lượng** (chỉ chứa ký tự chữ). "
-                                    f"Hệ thống chưa đủ dữ liệu số để chấm điểm và tạo Dashboard ở Bước 3."
+                                st.error(
+                                    f"❌ **Tệp `{item['file']}` không có cột số liệu định lượng** (chỉ chứa ký tự chữ). "
+                                    f"Vui lòng nạp tệp có ít nhất 1 cột số liệu để tiếp tục sang Bước 2."
                                 )
                             else:
                                 if has_backup and user_logs_s1:
@@ -2237,8 +2237,13 @@ try:
                 st.success(st.session_state.pop("_ai_ctx_done_msg"))
 
         if orch.data_agent.raw_dataframes:
+            _has_num_s1 = any(
+                len(df.select_dtypes(include=["number"]).columns) > 0
+                for df in orch.data_agent.raw_dataframes.values()
+                if df is not None and not df.empty
+            )
             with st.container(key="floating_approve_step1"):
-                if st.button("✅ Duyệt & Sang Bước 2 ➔", type="primary", use_container_width=True, key="btn_approve_step1"):
+                if st.button("✅ Duyệt & Sang Bước 2 ➔", type="primary", use_container_width=True, key="btn_approve_step1", disabled=(not _has_num_s1)):
                     set_spinner_msg("Đang chuyển sang Bước 2: Làm sạch & Kiểm tra dữ liệu...")
                     st.session_state.step1_approved = True
                     st.session_state.current_step = 2
