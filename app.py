@@ -2021,7 +2021,17 @@ try:
                             with st.spinner("Đang đọc và kiểm tra chất lượng dữ liệu..."):
                                 for up in uploaded_files:
                                     content = up.read()
-                                    success, msg = orch.load_file(content, up.name)
+                                    if up.name.lower().endswith(".tsv"):
+                                        # Đảm bảo đọc được .tsv ngay cả khi file_handler cũ chưa cập nhật .tsv
+                                        success, msg = orch.load_file(content, up.name[:-4] + ".csv")
+                                        if success and (up.name[:-4] + ".csv") in orch.data_agent.raw_dataframes:
+                                            orch.data_agent.raw_dataframes[up.name] = orch.data_agent.raw_dataframes.pop(up.name[:-4] + ".csv")
+                                            if (up.name[:-4] + ".csv") in orch.data_agent.file_infos:
+                                                orch.data_agent.file_infos[up.name] = orch.data_agent.file_infos.pop(up.name[:-4] + ".csv")
+                                            if (up.name[:-4] + ".csv") in orch.data_agent.column_mappings:
+                                                orch.data_agent.column_mappings[up.name] = orch.data_agent.column_mappings.pop(up.name[:-4] + ".csv")
+                                    else:
+                                        success, msg = orch.load_file(content, up.name)
                                     st.session_state.file_messages.append({"file": up.name, "success": success, "msg": msg})
                                     if success:
                                         if up.name in orch.data_agent.raw_dataframes:
