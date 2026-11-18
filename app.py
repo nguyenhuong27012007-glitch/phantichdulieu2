@@ -2973,16 +2973,6 @@ try:
             num_cols_sample = scoring_data.get("numeric_cols", [])[:5]
             cols_note = ", ".join(num_cols_sample) if num_cols_sample else "chưa có cột số định lượng"
 
-            # Nếu chỉ có 1 nhóm duy nhất (không có cột phân nhóm để so sánh đa chiều) -> báo cáo trung thực, không bịa "2 nhóm dẫn đầu"
-            if len(scoring_map) <= 1:
-                return f"""### 1. Tổng quan dữ liệu từ các tệp đã nạp
-- **[DỮ LIỆU] Quy mô tổng hợp:** **{len(orch.data_agent.raw_dataframes)} tệp** ({_files_display_str}) với tổng **{total_rows_now:,} bản ghi**.{file_details_md}
-- **[CHẤT LƯỢNG DỮ LIỆU]:** Toàn bộ hệ thống hiện còn **{total_nulls_all:,} ô trống**.
-
-### 2. Nhận xét cấu trúc dữ liệu
-- Tệp dữ liệu hiện tại chỉ có **1 nhóm đơn lẻ** (chưa có cột phân loại như khu vực, phòng ban, sản phẩm... với từ 2 nhóm trở lên để so sánh và xếp hạng đa chiều).
-- Các chỉ số thống kê trên được tính trực tiếp từ toàn bộ bản ghi trong tệp, không có sự so sánh chéo giữa các nhóm."""
-
             file_details_md = ""
             total_nulls_all = 0
             for fname, df_f in orch.data_agent.raw_dataframes.items():
@@ -2996,6 +2986,16 @@ try:
                         stat_bits.append(f"`{nc}` (tổng **{s_col.sum():,.1f}**, TB **{s_col.mean():,.1f}**)")
                 stat_str = "; ".join(stat_bits) if stat_bits else "dữ liệu phân loại"
                 file_details_md += f"\n  - **`{fname}`** ({len(df_f):,} dòng × {len(df_f.columns)} cột, {null_f:,} ô trống): {stat_str}."
+
+            # Nếu chỉ có 1 nhóm duy nhất (không có cột phân nhóm để so sánh đa chiều) -> báo cáo trung thực, không bịa "2 nhóm dẫn đầu"
+            if len(scoring_map) <= 1:
+                return f"""### 1. Tổng quan dữ liệu từ các tệp đã nạp
+- **[DỮ LIỆU] Quy mô tổng hợp:** **{len(orch.data_agent.raw_dataframes)} tệp** ({_files_display_str}) với tổng **{total_rows_now:,} bản ghi**.{file_details_md}
+- **[CHẤT LƯỢNG DỮ LIỆU]:** Toàn bộ hệ thống hiện còn **{total_nulls_all:,} ô trống**.
+
+### 2. Nhận xét cấu trúc dữ liệu
+- Tệp dữ liệu hiện tại chỉ có **1 nhóm đơn lẻ** (chưa có cột phân loại như khu vực, phòng ban, sản phẩm... với từ 2 nhóm trở lên để so sánh và xếp hạng đa chiều).
+- Các chỉ số thống kê trên được tính trực tiếp từ toàn bộ bản ghi trong tệp, không có sự so sánh chéo giữa các nhóm."""
 
             top_bullets = ""
             for g in top_2:
@@ -3032,11 +3032,11 @@ try:
             top_str = ", ".join(recommended) if recommended else "Nhóm ưu tiên"
             total_rows_now = sum(len(df) for df in orch.data_agent.raw_dataframes.values())
             num_cols_sample = scoring_data.get("numeric_cols", [])[:3] if "scoring_data" in locals() else []
+            kpi_str = ", ".join(f"**{c}**" for c in num_cols_sample) if num_cols_sample else "trọng tâm"
             if len(scoring_data.get("scoring", {})) <= 1 if "scoring_data" in locals() else False:
                 return f"""### Kế hoạch hành động đề xuất
 - **Bước 1 (Bổ sung trường phân nhóm):** Nếu bạn muốn so sánh hiệu suất giữa các khu vực, phòng ban hoặc danh mục sản phẩm, hãy bổ sung thêm cột phân loại vào tệp **{_files_display_str}**.
 - **Bước 2 (Theo dõi chỉ số):** Tiếp tục theo dõi các chỉ số {kpi_str} đã thống kê trực tiếp từ tệp dữ liệu hiện tại."""
-            kpi_str = ", ".join(f"**{c}**" for c in num_cols_sample) if num_cols_sample else "trọng tâm"
             dep_list = scoring_data.get("recommendation", {}).get("deprioritized", []) if "scoring_data" in locals() else []
             dep_note = f" và đối chiếu khoảng cách hiệu suất với nhóm **{', '.join(dep_list[:3])}**" if dep_list else ""
             return f"""### Kế hoạch hành động đề xuất cho: {top_str}
