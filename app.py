@@ -2004,13 +2004,13 @@ try:
                         <span style="font-weight:800; color:#2563eb; font-size:1.05rem;">Tải tệp</span>
                     </div>
                     <div class="gsheet-hint-text" style="font-size:0.95rem; font-weight:800; color:#0f172a; margin-bottom:8px; line-height:1.4;">
-                        Kéo thả tệp CSV, Excel vào đây hoặc Nhấn để tải lên
+                        Kéo thả tệp CSV, TSV, Excel vào đây hoặc Nhấn để tải lên
                     </div>
                     """, unsafe_allow_html=True)
                     with st.container(key="step1_file_inner_box"):
                         uploaded_files = st.file_uploader(
-                            "Chọn file CSV, Excel...",
-                            type=["csv", "xlsx", "xls"],
+                            "Chọn file CSV, TSV, Excel...",
+                            type=["csv", "tsv", "xlsx", "xls"],
                             accept_multiple_files=True,
                             label_visibility="collapsed",
                             key="s1_file_uploader"
