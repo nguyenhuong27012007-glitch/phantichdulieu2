@@ -325,7 +325,7 @@ def _validate_df_meaningful(df: pd.DataFrame):
         return False, "Toàn bộ các ô trong tệp đều trống."
     # Kiểm tra xem toàn bộ bảng có chỉ lặp lại 1 giá trị vô nghĩa (vd: toàn 'x') hay không
     flat_vals = df.astype(str).values.ravel()
-    uniq_vals = set(v.strip() for v in flat_vals if v.strip() not in ("", "nan", "None", "NaN", "NULL"))
+    uniq_vals = set(str(v).strip() for v in flat_vals if str(v).strip() not in ("", "nan", "None", "NaN", "NULL", "<NA>"))
     if len(uniq_vals) <= 1:
         return False, "Dữ liệu chỉ chứa 1 giá trị duy nhất lặp lại, không có thông tin để phân tích."
     num_cols = df.select_dtypes(include=["number"]).columns
