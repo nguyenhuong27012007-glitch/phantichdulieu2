@@ -334,6 +334,13 @@ def _validate_df_meaningful(df: pd.DataFrame):
     has_valid_num = any(df[c].dropna().shape[0] > 0 for c in num_cols)
     if not has_valid_num:
         return False, "Các cột số liệu đều trống, không có giá trị để tính toán."
+    # Kiểm tra dữ liệu giả/tạo tự động kiểu chỉ có mã định danh duy nhất + dãy số tăng đều (vd: 0, 1, 2, ...)
+    if len(df) >= 10:
+        non_num_cols = [c for c in df.columns if c not in num_cols]
+        all_text_unique_or_empty = all(df[c].nunique(dropna=True) >= len(df) for c in non_num_cols)
+        all_num_trivial = all(df[c].dropna().diff().dropna().nunique() <= 1 for c in num_cols)
+        if all_text_unique_or_empty and all_num_trivial:
+            return False, "Dữ liệu chỉ gồm mã định danh tuần tự và dãy số tăng đều, không có nhóm phân loại hoặc biến động thực tế để phân tích."
     return True, ""
 
 
