@@ -2016,11 +2016,12 @@ try:
                             key="s1_file_uploader"
                         )
                     if uploaded_files:
-                        _up_sig = tuple((u.name, getattr(u, "size", 0)) for u in uploaded_files)
-                        if st.session_state.get("_last_uploaded_sig") != _up_sig:
+                        _up_sig = tuple((getattr(u, "file_id", u.name), u.name, getattr(u, "size", 0)) for u in uploaded_files)
+                        _has_unloaded = any(u.name not in orch.data_agent.raw_dataframes for u in uploaded_files)
+                        if st.session_state.get("_last_uploaded_sig") != _up_sig or _has_unloaded:
                             with st.spinner("Đang đọc và kiểm tra chất lượng dữ liệu..."):
                                 for up in uploaded_files:
-                                    content = up.read()
+                                    content = up.getvalue()
                                     if up.name.lower().endswith(".tsv"):
                                         # Đảm bảo đọc được .tsv ngay cả khi file_handler cũ chưa cập nhật .tsv
                                         success, msg = orch.load_file(content, up.name[:-4] + ".csv")
