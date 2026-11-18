@@ -2922,7 +2922,17 @@ try:
             dep = rec.get("deprioritized", [])
             total_rows_now = sum(len(df) for df in orch.data_agent.raw_dataframes.values())
             num_cols_sample = scoring_data.get("numeric_cols", [])[:5]
-            cols_note = ", ".join(num_cols_sample) if num_cols_sample else "các chỉ tiêu tổng hợp"
+            cols_note = ", ".join(num_cols_sample) if num_cols_sample else "chưa có cột số định lượng"
+
+            # Kiểm tra nếu dữ liệu quá ít (<= 2 dòng) hoặc không có cột số nào
+            if total_rows_now <= 2 or not num_cols_sample:
+                return f"""### 1. Tổng quan dữ liệu từ các tệp đã nạp
+- **[CẢNH BÁO DỮ LIỆU CHƯA ĐỦ ĐIỀU KIỆN PHÂN TÍCH]:** Hệ thống chỉ ghi nhận **{total_rows_now:,} bản ghi** trên **{len(orch.data_agent.raw_dataframes)} tệp** ({_files_display_str}) và **không có cột chỉ số định lượng (số liệu)** nào hợp lệ.
+- **Nhận xét thực tế:** Với quy mô dữ liệu hiện tại (ví dụ chỉ có 1 dòng hoặc toàn bộ giá trị giống nhau dạng ký tự `x`), hệ thống **chưa đủ cơ sở** để phân tích xu hướng, so sánh hiệu suất giữa các nhóm hay đưa ra kết luận kinh doanh.
+
+### 2. Khuyến nghị chuẩn bị dữ liệu
+- **Bổ sung bản ghi:** Cần tối thiểu từ **10–30 dòng dữ liệu trở lên** để các phép tính thống kê và xếp hạng có ý nghĩa.
+- **Bổ sung cột số liệu:** Cần có ít nhất 1 cột định lượng (ví dụ: doanh thu, số lượng, chi phí, điểm đánh giá...) để hệ thống chấm điểm chính xác."""
 
             file_details_md = ""
             total_nulls_all = 0
@@ -2971,7 +2981,13 @@ try:
 
         def _build_default_plan_standalone(recommended):
             top_str = ", ".join(recommended) if recommended else "Nhóm ưu tiên"
+            total_rows_now = sum(len(df) for df in orch.data_agent.raw_dataframes.values())
             num_cols_sample = scoring_data.get("numeric_cols", [])[:3] if "scoring_data" in locals() else []
+            if total_rows_now <= 2 or not num_cols_sample:
+                return f"""### Kế hoạch hành động đề xuất
+- **Bước 1 (Bổ sung dữ liệu đầu vào):** Tải lên tệp **{_files_display_str}** bản đầy đủ có nhiều dòng dữ liệu và chứa các cột chỉ số dạng số.
+- **Bước 2 (Kiểm tra & Chuẩn hóa):** Đảm bảo các cột số không bị nhận nhầm thành văn bản và loại bỏ các cột dư thừa (nếu có tới >200 cột trống/lặp).
+- **Bước 3 (Phân tích lại):** Chạy lại Bước 3 để hệ thống tính điểm, xếp hạng và đưa ra kế hoạch hành động sát thực tế."""
             kpi_str = ", ".join(f"**{c}**" for c in num_cols_sample) if num_cols_sample else "trọng tâm"
             dep_list = scoring_data.get("recommendation", {}).get("deprioritized", []) if "scoring_data" in locals() else []
             dep_note = f" và đối chiếu khoảng cách hiệu suất với nhóm **{', '.join(dep_list[:3])}**" if dep_list else ""
