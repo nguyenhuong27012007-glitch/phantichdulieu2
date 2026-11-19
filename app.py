@@ -18,6 +18,49 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from agents.orchestrator import AgentOrchestrator
 from config import COMPANY_NAME, EXPANSION_SLOTS, TOTAL_REGIONS, DEFAULT_CRITERIA, DEFAULT_GEMINI_API_KEY
 from utils.column_mapper import COLUMN_SCHEMA
+import utils.file_handler as _fh_mod
+
+
+def _smart_read_csv_override(content: bytes):
+    """Đọc CSV tự động nhận diện dấu phân cách ',', ';', '\\t', '|' chính xác từ dòng tiêu đề."""
+    encodings = ['utf-8-sig', 'utf-8', 'latin-1', 'cp1252', 'iso-8859-1']
+    base_seps = [',', ';', '\t', '|']
+    for encoding in encodings:
+        try:
+            text_head = content[:8192].decode(encoding, errors='strict')
+        except Exception:
+            continue
+        first_line = next((ln for ln in text_head.splitlines() if ln.strip()), "")
+        ranked_seps = sorted(base_seps, key=lambda s: first_line.count(s), reverse=True)
+        best_df = None
+        for sep in ranked_seps:
+            try:
+                df = pd.read_csv(
+                    io.BytesIO(content),
+                    encoding=encoding,
+                    sep=sep,
+                    on_bad_lines='skip',
+                    dtype=str,
+                    index_col=False
+                )
+                if len(df.columns) > 1:
+                    best_df = df
+                    break
+                if best_df is None and len(df.columns) == 1 and len(df) > 0:
+                    best_df = df
+            except Exception:
+                continue
+        if best_df is not None:
+            for col in best_df.columns:
+                try:
+                    best_df[col] = pd.to_numeric(best_df[col].str.replace(',', ''))
+                except Exception:
+                    pass
+            return best_df
+    return None
+
+
+_fh_mod._read_csv = _smart_read_csv_override
 
 
 # ============================================================
@@ -328,19 +371,29 @@ def _validate_df_meaningful(df: pd.DataFrame):
     uniq_vals = set(str(v).strip() for v in flat_vals if str(v).strip() not in ("", "nan", "None", "NaN", "NULL", "<NA>"))
     if len(uniq_vals) <= 1:
         return False, "Dữ liệu chỉ chứa 1 giá trị duy nhất lặp lại, không có thông tin để phân tích."
-    num_cols = df.select_dtypes(include=["number"]).columns
-    if len(num_cols) == 0:
-        return False, "Tệp không có cột số liệu định lượng nào."
+    num_cols = list(df.select_dtypes(include=["number"]).columns)
     has_valid_num = any(df[c].dropna().shape[0] > 0 for c in num_cols)
+    # Nếu cột số đang bị lẫn ký tự lỗi/định dạng tiền tệ (khiến pandas đọc thành chuỗi) -> vẫn cho phép sang Bước 2 để làm sạch
     if not has_valid_num:
-        return False, "Các cột số liệu đều trống, không có giá trị để tính toán."
-    # Kiểm tra dữ liệu giả/tạo tự động kiểu chỉ có mã định danh duy nhất + dãy số tăng đều (vd: 0, 1, 2, ...)
-    if len(df) >= 10:
+        for c in df.columns:
+            s_clean = (
+                df[c].dropna().astype(str).str.strip()
+                .str.replace(r"[,\s₫đ$%€£¥VNDvnd]", "", regex=True)
+            )
+            s_num = pd.to_numeric(s_clean, errors="coerce").dropna()
+            if len(s_num) > 0:
+                has_valid_num = True
+                break
+    if not has_valid_num:
+        return False, "Tệp không có cột số liệu định lượng nào (chỉ chứa chữ)."
+    # Kiểm tra dữ liệu giả/tạo tự động kiểu chỉ có 1 cột mã ERR-xxxxx + 1 cột dãy số thứ tự 0, 1, 2...
+    if len(df) >= 100 and len(df.columns) == 2 and len(num_cols) == 1:
         non_num_cols = [c for c in df.columns if c not in num_cols]
-        all_text_unique_or_empty = all(df[c].nunique(dropna=True) >= len(df) for c in non_num_cols)
-        all_num_trivial = all(df[c].dropna().diff().dropna().nunique() <= 1 for c in num_cols)
-        if all_text_unique_or_empty and all_num_trivial:
-            return False, "Dữ liệu chỉ gồm mã định danh tuần tự và dãy số tăng đều, không có nhóm phân loại hoặc biến động thực tế để phân tích."
+        s_num_col = df[num_cols[0]].dropna()
+        is_seq_idx = len(s_num_col) > 10 and s_num_col.iloc[0] in (0, 1) and (s_num_col.diff().dropna() == 1).all()
+        all_text_unique = all(df[c].nunique(dropna=True) >= len(df) for c in non_num_cols)
+        if is_seq_idx and all_text_unique:
+            return False, "Dữ liệu chỉ gồm mã định danh tuần tự và dãy số thứ tự 0, 1, 2..., không có nhóm phân loại hoặc biến động thực tế để phân tích."
     return True, ""
 
 
@@ -1022,13 +1075,13 @@ st.markdown(f"""
         line-height: 1.5 !important;
     }}
 
-    /* Nút Duyệt & Tải xuống cố định gọn ở góc dưới bên phải (không che nội dung bảng/chữ) */
+    /* Nút Duyệt & Tải xuống cố định gọn ở góc dưới bên phải (tránh nút Manage app của Streamlit Cloud) */
     .st-key-floating_approve_step1,
     .st-key-floating_approve_step2,
     .st-key-floating_download_step3 {{
         position: fixed !important;
         right: 24px !important;
-        bottom: 20px !important;
+        bottom: 62px !important;
         top: auto !important;
         transform: none !important;
         z-index: 9999 !important;
@@ -2143,7 +2196,12 @@ try:
                             user_logs_s1 = f_info_item.get("user_action_log", [])
 
                             _is_ok_df, _err_reason_df = _validate_df_meaningful(df_chk)
-                            if detected_issues:
+                            if not _is_ok_df:
+                                st.error(
+                                    f"❌ **Tệp `{item['file']}` không đủ dữ liệu có ý nghĩa để phân tích:** {_err_reason_df} "
+                                    f"Vui lòng nạp tệp khác có dữ liệu thực tế."
+                                )
+                            elif detected_issues:
                                 _short_err_lines = "\n".join(
                                     f"- **{iss['type']}:** {iss['count']:,} {'dòng' if 'trùng' in iss['type'].lower() or 'dòng' in iss['type'].lower() else 'ô'}"
                                     for iss in detected_issues
@@ -2151,11 +2209,6 @@ try:
                                 st.warning(
                                     f"⚠️ **Phát hiện {len(detected_issues)} nhóm lỗi trong tệp `{item['file']}`:**\n\n"
                                     f"{_short_err_lines}"
-                                )
-                            elif not _is_ok_df:
-                                st.error(
-                                    f"❌ **Tệp `{item['file']}` không đủ dữ liệu có ý nghĩa để phân tích:** {_err_reason_df} "
-                                    f"Vui lòng nạp tệp khác có dữ liệu thực tế."
                                 )
                             else:
                                 if has_backup and user_logs_s1:
@@ -2266,11 +2319,18 @@ try:
                 st.success(st.session_state.pop("_ai_ctx_done_msg"))
 
         if orch.data_agent.raw_dataframes:
-            _has_num_s1 = any(
-                _validate_df_meaningful(df)[0]
-                for df in orch.data_agent.raw_dataframes.values()
-                if df is not None and not df.empty
-            )
+            _invalid_files_s1 = []
+            _has_num_s1 = False
+            for _fn_s1, _df_s1 in orch.data_agent.raw_dataframes.items():
+                if _df_s1 is not None and not _df_s1.empty:
+                    _ok_s1, _reason_s1 = _validate_df_meaningful(_df_s1)
+                    if _ok_s1:
+                        _has_num_s1 = True
+                    else:
+                        _invalid_files_s1.append((_fn_s1, _reason_s1))
+            if not _has_num_s1 and _invalid_files_s1:
+                _reasons_str = "; ".join(f"`{fn}` ({rs})" for fn, rs in _invalid_files_s1)
+                st.error(f"🚫 **Chưa đủ điều kiện sang Bước 2:** {_reasons_str} Vui lòng tải lên tệp dữ liệu hợp lệ.")
             with st.container(key="floating_approve_step1"):
                 if st.button("✅ Duyệt & Sang Bước 2 ➔", type="primary", use_container_width=True, key="btn_approve_step1", disabled=(not _has_num_s1)):
                     set_spinner_msg("Đang chuyển sang Bước 2: Làm sạch & Kiểm tra dữ liệu...")
@@ -2904,11 +2964,20 @@ try:
                 if any(tk in c_low for tk in time_kw) or pd.api.types.is_datetime64_any_dtype(df_in[c]):
                     if 1 <= n_uniq <= 366:
                         time_cols.append(c)
-                elif 2 <= n_uniq <= min(50, max(2, int(len(df_in) * 0.85))):
+                elif 2 <= n_uniq <= min(100, max(2, int(len(df_in) * 0.9))):
                     cat_cols.append(c)
 
             if not cat_cols:
                 cat_cols = [c for c in df_in.columns if c not in valid_metrics and c not in time_cols and df_in[c].nunique(dropna=True) >= 1]
+
+            # Sắp xếp ưu tiên các cột phân loại tổng quát (2 -> 12 nhóm như Khu vực, Phòng ban, Kênh...) lên trước các cột chi tiết (như Mã cửa hàng, Sản phẩm...)
+            cat_cols = sorted(
+                cat_cols,
+                key=lambda col: (
+                    0 if 2 <= df_in[col].nunique(dropna=True) <= 12 else 1,
+                    df_in[col].nunique(dropna=True)
+                )
+            )
 
             return valid_metrics, cat_cols, time_cols
 
@@ -3138,9 +3207,9 @@ try:
                 lines_rep.append(f"- **Các chỉ số định lượng khác trong tệp:** {'; '.join(other_bits)}.")
 
             lines_rep.append("")
-            lines_rep.append(f"### 2. Phân tích xếp hạng theo `{selected_dim1}` ({len(g1)} nhóm)")
+            lines_rep.append(f"### 2. Phân tích xếp hạng theo chiều chính `{selected_dim1}` ({len(g1)} nhóm)")
 
-            for idx_r, r_g1 in g1.head(10).iterrows():
+            for idx_r, r_g1 in g1.head(12).iterrows():
                 gr_txt = ""
                 if "Biến động đầu-cuối kỳ (%)" in r_g1 and pd.notna(r_g1["Biến động đầu-cuối kỳ (%)"]):
                     sign_g = "+" if r_g1["Biến động đầu-cuối kỳ (%)"] >= 0 else ""
@@ -3159,12 +3228,12 @@ try:
             if len(g1) >= 2:
                 lbl_mode = "tổng" if additive else "mức trung bình"
                 lines_rep.append(
-                    f"- **Chênh lệch nhóm đầu & nhóm cuối:** Nhóm dẫn đầu (**{top_row['Nhóm']}**) có {lbl_mode} cao hơn nhóm thấp nhất (**{bot_row['Nhóm']}**) là **{_fmt_num(diff_val)}** (tương đương **+{diff_pct:.1f}%**)."
+                    f"- **Chênh lệch nhóm đầu & nhóm cuối (`{selected_dim1}`):** Nhóm dẫn đầu (**{top_row['Nhóm']}**) có {lbl_mode} cao hơn nhóm thấp nhất (**{bot_row['Nhóm']}**) là **{_fmt_num(diff_val)}** (tương đương **+{diff_pct:.1f}%**)."
                 )
 
             if not g2.empty and selected_dim2 != "(Không chọn)":
                 lines_rep.append("")
-                lines_rep.append(f"### 3. Phân tích theo `{selected_dim2}` & tương quan chéo")
+                lines_rep.append(f"### 3. Phân tích bổ sung theo chiều phụ `{selected_dim2}` & tương quan chéo")
                 for idx_2, r_g2 in g2.head(8).iterrows():
                     if additive:
                         lines_rep.append(
@@ -3201,7 +3270,7 @@ try:
             val_bot_str = _fmt_num(bot_row[sort_col])
             lines_plan = [
                 f"### Nhận định & Đề xuất trọng tâm từ dữ liệu ({_files_display_str})",
-                f"- **1. Phát huy nhóm dẫn đầu ({top_row['Nhóm']}):** Đang đứng Hạng 1 trên chiều `{selected_dim1}` với kết quả **{val_top_str}**"
+                f"- **1. Phát huy nhóm dẫn đầu ({top_row['Nhóm']}):** Đang đứng Hạng 1 trên chiều chính `{selected_dim1}` với kết quả **{val_top_str}**"
                 + (f" (chiếm **{top_row['Tỷ trọng (%)']:.1f}%** toàn tệp)." if additive else ".")
                 + (f" Tổ hợp hiệu quả nhất là **{combo['best_pair']}** (**{_fmt_num(combo['best_val'])}**), cần được lấy làm chuẩn đối sánh cho các nhóm khác." if combo else ""),
                 f"- **2. Cải thiện nhóm cuối bảng ({bot_row['Nhóm']}):** Hiện ở mức **{val_bot_str}**, thấp hơn nhóm dẫn đầu **{_fmt_num(diff_val)}** (**{diff_pct:.1f}%**). "
@@ -3219,7 +3288,7 @@ try:
             return "\n".join(lines_rep), "\n".join(lines_plan)
 
         _current_step3_sig = (
-            "v8_universal_all_files",
+            "v9_universal_sync_dim1",
             _files_display_str,
             total_records_all,
             total_nulls_all,
@@ -3288,25 +3357,29 @@ try:
             top_g = g1.iloc[0]
             bot_g = g1.iloc[-1]
 
-            g1_plot = g1.head(8)
+            # 1. Biểu đồ cột dọc phía trên: Hiển thị Chiều phân nhóm chính (selected_dim1)
+            g1_plot = g1.head(12)
             max_g1_val = max(float(g1_plot[sort_col].max()), 1e-9)
             bars_g1_html = ""
+            bar_w = "34px" if len(g1_plot) > 8 else "42px"
+            col_min_w = "56px" if len(g1_plot) > 8 else "72px"
             for _, r in g1_plot.iterrows():
                 val_main = float(r[sort_col])
                 h_pct = max(18, int(round((val_main / max_g1_val) * 100)))
                 sub_lbl = f"TB: {_fmt_num(r['mean'])}" if additive else f"Median: {_fmt_num(r['median'])}"
                 bars_g1_html += f"""
-                <div style="flex:1; display:flex; flex-direction:column; align-items:center; min-width:72px;">
-                    <div style="font-weight:800; color:#1e293b; font-size:0.84rem; margin-bottom:6px;">{_fmt_num(val_main)}</div>
-                    <div style="width:42px; height:150px; background:#e2e8f0; border-radius:10px; display:flex; align-items:flex-end; overflow:hidden;">
+                <div style="flex:1; display:flex; flex-direction:column; align-items:center; min-width:{col_min_w};">
+                    <div style="font-weight:800; color:#1e293b; font-size:0.80rem; margin-bottom:6px; white-space:nowrap;">{_fmt_num(val_main)}</div>
+                    <div style="width:{bar_w}; height:150px; background:#e2e8f0; border-radius:10px; display:flex; align-items:flex-end; overflow:hidden;">
                         <div style="width:100%; height:{h_pct}%; background:linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%); border-radius:10px;"></div>
                     </div>
-                    <div style="font-weight:700; color:#334155; font-size:0.83rem; margin-top:8px; text-align:center; word-break:break-word;">{_html_lib.escape(str(r['Nhóm']))}</div>
-                    <div style="font-size:0.74rem; color:#64748b;">{sub_lbl}</div>
+                    <div style="font-weight:700; color:#334155; font-size:0.80rem; margin-top:8px; text-align:center; word-break:break-word;">{_html_lib.escape(str(r['Nhóm']))}</div>
+                    <div style="font-size:0.71rem; color:#64748b; white-space:nowrap;">{sub_lbl}</div>
                 </div>
                 """
 
-            palette = ["#1d4ed8", "#3b82f6", "#60a5fa", "#93c5fd", "#0284c7", "#38bdf8", "#818cf8", "#a5b4fc"]
+            # 2. Biểu đồ tròn Tỷ trọng theo Chiều phân nhóm chính (selected_dim1)
+            palette = ["#1d4ed8", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", "#0284c7", "#38bdf8", "#818cf8", "#a5b4fc", "#6366f1", "#4f46e5", "#c7d2fe"]
             conic_parts = []
             legend_parts = []
             acc_pct = 0.0
@@ -3318,55 +3391,70 @@ try:
                 conic_parts.append(f"{col_hex} {acc_pct:.2f}% {next_pct:.2f}%")
                 acc_pct = next_pct
                 legend_parts.append(
-                    f"<span style='display:inline-flex;align-items:center;gap:5px;font-size:0.82rem;font-weight:700;color:#1e293b;margin:3px 7px;'>"
+                    f"<span style='display:inline-flex;align-items:center;gap:5px;font-size:0.80rem;font-weight:700;color:#1e293b;margin:2px 6px;'>"
                     f"<span style='width:9px;height:9px;border-radius:50%;background:{col_hex};display:inline-block;'></span>"
                     f"{_html_lib.escape(str(r['Nhóm']))} {sh:.1f}%</span>"
                 )
             if acc_pct < 99.9:
                 conic_parts.append(f"#cbd5e1 {acc_pct:.2f}% 100%")
             conic_css = ", ".join(conic_parts) if conic_parts else "#2563eb 0% 100%"
-            donut_title = f"Tỷ trọng {selected_metric}" if additive else "Tỷ trọng số lượng bản ghi"
+            donut_title = f"Tỷ trọng {selected_metric} theo {selected_dim1}" if additive else f"Tỷ trọng bản ghi theo {selected_dim1}"
 
-            sec_bars_html = ""
+            # 3. Khung bên trái phía dưới: LUÔN hiển thị xếp hạng chi tiết theo đúng Chiều phân nhóm chính (selected_dim1)
+            #    và nếu có Chiều phân tích phụ (selected_dim2) thì hiển thị thêm phần Chiều phụ ở bên dưới.
+            primary_bars_html = ""
+            max_g1_all = max(float(g1[sort_col].max()), 1e-9)
+            for idx_p, r1 in g1.head(15).iterrows():
+                v1 = float(r1[sort_col])
+                w_pct1 = max(10, int(round((v1 / max_g1_all) * 100)))
+                r1_right = f"{_fmt_num(r1['sum'])} (TB: {_fmt_num(r1['mean'])})" if additive else f"TB: {_fmt_num(r1['mean'])} (Min–Max: {_fmt_num(r1['min'])}→{_fmt_num(r1['max'])})"
+                primary_bars_html += f"""
+                <div style="margin-bottom:11px;">
+                    <div style="display:flex; justify-content:space-between; font-size:0.86rem; font-weight:700; color:#1e293b; margin-bottom:4px;">
+                        <span>#{idx_p+1}. {_html_lib.escape(str(r1['Nhóm']))} ({r1['Tỷ trọng (%)']:.1f}%)</span>
+                        <span style="color:#2563eb;">{r1_right}</span>
+                    </div>
+                    <div style="width:100%; height:10px; background:#e2e8f0; border-radius:999px; overflow:hidden;">
+                        <div style="width:{w_pct1}%; height:100%; background:linear-gradient(90deg, #2563eb, #38bdf8); border-radius:999px;"></div>
+                    </div>
+                </div>
+                """
+
+            sec_cross_html = ""
             if not g2.empty and selected_dim2 != "(Không chọn)":
-                sec_title = f"Phân tích theo {selected_dim2}"
                 max_g2 = max(float(g2[sort_col].max()), 1e-9)
-                for _, r2 in g2.head(7).iterrows():
+                sec_rows_tmp = ""
+                for idx_s, r2 in g2.head(10).iterrows():
                     v2 = float(r2[sort_col])
-                    w_pct = max(10, int(round((v2 / max_g2) * 100)))
+                    w_pct2 = max(10, int(round((v2 / max_g2) * 100)))
                     r2_right = f"{_fmt_num(r2['sum'])} (TB: {_fmt_num(r2['mean'])})" if additive else f"TB: {_fmt_num(r2['mean'])} (Min–Max: {_fmt_num(r2['min'])}→{_fmt_num(r2['max'])})"
-                    sec_bars_html += f"""
-                    <div style="margin-bottom:11px;">
-                        <div style="display:flex; justify-content:space-between; font-size:0.86rem; font-weight:700; color:#1e293b; margin-bottom:4px;">
+                    sec_rows_tmp += f"""
+                    <div style="margin-bottom:10px;">
+                        <div style="display:flex; justify-content:space-between; font-size:0.84rem; font-weight:700; color:#334155; margin-bottom:3px;">
                             <span>{_html_lib.escape(str(r2[selected_dim2]))} ({r2['Tỷ trọng (%)']:.1f}%)</span>
-                            <span style="color:#2563eb;">{r2_right}</span>
+                            <span style="color:#0284c7;">{r2_right}</span>
                         </div>
-                        <div style="width:100%; height:10px; background:#e2e8f0; border-radius:999px; overflow:hidden;">
-                            <div style="width:{w_pct}%; height:100%; background:linear-gradient(90deg, #2563eb, #38bdf8); border-radius:999px;"></div>
-                        </div>
-                    </div>
-                    """
-            else:
-                sec_title = f"Biên độ Min – Median – Max theo {selected_dim1}"
-                for _, r1 in g1_plot.iterrows():
-                    w_pct = max(10, int(round((float(r1["max"]) / max(bundle["grand_max"], 1e-9)) * 100)))
-                    sec_bars_html += f"""
-                    <div style="margin-bottom:11px;">
-                        <div style="display:flex; justify-content:space-between; font-size:0.86rem; font-weight:700; color:#1e293b; margin-bottom:4px;">
-                            <span>{_html_lib.escape(str(r1['Nhóm']))}</span>
-                            <span style="color:#2563eb;">Min: {_fmt_num(r1['min'])} · Median: {_fmt_num(r1['median'])} · Max: {_fmt_num(r1['max'])}</span>
-                        </div>
-                        <div style="width:100%; height:10px; background:#e2e8f0; border-radius:999px; overflow:hidden;">
-                            <div style="width:{w_pct}%; height:100%; background:linear-gradient(90deg, #2563eb, #38bdf8); border-radius:999px;"></div>
+                        <div style="width:100%; height:8px; background:#e2e8f0; border-radius:999px; overflow:hidden;">
+                            <div style="width:{w_pct2}%; height:100%; background:linear-gradient(90deg, #0284c7, #38bdf8); border-radius:999px;"></div>
                         </div>
                     </div>
                     """
+                sec_cross_html = f"""
+                <div style="margin-top:16px; padding-top:14px; border-top:1.5px dashed #cbd5e1;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <span style="font-size:0.94rem; font-weight:800; color:#0f172a;">🔀 Phân tích theo chiều phụ: {_html_lib.escape(selected_dim2)}</span>
+                        <span class="badge-pill" style="background:#f0f9ff; color:#0284c7; border-color:#bae6fd;">Chiều phụ (Chéo)</span>
+                    </div>
+                    {sec_rows_tmp}
+                </div>
+                """
 
+            # 4. Khối Thời gian (nếu file có cột thời gian) HOẶC Tương quan các cột số khác
             right_panel_html = ""
             if not t_df.empty and time_col:
                 right_panel_title = f"Diễn biến theo {time_col}"
                 max_t = max(float(t_df[sort_col].max()), 1e-9)
-                for _, rt in t_df.tail(10).iterrows():
+                for _, rt in t_df.tail(12).iterrows():
                     vt = float(rt[sort_col])
                     w_t = max(12, int(round((vt / max_t) * 100)))
                     rt_lbl = f"Tổng: {_fmt_num(rt['sum'])} (TB: {_fmt_num(rt['mean'])})" if additive else f"TB: {_fmt_num(rt['mean'])} ({int(rt['count'])} dòng)"
@@ -3407,6 +3495,24 @@ try:
                     <div>• <b>Trung vị (Median):</b> {_fmt_num(bundle['grand_median'])}</div>
                     <div>• <b>Độ lệch chuẩn (Std Dev):</b> {_fmt_num(bundle['grand_std'])}</div>
                     <div>• <b>Khoảng biến thiên (Range):</b> {_fmt_num(bundle['grand_max'] - bundle['grand_min'])}</div>
+                </div>
+                """
+
+            if not t_df.empty and time_col and bundle["other_metrics_summary"]:
+                om_rows_html = ""
+                for om in bundle["other_metrics_summary"]:
+                    corr_badge = f"r = {om['corr']:.2f}" if om["corr"] is not None else ""
+                    val_om_txt = f"Tổng: {_fmt_num(om['sum'])} (TB: {_fmt_num(om['mean'])})" if om["additive"] else f"TB: {_fmt_num(om['mean'])}"
+                    om_rows_html += f"""
+                    <div style="display:flex; justify-content:space-between; font-size:0.83rem; padding:5px 0; border-bottom:1px solid #f1f5f9;">
+                        <span style="font-weight:700; color:#334155;">{_html_lib.escape(str(om['col']))} <span style="color:#64748b;font-weight:500;">{corr_badge}</span></span>
+                        <span style="font-weight:700; color:#1e3a8a;">{val_om_txt}</span>
+                    </div>
+                    """
+                right_panel_html += f"""
+                <div style="margin-top:16px; padding-top:12px; border-top:1.5px dashed #cbd5e1;">
+                    <div style="font-size:0.92rem; font-weight:800; color:#0f172a; margin-bottom:6px;">📊 Các chỉ số định lượng khác trong tệp</div>
+                    {om_rows_html}
                 </div>
                 """
 
@@ -3499,7 +3605,7 @@ try:
         <div>
             <div style="font-size:1.22rem; font-weight:800; color:#1e3a8a;">{_html_lib.escape(title)}</div>
             <div style="font-size:0.85rem; color:#475569; margin-top:3px;">
-                Phân tích tự động 100% từ dữ liệu thực tế ({total_records_all:,} dòng × {len(df_all.columns)} cột · Chỉ số: <b>{_html_lib.escape(selected_metric)}</b>)
+                Phân tích tự động 100% từ dữ liệu thực tế ({total_records_all:,} dòng × {len(df_all.columns)} cột · Chỉ số: <b>{_html_lib.escape(selected_metric)}</b> · Chiều chính: <b>{_html_lib.escape(selected_dim1)}</b>)
             </div>
         </div>
         <span class="badge-pill">{time_badge}</span>
@@ -3531,10 +3637,10 @@ try:
     <div class="grid-2">
         <div class="dash-card" style="margin-bottom:0;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-                <span style="font-size:1.0rem; font-weight:800; color:#0f172a;">So sánh {_html_lib.escape(selected_metric)} theo {_html_lib.escape(selected_dim1)}</span>
-                <span class="badge-pill">Top {len(g1_plot)} nhóm</span>
+                <span style="font-size:1.0rem; font-weight:800; color:#0f172a;">Biểu đồ so sánh {_html_lib.escape(selected_metric)} theo {_html_lib.escape(selected_dim1)}</span>
+                <span class="badge-pill">{len(g1_plot)}/{len(g1)} nhóm</span>
             </div>
-            <div style="display:flex; justify-content:space-around; align-items:flex-end; padding:12px 10px; background:#f8fbff; border-radius:14px; gap:8px;">
+            <div style="display:flex; justify-content:space-around; align-items:flex-end; padding:12px 10px; background:#f8fbff; border-radius:14px; gap:6px; overflow-x:auto;">
                 {bars_g1_html}
             </div>
         </div>
@@ -3563,10 +3669,11 @@ try:
     <div class="grid-2">
         <div class="dash-card" style="margin-bottom:0;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-                <span style="font-size:1.0rem; font-weight:800; color:#0f172a;">{_html_lib.escape(sec_title)}</span>
-                <span class="badge-pill">Số liệu thực</span>
+                <span style="font-size:1.0rem; font-weight:800; color:#0f172a;">Phân tích theo {_html_lib.escape(selected_dim1)}</span>
+                <span class="badge-pill">Chiều phân nhóm chính</span>
             </div>
-            {sec_bars_html}
+            {primary_bars_html}
+            {sec_cross_html}
         </div>
         <div class="dash-card" style="margin-bottom:0;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
