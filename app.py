@@ -3014,26 +3014,38 @@ try:
         if _show_time_sel:
             _active_ctrls.append("time")
 
-        selected_metric = num_cols[0]
-        selected_dim1 = primary_dim_options[0]
-        selected_dim2 = "(Không chọn)"
-        selected_time_opt = time_cols[0] if time_cols else "(Không có / Tự động)"
+        _ctrl_vals = {
+            "metric": num_cols[0] if num_cols else None,
+            "dim1": primary_dim_options[0],
+            "dim2": "(Không chọn)",
+            "time": time_cols[0] if time_cols else "(Không có / Tự động)",
+        }
 
-        if _active_ctrls:
+        def _render_single_ctrl(_ckey: str):
+            if _ckey == "metric":
+                _ctrl_vals["metric"] = st.selectbox("📊 Chỉ số phân tích chính:", num_cols, index=0, key="s3_metric_col")
+            elif _ckey == "dim1":
+                _ctrl_vals["dim1"] = st.selectbox("🏷️ Chiều phân nhóm chính:", primary_dim_options, index=0, key="s3_dim1_col")
+            elif _ckey == "dim2":
+                sec_candidates_live = [c for c in (cat_cols + time_cols) if c != _ctrl_vals["dim1"]]
+                sec_options_live = ["(Không chọn)"] + sec_candidates_live
+                default_sec_idx = 1 if len(sec_options_live) > 1 else 0
+                _ctrl_vals["dim2"] = st.selectbox("🔀 Chiều phân tích phụ (Chéo):", sec_options_live, index=default_sec_idx, key="s3_dim2_col")
+            elif _ckey == "time":
+                _ctrl_vals["time"] = st.selectbox("🕒 Trục thời gian / Kỳ:", time_options, index=1, key="s3_time_col")
+
+        if len(_active_ctrls) == 1:
+            _render_single_ctrl(_active_ctrls[0])
+        elif len(_active_ctrls) >= 2:
             _ctrl_cols = st.columns(len(_active_ctrls))
             for _idx_c, _ckey in enumerate(_active_ctrls):
                 with _ctrl_cols[_idx_c]:
-                    if _ckey == "metric":
-                        selected_metric = st.selectbox("📊 Chỉ số phân tích chính:", num_cols, index=0, key="s3_metric_col")
-                    elif _ckey == "dim1":
-                        selected_dim1 = st.selectbox("🏷️ Chiều phân nhóm chính:", primary_dim_options, index=0, key="s3_dim1_col")
-                    elif _ckey == "dim2":
-                        sec_candidates_live = [c for c in (cat_cols + time_cols) if c != selected_dim1]
-                        sec_options_live = ["(Không chọn)"] + sec_candidates_live
-                        default_sec_idx = 1 if len(sec_options_live) > 1 else 0
-                        selected_dim2 = st.selectbox("🔀 Chiều phân tích phụ (Chéo):", sec_options_live, index=default_sec_idx, key="s3_dim2_col")
-                    elif _ckey == "time":
-                        selected_time_opt = st.selectbox("🕒 Trục thời gian / Kỳ:", time_options, index=1, key="s3_time_col")
+                    _render_single_ctrl(_ckey)
+
+        selected_metric = _ctrl_vals["metric"]
+        selected_dim1 = _ctrl_vals["dim1"]
+        selected_dim2 = _ctrl_vals["dim2"]
+        selected_time_opt = _ctrl_vals["time"]
 
         time_col = selected_time_opt if selected_time_opt != "(Không có / Tự động)" else (time_cols[0] if time_cols else None)
         is_additive = _is_additive_metric(selected_metric, df_all[selected_metric])
@@ -3133,7 +3145,7 @@ try:
                     agg_fn = "sum" if onc_add else "mean"
                     lbl_prefix = "Tổng" if onc_add else "TB"
                     onc_map = df_work.groupby(dim1_col, dropna=True)[onc].agg(agg_fn).to_dict()
-                    summary_table[f"{lbl_prefix} {onc}"] = g1["Nhóm"].map(lambda x: round(float(onc_map.get(x, 0.0)), 2))
+                    summary_table[f"{lbl_prefix} {onc}"] = g1["Nhóm"].map(lambda x: round(float(onc_map[x]), 2) if pd.notna(onc_map.get(x)) else 0.0)
 
             g2_table = pd.DataFrame()
             top_combo_info = None
