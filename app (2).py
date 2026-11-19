@@ -328,19 +328,29 @@ def _validate_df_meaningful(df: pd.DataFrame):
     uniq_vals = set(str(v).strip() for v in flat_vals if str(v).strip() not in ("", "nan", "None", "NaN", "NULL", "<NA>"))
     if len(uniq_vals) <= 1:
         return False, "Dữ liệu chỉ chứa 1 giá trị duy nhất lặp lại, không có thông tin để phân tích."
-    num_cols = df.select_dtypes(include=["number"]).columns
-    if len(num_cols) == 0:
-        return False, "Tệp không có cột số liệu định lượng nào."
+    num_cols = list(df.select_dtypes(include=["number"]).columns)
     has_valid_num = any(df[c].dropna().shape[0] > 0 for c in num_cols)
+    # Nếu cột số đang bị lẫn ký tự lỗi/định dạng tiền tệ (khiến pandas đọc thành chuỗi) -> vẫn cho phép sang Bước 2 để làm sạch
     if not has_valid_num:
-        return False, "Các cột số liệu đều trống, không có giá trị để tính toán."
-    # Kiểm tra dữ liệu giả/tạo tự động kiểu chỉ có mã định danh duy nhất + dãy số tăng đều (vd: 0, 1, 2, ...)
-    if len(df) >= 10:
+        for c in df.columns:
+            s_clean = (
+                df[c].dropna().astype(str).str.strip()
+                .str.replace(r"[,\s₫đ$%€£¥VNDvnd]", "", regex=True)
+            )
+            s_num = pd.to_numeric(s_clean, errors="coerce").dropna()
+            if len(s_num) > 0:
+                has_valid_num = True
+                break
+    if not has_valid_num:
+        return False, "Tệp không có cột số liệu định lượng nào (chỉ chứa chữ)."
+    # Kiểm tra dữ liệu giả/tạo tự động kiểu chỉ có 1 cột mã ERR-xxxxx + 1 cột dãy số thứ tự 0, 1, 2...
+    if len(df) >= 100 and len(df.columns) == 2 and len(num_cols) == 1:
         non_num_cols = [c for c in df.columns if c not in num_cols]
-        all_text_unique_or_empty = all(df[c].nunique(dropna=True) >= len(df) for c in non_num_cols)
-        all_num_trivial = all(df[c].dropna().diff().dropna().nunique() <= 1 for c in num_cols)
-        if all_text_unique_or_empty and all_num_trivial:
-            return False, "Dữ liệu chỉ gồm mã định danh tuần tự và dãy số tăng đều, không có nhóm phân loại hoặc biến động thực tế để phân tích."
+        s_num_col = df[num_cols[0]].dropna()
+        is_seq_idx = len(s_num_col) > 10 and s_num_col.iloc[0] in (0, 1) and (s_num_col.diff().dropna() == 1).all()
+        all_text_unique = all(df[c].nunique(dropna=True) >= len(df) for c in non_num_cols)
+        if is_seq_idx and all_text_unique:
+            return False, "Dữ liệu chỉ gồm mã định danh tuần tự và dãy số thứ tự 0, 1, 2..., không có nhóm phân loại hoặc biến động thực tế để phân tích."
     return True, ""
 
 
@@ -2143,7 +2153,12 @@ try:
                             user_logs_s1 = f_info_item.get("user_action_log", [])
 
                             _is_ok_df, _err_reason_df = _validate_df_meaningful(df_chk)
-                            if detected_issues:
+                            if not _is_ok_df:
+                                st.error(
+                                    f"❌ **Tệp `{item['file']}` không đủ dữ liệu có ý nghĩa để phân tích:** {_err_reason_df} "
+                                    f"Vui lòng nạp tệp khác có dữ liệu thực tế."
+                                )
+                            elif detected_issues:
                                 _short_err_lines = "\n".join(
                                     f"- **{iss['type']}:** {iss['count']:,} {'dòng' if 'trùng' in iss['type'].lower() or 'dòng' in iss['type'].lower() else 'ô'}"
                                     for iss in detected_issues
@@ -2151,11 +2166,6 @@ try:
                                 st.warning(
                                     f"⚠️ **Phát hiện {len(detected_issues)} nhóm lỗi trong tệp `{item['file']}`:**\n\n"
                                     f"{_short_err_lines}"
-                                )
-                            elif not _is_ok_df:
-                                st.error(
-                                    f"❌ **Tệp `{item['file']}` không đủ dữ liệu có ý nghĩa để phân tích:** {_err_reason_df} "
-                                    f"Vui lòng nạp tệp khác có dữ liệu thực tế."
                                 )
                             else:
                                 if has_backup and user_logs_s1:
