@@ -2759,6 +2759,7 @@ try:
                                         orch.data_agent.file_infos[selected_file]["missing_cells_count"] = int(fixed_df.isna().sum().sum())
                                         orch.data_agent.file_infos.setdefault(selected_file, {}).setdefault("user_action_log", []).extend(fix_reps)
                                         st.session_state[f"{s2_issue_key_prefix}_selected"] = []
+                                        st.session_state["_detect_issues_cache"] = {}
                                         st.toast(f"✅ Đã xử lý xong các lỗi trên {selected_file}!")
                                     st.rerun()
                             if has_s2_backup and user_edits:
@@ -2769,6 +2770,7 @@ try:
                                         orch.data_agent.raw_dataframes[selected_file] = orig_copy
                                         file_info_cur["rows"] = len(orig_copy)
                                         file_info_cur["user_action_log"] = []
+                                        st.session_state["_detect_issues_cache"] = {}
                                         st.toast(f"↩️ Đã khôi phục tệp {selected_file} về dữ liệu gốc ban đầu.")
                                         st.rerun()
 
@@ -3960,6 +3962,8 @@ try:
 </body>
 </html>"""
 
+        if st.session_state.get("dashboard_scores_df") is None:
+            st.session_state.dashboard_scores_df = stats_bundle["summary_table"]
         df_scores = st.session_state.dashboard_scores_df.copy()
         unified_html = _build_universal_dashboard_html(
             title=st.session_state.dashboard_title,
