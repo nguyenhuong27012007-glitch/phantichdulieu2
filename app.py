@@ -2991,22 +2991,49 @@ try:
 
         num_cols, cat_cols, time_cols = _detect_universal_schema(df_all)
 
-        # Thanh tùy chọn linh hoạt cho mọi file
-        ctrl_c1, ctrl_c2, ctrl_c3, ctrl_c4 = st.columns([1.3, 1.3, 1.2, 1.2])
-        with ctrl_c1:
-            selected_metric = st.selectbox("📊 Chỉ số phân tích chính:", num_cols, index=0, key="s3_metric_col")
-        with ctrl_c2:
-            primary_dim_options = cat_cols + time_cols if (cat_cols or time_cols) else ["(Toàn bộ dữ liệu)"]
-            selected_dim1 = st.selectbox("🏷️ Chiều phân nhóm chính:", primary_dim_options, index=0, key="s3_dim1_col")
-        with ctrl_c3:
-            sec_candidates = [c for c in (cat_cols + time_cols) if c != selected_dim1]
-            sec_options = ["(Không chọn)"] + sec_candidates
-            default_sec_idx = 1 if len(sec_options) > 1 else 0
-            selected_dim2 = st.selectbox("🔀 Chiều phân tích phụ (Chéo):", sec_options, index=default_sec_idx, key="s3_dim2_col")
-        with ctrl_c4:
-            time_options = ["(Không có / Tự động)"] + time_cols
-            default_t_idx = 1 if time_cols else 0
-            selected_time_opt = st.selectbox("🕒 Trục thời gian / Kỳ:", time_options, index=default_t_idx, key="s3_time_col")
+        # Thanh tùy chọn linh hoạt cho mọi file — chỉ hiển thị các thanh có từ 2 lựa chọn trở lên
+        primary_dim_options = cat_cols + time_cols if (cat_cols or time_cols) else ["(Toàn bộ dữ liệu)"]
+        _show_metric_sel = len(num_cols) >= 2
+        _show_dim1_sel = len(primary_dim_options) >= 2
+        _cur_dim1_preview = st.session_state.get("s3_dim1_col") if (
+            _show_dim1_sel and st.session_state.get("s3_dim1_col") in primary_dim_options
+        ) else primary_dim_options[0]
+        sec_candidates = [c for c in (cat_cols + time_cols) if c != _cur_dim1_preview]
+        sec_options = ["(Không chọn)"] + sec_candidates
+        _show_dim2_sel = len(sec_options) >= 2
+        time_options = ["(Không có / Tự động)"] + time_cols
+        _show_time_sel = len(time_cols) >= 2
+
+        _active_ctrls = []
+        if _show_metric_sel:
+            _active_ctrls.append("metric")
+        if _show_dim1_sel:
+            _active_ctrls.append("dim1")
+        if _show_dim2_sel:
+            _active_ctrls.append("dim2")
+        if _show_time_sel:
+            _active_ctrls.append("time")
+
+        selected_metric = num_cols[0]
+        selected_dim1 = primary_dim_options[0]
+        selected_dim2 = "(Không chọn)"
+        selected_time_opt = time_cols[0] if time_cols else "(Không có / Tự động)"
+
+        if _active_ctrls:
+            _ctrl_cols = st.columns(len(_active_ctrls))
+            for _idx_c, _ckey in enumerate(_active_ctrls):
+                with _ctrl_cols[_idx_c]:
+                    if _ckey == "metric":
+                        selected_metric = st.selectbox("📊 Chỉ số phân tích chính:", num_cols, index=0, key="s3_metric_col")
+                    elif _ckey == "dim1":
+                        selected_dim1 = st.selectbox("🏷️ Chiều phân nhóm chính:", primary_dim_options, index=0, key="s3_dim1_col")
+                    elif _ckey == "dim2":
+                        sec_candidates_live = [c for c in (cat_cols + time_cols) if c != selected_dim1]
+                        sec_options_live = ["(Không chọn)"] + sec_candidates_live
+                        default_sec_idx = 1 if len(sec_options_live) > 1 else 0
+                        selected_dim2 = st.selectbox("🔀 Chiều phân tích phụ (Chéo):", sec_options_live, index=default_sec_idx, key="s3_dim2_col")
+                    elif _ckey == "time":
+                        selected_time_opt = st.selectbox("🕒 Trục thời gian / Kỳ:", time_options, index=1, key="s3_time_col")
 
         time_col = selected_time_opt if selected_time_opt != "(Không có / Tự động)" else (time_cols[0] if time_cols else None)
         is_additive = _is_additive_metric(selected_metric, df_all[selected_metric])
