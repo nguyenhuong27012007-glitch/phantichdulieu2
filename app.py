@@ -1623,7 +1623,7 @@ def _vietnamese_error_message(exc: Exception) -> str:
         return "⚠️ Mã kết nối AI (API Key) chưa hợp lệ. Vui lòng kiểm tra lại trong Bảng Cài Đặt bên trái."
     if "ParserError" in msg or "tokenizing" in msg:
         return "⚠️ Định dạng tệp dữ liệu có dòng bị lệch cột. Vui lòng kiểm tra lại tệp CSV/Excel."
-    return "⚠️ Hệ thống gặp sự cố nhỏ khi xử lý thao tác vừa rồi. Vui lòng kiểm tra lại dữ liệu hoặc thử lại."
+    return f"⚠️ Hệ thống gặp sự cố nhỏ khi xử lý thao tác vừa rồi ({type(exc).__name__}: {msg[:150]}). Vui lòng kiểm tra lại dữ liệu hoặc thử lại."
 
 def _render_excel_filter_toolbar(df_cur: pd.DataFrame, key_prefix: str):
     """Thanh công cụ lọc nhiều cột, tìm kiếm, sắp xếp và chọn cột hiển thị kiểu Excel."""
