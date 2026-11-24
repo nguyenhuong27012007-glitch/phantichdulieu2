@@ -3805,6 +3805,7 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
 
         def _build_a4_pdf_report_html(interactive: bool = False) -> str:
             import base64 as _b64
+            from datetime import datetime as _dt_a4
             import matplotlib
             matplotlib.use("Agg")
             import matplotlib.pyplot as _plt
@@ -3820,6 +3821,8 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
             _first_q_line = next((ln.strip() for ln in _biz_questions_s3.splitlines() if ln.strip()), "")
             _goal_headline = _re_lib.sub(r"^(?:\d+[\.\)\:]|[-•*])\s*", "", _first_q_line).strip() if _first_q_line else f"Đánh giá hiệu suất {selected_metric} theo {selected_dim1}"
             _extra_sentence = f" Bối cảnh bổ sung từ đơn vị: {_html_lib.escape(_biz_extra_s3)}." if _biz_extra_s3 else ""
+            _now_vn = _dt_a4.now()
+            _date_vn_str = f"Ngày {_now_vn.day:02d} tháng {_now_vn.month:02d} năm {_now_vn.year}"
 
             def _md_to_a4_black_html(md_text: str) -> str:
                 if not md_text:
@@ -3876,7 +3879,7 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
 
             # Hình 1: Biểu đồ cột so sánh theo chiều phân nhóm chính
             _g1_p = _g1_a4.head(10)
-            fig1, ax1 = _plt.subplots(figsize=(6.0, 2.9))
+            fig1, ax1 = _plt.subplots(figsize=(6.0, 2.8))
             _x_lbls = [str(x)[:18] for x in _g1_p["Nhóm"].tolist()]
             _y_vals = [float(v) for v in _g1_p[_sc_a4].tolist()]
             bars = ax1.bar(_x_lbls, _y_vals, color="#2563eb", edgecolor="#1e3a8a", width=0.52, linewidth=0.7)
@@ -3904,7 +3907,7 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
 
             # Hình 2: Biểu đồ cơ cấu tỷ trọng (Pie/Donut)
             if len(_g1_p) >= 2:
-                fig2, ax2 = _plt.subplots(figsize=(5.8, 2.9))
+                fig2, ax2 = _plt.subplots(figsize=(5.8, 2.8))
                 _pie_vals = [max(0.0, float(v)) for v in (_g1_p["Tỷ trọng (%)"] if is_additive else _g1_p["count"]).tolist()]
                 if sum(_pie_vals) > 0:
                     _pie_colors = ["#1d4ed8", "#3b82f6", "#60a5fa", "#93c5fd", "#0284c7", "#38bdf8", "#6366f1", "#818cf8", "#a5b4fc", "#cbd5e1"]
@@ -3936,7 +3939,7 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
             # Hình 3: Biểu đồ xu hướng theo thời gian (nếu tệp có cột thời gian >= 2 kỳ)
             if not _t_df_a4.empty and time_col and len(_t_df_a4) >= 2:
                 _t_p = _t_df_a4.tail(12)
-                fig3, ax3 = _plt.subplots(figsize=(6.0, 2.7))
+                fig3, ax3 = _plt.subplots(figsize=(6.0, 2.6))
                 _tx = [str(x) for x in _t_p[time_col].tolist()]
                 _ty = [float(v) for v in _t_p[_sc_a4].tolist()]
                 ax3.plot(_tx, _ty, marker="o", color="#1d4ed8", linewidth=1.8, markersize=4.5)
@@ -3985,25 +3988,32 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
             _sec_charts_num = "III" if _has_obj_s3 else "II"
             _sec_detail_num = "IV" if _has_obj_s3 else "III"
 
-            # Mục lục, Danh mục hình ảnh, Danh mục bảng biểu chuẩn báo cáo
-            def _toc_row(label: str, ref_code: str, indent: bool = False) -> str:
+            # Đánh số trang chuẩn: Trang bìa (không số), Mục lục (i), Danh mục (ii), Nội dung (1, 2, 3)
+            _pg_intro = "1"
+            _pg_charts = "2"
+            _pg_detail = "3"
+
+            def _toc_row(label: str, page_str: str, indent: bool = False) -> str:
                 cls = "toc-row toc-sub" if indent else "toc-row toc-main"
-                return f'<div class="{cls}"><span class="toc-label">{label}</span><span class="toc-dots"></span><span class="toc-ref">{ref_code}</span></div>'
+                return f'<div class="{cls}"><span class="toc-label">{label}</span><span class="toc-dots"></span><span class="toc-ref">{page_str}</span></div>'
 
             _toc_rows = [
-                _toc_row("I. Giới thiệu Tổng quan Doanh nghiệp &amp; Bối cảnh Phân tích", "Mục I"),
-                _toc_row("1.1. Tổng quan Bối cảnh &amp; Phạm vi Dữ liệu", "1.1", indent=True),
-                _toc_row("1.2. Phương pháp Phân tích &amp; Hồ sơ Dữ liệu", "1.2", indent=True),
-                _toc_row("1.3. Tổng hợp Phát hiện Trọng tâm", "1.3", indent=True),
+                _toc_row("DANH MỤC HÌNH ẢNH / BIỂU ĐỒ &amp; BẢNG BIỂU", "ii"),
+                _toc_row("I. Giới thiệu Tổng quan Doanh nghiệp &amp; Bối cảnh Phân tích", _pg_intro),
+                _toc_row("1.1. Tổng quan Bối cảnh &amp; Phạm vi Dữ liệu", _pg_intro, indent=True),
+                _toc_row("1.2. Phương pháp Phân tích &amp; Hồ sơ Dữ liệu", _pg_intro, indent=True),
+                _toc_row("1.3. Tổng hợp Phát hiện Trọng tâm", _pg_intro, indent=True),
             ]
             if _has_obj_s3:
-                _toc_rows.append(_toc_row("II. Giải đáp Mục tiêu Phân tích (từ Bước 1)", "Mục II"))
-            _toc_rows.append(_toc_row(f"{_sec_charts_num}. Biểu đồ Trực quan, Nhận xét &amp; Bảng Tổng hợp Số liệu", f"Mục {_sec_charts_num}"))
-            _toc_rows.append(_toc_row(f"{_sec_detail_num}. Phân tích Chi tiết &amp; Đề xuất Hành động", f"Mục {_sec_detail_num}"))
+                _toc_rows.append(_toc_row("II. Giải đáp Mục tiêu Phân tích (từ Bước 1)", _pg_intro))
+            _toc_rows.append(_toc_row(f"{_sec_charts_num}. Biểu đồ Trực quan, Nhận xét &amp; Bảng Tổng hợp Số liệu", _pg_charts))
+            _toc_rows.append(_toc_row(f"{_sec_detail_num}. Phân tích Chi tiết &amp; Đề xuất Hành động", _pg_detail))
 
-            _lof_rows = [_toc_row(c, f"Hình {idx}") for idx, c in enumerate(_figure_list_items, 1)]
+            _lof_rows = [_toc_row(c, _pg_charts) for c in _figure_list_items]
             _tbl1_cap = f"Bảng 1: Bảng tổng hợp số liệu chi tiết theo {_html_lib.escape(str(selected_dim1))}"
-            _lot_rows = [_toc_row(_tbl1_cap, "Bảng 1")]
+            _lot_rows = [_toc_row(_tbl1_cap, _pg_charts)]
+
+            _editable_attr = ' contenteditable="true" spellcheck="false"' if interactive else ""
 
             _toolbar_html = """
 <div class="word-toolbar" id="wordToolbar">
@@ -4047,18 +4057,15 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
 
             _editor_script = """
 <script>
-const sheetEl = document.getElementById('a4Sheet');
-const initialSheetHtml = sheetEl ? sheetEl.innerHTML : '';
+const docWrap = document.getElementById('a4DocWrap');
+const initialDocHtml = docWrap ? docWrap.innerHTML : '';
 function fmt(cmd) {
-    if (!sheetEl) return;
-    sheetEl.focus();
     document.execCommand(cmd, false, null);
 }
 function fmtSize(pt) {
-    if (!sheetEl) return;
-    sheetEl.focus();
     document.execCommand('fontSize', false, '4');
-    const fonts = sheetEl.querySelectorAll('font[size="4"]');
+    if (!docWrap) return;
+    const fonts = docWrap.querySelectorAll('font[size="4"]');
     fonts.forEach(f => {
         const span = document.createElement('span');
         span.style.fontSize = pt;
@@ -4067,16 +4074,18 @@ function fmtSize(pt) {
     });
 }
 function resetDoc() {
-    if (!sheetEl) return;
+    if (!docWrap) return;
     if (confirm('Khôi phục toàn bộ nội dung báo cáo về bản gốc ban đầu?')) {
-        sheetEl.innerHTML = initialSheetHtml;
+        docWrap.innerHTML = initialDocHtml;
     }
 }
 function printEditedDoc() {
-    if (!sheetEl) return;
+    if (!docWrap) return;
     const styleEl = document.querySelector('style');
     const cssText = styleEl ? styleEl.innerHTML : '';
-    const htmlOut = '<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><title>' + document.title + '</title><style>' + cssText + '</style></head><body><div class="a4-sheet">' + sheetEl.innerHTML + '</div></body></html>';
+    const clone = docWrap.cloneNode(true);
+    clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+    const htmlOut = '<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><title>' + document.title + '</title><style>' + cssText + '</style></head><body><div class="a4-doc-wrap">' + clone.innerHTML + '</div></body></html>';
     const w = window.open('', '_blank', 'width=960,height=1100');
     if (w) {
         w.document.open();
@@ -4091,8 +4100,6 @@ function printEditedDoc() {
 </script>
 """ if interactive else ""
 
-            _editable_attr = ' contenteditable="true" spellcheck="false"' if interactive else ""
-
             return f"""<!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -4101,13 +4108,13 @@ function printEditedDoc() {
 <style>
     @page {{
         size: A4 portrait;
-        margin: 20mm 18mm 20mm 25mm;
+        margin: 0;
     }}
     * {{ box-sizing: border-box; }}
     body {{
         margin: 0;
-        padding: 0 16px 28px 16px;
-        background: #e5e7eb;
+        padding: 0 16px 32px 16px;
+        background: #d1d5db;
         font-family: "Times New Roman", Times, serif;
         color: #000000;
         -webkit-print-color-adjust: exact !important;
@@ -4124,7 +4131,7 @@ function printEditedDoc() {
         background: #f8fafc;
         border-bottom: 1px solid #cbd5e1;
         padding: 8px 14px;
-        margin: 0 -16px 18px -16px;
+        margin: 0 -16px 20px -16px;
         font-family: "Segoe UI", Arial, sans-serif;
         box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
     }}
@@ -4168,93 +4175,160 @@ function printEditedDoc() {
         padding: 5px 12px;
     }}
     .wt-print:hover {{ background: #1e40af; border-color: #1e40af; }}
-    .a4-sheet {{
+
+    .a4-doc-wrap {{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 22px;
+        padding-top: 12px;
+    }}
+    .a4-page {{
         width: 210mm;
+        min-height: 297mm;
         max-width: 100%;
-        margin: 14px auto 0 auto;
         background: #ffffff;
-        padding: 20mm 18mm 20mm 25mm;
-        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.14);
+        padding: 20mm 18mm 18mm 25mm;
+        box-shadow: 0 6px 22px rgba(0, 0, 0, 0.16);
         font-family: "Times New Roman", Times, serif;
         font-size: 13pt;
         line-height: 1.5;
         color: #000000;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        page-break-after: always;
+        break-after: page;
+    }}
+    .a4-page:last-child {{
+        page-break-after: auto;
+        break-after: auto;
+    }}
+    .a4-page-body {{
+        flex: 1;
         outline: none;
     }}
-    .a4-sheet[contenteditable="true"]:focus {{
-        box-shadow: 0 0 0 2px #93c5fd, 0 6px 24px rgba(0, 0, 0, 0.14);
+    .a4-page-body[contenteditable="true"]:focus {{
+        outline: 1.5px dashed #93c5fd;
+        outline-offset: 6px;
     }}
-    .a4-title {{
+    .a4-page-footer {{
+        margin-top: 14px;
+        padding-top: 6px;
+        border-top: 0.5px solid #cbd5e1;
         text-align: center;
-        font-size: 16pt;
+        font-size: 11.5pt;
+        color: #000000;
+        user-select: none;
+    }}
+
+    /* Trang bìa chuẩn báo cáo */
+    .a4-cover-frame {{
+        border: 3px double #000000;
+        padding: 24mm 16mm;
+        height: 255mm;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        text-align: center;
+    }}
+    .a4-cover-org {{
+        font-size: 13pt;
         font-weight: 700;
         text-transform: uppercase;
-        margin: 0 0 8px 0;
-        color: #000000;
+        letter-spacing: 0.5px;
     }}
-    .a4-subtitle {{
-        text-align: center;
-        font-size: 13pt;
-        margin: 0 0 4px 0;
-        color: #000000;
-    }}
-    .a4-quote {{
-        text-align: center;
-        font-style: italic;
-        font-size: 13pt;
-        margin: 0 0 10px 0;
-        color: #000000;
-    }}
-    .a4-meta-line {{
-        text-align: center;
+    .a4-cover-suborg {{
         font-size: 12pt;
-        color: #000000;
-        border-bottom: 1px solid #000000;
-        padding-bottom: 10px;
-        margin-bottom: 16px;
+        margin-top: 4px;
     }}
-    .a4-frontmatter {{
-        margin-bottom: 16px;
-        page-break-after: always;
+    .a4-cover-line {{
+        width: 45%;
+        border-top: 1px solid #000000;
+        margin: 12px auto 0 auto;
     }}
+    .a4-cover-main-title {{
+        font-size: 20pt;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin: 0 0 16px 0;
+        line-height: 1.35;
+    }}
+    .a4-cover-goal {{
+        font-size: 14pt;
+        font-weight: 700;
+        margin: 0 0 10px 0;
+    }}
+    .a4-cover-quote {{
+        font-size: 13pt;
+        font-style: italic;
+        margin: 0 auto 24px auto;
+        max-width: 90%;
+    }}
+    .a4-cover-meta {{
+        text-align: left;
+        margin: 0 auto;
+        width: 86%;
+        border: 1px solid #000000;
+        padding: 12px 16px;
+        font-size: 12.5pt;
+        line-height: 1.65;
+    }}
+    .a4-cover-date {{
+        font-size: 12.5pt;
+        font-style: italic;
+    }}
+
+    /* Mục lục & Danh mục */
     .a4-fm-title {{
+        text-align: center;
+        font-size: 15pt;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin: 4px 0 16px 0;
+        color: #000000;
+    }}
+    .a4-fm-subtitle {{
         text-align: center;
         font-size: 14pt;
         font-weight: 700;
         text-transform: uppercase;
-        margin: 14px 0 8px 0;
+        margin: 26px 0 12px 0;
         color: #000000;
     }}
     .toc-row {{
         display: flex;
         align-items: baseline;
-        font-size: 12.5pt;
-        line-height: 1.55;
+        font-size: 13pt;
+        line-height: 1.75;
         color: #000000;
     }}
-    .toc-main {{ font-weight: 700; margin-top: 3px; }}
-    .toc-sub {{ padding-left: 20px; font-weight: 400; }}
-    .toc-label {{ flex-shrink: 0; max-width: 82%; }}
+    .toc-main {{ font-weight: 700; margin-top: 4px; }}
+    .toc-sub {{ padding-left: 24px; font-weight: 400; }}
+    .toc-label {{ flex-shrink: 0; max-width: 84%; }}
     .toc-dots {{
         flex: 1;
         border-bottom: 1px dotted #000000;
         margin: 0 6px;
         min-width: 16px;
     }}
-    .toc-ref {{ flex-shrink: 0; font-weight: 400; }}
-    .a4-sheet h2 {{
+    .toc-ref {{ flex-shrink: 0; font-weight: 400; min-width: 18px; text-align: right; }}
+
+    /* Nội dung chính */
+    .a4-page h2 {{
         font-size: 14pt;
         font-weight: 700;
-        margin: 18px 0 8px 0;
+        margin: 4px 0 10px 0;
         color: #000000;
     }}
-    .a4-sheet h3 {{
+    .a4-page h3 {{
         font-size: 13pt;
         font-weight: 700;
         margin: 12px 0 6px 0;
         color: #000000;
     }}
-    .a4-sheet p {{
+    .a4-page p {{
         margin: 0 0 9px 0;
         text-align: justify;
         color: #000000;
@@ -4269,13 +4343,13 @@ function printEditedDoc() {
         color: #000000;
     }}
     .a4-figure {{
-        margin: 12px 0 16px 0;
+        margin: 10px 0 14px 0;
         text-align: center;
         break-inside: avoid;
     }}
     .a4-figure img {{
-        max-width: 74%;
-        max-height: 76mm;
+        max-width: 72%;
+        max-height: 70mm;
         width: auto;
         height: auto;
         border: 1px solid #d1d5db;
@@ -4286,20 +4360,20 @@ function printEditedDoc() {
         font-size: 12pt;
         font-style: italic;
         color: #000000;
-        margin: 5px 0 7px 0;
+        margin: 4px 0 6px 0;
         text-align: center;
     }}
     .a4-fig-note {{
-        font-size: 13pt;
+        font-size: 12.5pt;
         color: #000000;
         text-align: justify;
-        margin: 0 0 8px 0;
+        margin: 0 0 6px 0;
     }}
     .a4-tbl-cap {{
         font-size: 12pt;
         font-style: italic;
         color: #000000;
-        margin: 12px 0 6px 0;
+        margin: 10px 0 6px 0;
         text-align: center;
     }}
     table.a4-tbl {{
@@ -4308,7 +4382,7 @@ function printEditedDoc() {
         font-family: "Times New Roman", Times, serif;
         font-size: 11pt;
         color: #000000;
-        margin-bottom: 14px;
+        margin-bottom: 10px;
         break-inside: avoid;
     }}
     table.a4-tbl th, table.a4-tbl td {{
@@ -4325,83 +4399,141 @@ function printEditedDoc() {
     @media print {{
         body {{ background: #ffffff; padding: 0; }}
         .word-toolbar {{ display: none !important; }}
-        .a4-sheet {{ width: auto; margin: 0; padding: 0; box-shadow: none; }}
+        .a4-doc-wrap {{ gap: 0; padding: 0; display: block; }}
+        .a4-page {{
+            width: 210mm;
+            min-height: 296mm;
+            margin: 0;
+            box-shadow: none;
+            page-break-after: always;
+            break-after: page;
+        }}
+        .a4-page:last-child {{
+            page-break-after: auto;
+            break-after: auto;
+        }}
     }}
 </style>
 </head>
 <body>
 {_toolbar_html}
-<div class="a4-sheet" id="a4Sheet"{_editable_attr}>
-    <div class="a4-title">BÁO CÁO PHÂN TÍCH KINH DOANH</div>
-    <div class="a4-subtitle">Mục tiêu phân tích: {_html_lib.escape(_goal_headline)}</div>
-    <div class="a4-quote">Bài toán phân tích đặt ra: &ldquo;{_html_lib.escape(_goal_headline)}&rdquo;</div>
-    <div class="a4-meta-line">
-        Nguồn dữ liệu: <b>{_html_lib.escape(_files_display_str)}</b> &nbsp;|&nbsp;
-        Kỳ dữ liệu: <b>{_html_lib.escape(stats_bundle['time_range_label'])}</b> &nbsp;|&nbsp;
-        Quy mô: <b>{total_records_all:,}</b> bản ghi
-    </div>
+<div class="a4-doc-wrap" id="a4DocWrap">
 
-    <div class="a4-frontmatter">
-        <div class="a4-fm-title">MỤC LỤC</div>
-        {"".join(_toc_rows)}
+    <!-- TRANG BÌA (KHÔNG ĐÁNH SỐ TRANG) -->
+    <section class="a4-page">
+        <div class="a4-page-body"{_editable_attr}>
+            <div class="a4-cover-frame">
+                <div>
+                    <div class="a4-cover-org">HỆ THỐNG PHÂN TÍCH DỮ LIỆU &amp; BÁO CÁO QUẢN TRỊ</div>
+                    <div class="a4-cover-suborg">Lĩnh vực: {_html_lib.escape(_biz_t_disp)}</div>
+                    <div class="a4-cover-line"></div>
+                </div>
+                <div>
+                    <div class="a4-cover-main-title">BÁO CÁO PHÂN TÍCH KINH DOANH</div>
+                    <div class="a4-cover-goal">Mục tiêu: {_html_lib.escape(_goal_headline)}</div>
+                    <div class="a4-cover-quote">&ldquo;{_html_lib.escape(_goal_headline)}&rdquo;</div>
+                    <div class="a4-cover-meta">
+                        <div><b>Nguồn dữ liệu:</b> {_html_lib.escape(_files_display_str)}</div>
+                        <div><b>Kỳ đánh giá:</b> {_html_lib.escape(stats_bundle['time_range_label'])}</div>
+                        <div><b>Quy mô dữ liệu:</b> {total_records_all:,} bản ghi &times; {len(df_all.columns)} trường thông tin</div>
+                        <div><b>Chỉ số trọng tâm:</b> {_html_lib.escape(str(selected_metric))} theo {_html_lib.escape(str(selected_dim1))}</div>
+                    </div>
+                </div>
+                <div class="a4-cover-date">{_date_vn_str}</div>
+            </div>
+        </div>
+    </section>
 
-        <div class="a4-fm-title">DANH MỤC HÌNH ẢNH / BIỂU ĐỒ</div>
-        {"".join(_lof_rows)}
+    <!-- TRANG i: MỤC LỤC -->
+    <section class="a4-page">
+        <div class="a4-page-body"{_editable_attr}>
+            <div class="a4-fm-title">MỤC LỤC</div>
+            {"".join(_toc_rows)}
+        </div>
+        <div class="a4-page-footer">i</div>
+    </section>
 
-        <div class="a4-fm-title">DANH MỤC BẢNG BIỂU</div>
-        {"".join(_lot_rows)}
-    </div>
+    <!-- TRANG ii: DANH MỤC HÌNH ẢNH / BIỂU ĐỒ & DANH MỤC BẢNG BIỂU -->
+    <section class="a4-page">
+        <div class="a4-page-body"{_editable_attr}>
+            <div class="a4-fm-title">DANH MỤC HÌNH ẢNH / BIỂU ĐỒ</div>
+            {"".join(_lof_rows)}
 
-    <h2>I. Giới thiệu Tổng quan Doanh nghiệp &amp; Bối cảnh Phân tích</h2>
+            <div class="a4-fm-subtitle">DANH MỤC BẢNG BIỂU</div>
+            {"".join(_lot_rows)}
+        </div>
+        <div class="a4-page-footer">ii</div>
+    </section>
 
-    <h3>1.1. Tổng quan Bối cảnh &amp; Phạm vi Dữ liệu</h3>
-    <p>
-        Đơn vị hoạt động trong lĩnh vực <b>{_html_lib.escape(_biz_t_disp)}</b>.
-        Trong kỳ đánh giá hiện tại ({_html_lib.escape(stats_bundle['time_range_label'])}),
-        mục tiêu trọng tâm là &ldquo;{_html_lib.escape(_goal_headline)}&rdquo;.
-        Báo cáo này phân tích toàn diện trên tập dữ liệu đã qua kiểm duyệt
-        <b>{_html_lib.escape(_files_display_str)}</b> gồm <b>{total_records_all:,}</b> bản ghi hợp lệ
-        và <b>{len(df_all.columns)}</b> trường thông tin.{_extra_sentence}
-    </p>
+    <!-- TRANG 1: TỔNG QUAN & GIẢI ĐÁP MỤC TIÊU -->
+    <section class="a4-page">
+        <div class="a4-page-body"{_editable_attr}>
+            <h2>I. Giới thiệu Tổng quan Doanh nghiệp &amp; Bối cảnh Phân tích</h2>
 
-    <h3>1.2. Phương pháp Phân tích &amp; Hồ sơ Dữ liệu</h3>
-    <p>
-        Báo cáo áp dụng khung phân tích chuẩn mực DIID (Data → Information → Insight → Decision)
-        kết hợp 4 phương pháp bổ trợ: (1) Phân tích Mô tả quy mô &amp; cấu trúc theo chỉ số
-        <b>{_html_lib.escape(str(selected_metric))}</b> và chiều phân nhóm <b>{_html_lib.escape(str(selected_dim1))}</b>;
-        (2) Phân tích Tập trung xác định nhóm động lực chính;
-        (3) Phân tích Biến động &amp; Tương quan giữa các chỉ số định lượng trong tệp;
-        và (4) Kiểm định độ tin cậy dữ liệu đầu vào.
-        Độ đầy đủ dữ liệu sau khi làm sạch đạt <b>{_comp_a4:.1f}%</b>
-        (còn <b>{total_nulls_all:,}</b> ô trống, <b>{_dup_a4:,}</b> dòng trùng lặp).
-    </p>
+            <h3>1.1. Tổng quan Bối cảnh &amp; Phạm vi Dữ liệu</h3>
+            <p>
+                Đơn vị hoạt động trong lĩnh vực <b>{_html_lib.escape(_biz_t_disp)}</b>.
+                Trong kỳ đánh giá hiện tại ({_html_lib.escape(stats_bundle['time_range_label'])}),
+                mục tiêu trọng tâm là &ldquo;{_html_lib.escape(_goal_headline)}&rdquo;.
+                Báo cáo này phân tích toàn diện trên tập dữ liệu đã qua kiểm duyệt
+                <b>{_html_lib.escape(_files_display_str)}</b> gồm <b>{total_records_all:,}</b> bản ghi hợp lệ
+                và <b>{len(df_all.columns)}</b> trường thông tin.{_extra_sentence}
+            </p>
 
-    <h3>1.3. Tổng hợp Phát hiện Trọng tâm</h3>
-    <p>
-        Trên toàn bộ tập dữ liệu, chỉ số <b>{_html_lib.escape(str(selected_metric))}</b> ghi nhận mức trung bình
-        <b>{_fmt_num(stats_bundle['grand_mean'])}</b> (trung vị <b>{_fmt_num(stats_bundle['grand_median'])}</b>,
-        biên độ từ <b>{_fmt_num(stats_bundle['grand_min'])}</b> đến <b>{_fmt_num(stats_bundle['grand_max'])}</b>).
-        Xét theo <b>{_html_lib.escape(str(selected_dim1))}</b>, nhóm dẫn đầu là
-        <b>{_html_lib.escape(str(_top_a4['Nhóm']))}</b> (đạt <b>{_fmt_num(_top_a4[_sc_a4])}</b>),
-        trong khi nhóm thấp nhất là <b>{_html_lib.escape(str(_bot_a4['Nhóm']))}</b>
-        (đạt <b>{_fmt_num(_bot_a4[_sc_a4])}</b>).
-    </p>
+            <h3>1.2. Phương pháp Phân tích &amp; Hồ sơ Dữ liệu</h3>
+            <p>
+                Báo cáo áp dụng khung phân tích chuẩn mực DIID (Data → Information → Insight → Decision)
+                kết hợp 4 phương pháp bổ trợ: (1) Phân tích Mô tả quy mô &amp; cấu trúc theo chỉ số
+                <b>{_html_lib.escape(str(selected_metric))}</b> và chiều phân nhóm <b>{_html_lib.escape(str(selected_dim1))}</b>;
+                (2) Phân tích Tập trung xác định nhóm động lực chính;
+                (3) Phân tích Biến động &amp; Tương quan giữa các chỉ số định lượng trong tệp;
+                và (4) Kiểm định độ tin cậy dữ liệu đầu vào.
+                Độ đầy đủ dữ liệu sau khi làm sạch đạt <b>{_comp_a4:.1f}%</b>
+                (còn <b>{total_nulls_all:,}</b> ô trống, <b>{_dup_a4:,}</b> dòng trùng lặp).
+            </p>
 
-    {_obj_section_a4}
+            <h3>1.3. Tổng hợp Phát hiện Trọng tâm</h3>
+            <p>
+                Trên toàn bộ tập dữ liệu, chỉ số <b>{_html_lib.escape(str(selected_metric))}</b> ghi nhận mức trung bình
+                <b>{_fmt_num(stats_bundle['grand_mean'])}</b> (trung vị <b>{_fmt_num(stats_bundle['grand_median'])}</b>,
+                biên độ từ <b>{_fmt_num(stats_bundle['grand_min'])}</b> đến <b>{_fmt_num(stats_bundle['grand_max'])}</b>).
+                Xét theo <b>{_html_lib.escape(str(selected_dim1))}</b>, nhóm dẫn đầu là
+                <b>{_html_lib.escape(str(_top_a4['Nhóm']))}</b> (đạt <b>{_fmt_num(_top_a4[_sc_a4])}</b>),
+                trong khi nhóm thấp nhất là <b>{_html_lib.escape(str(_bot_a4['Nhóm']))}</b>
+                (đạt <b>{_fmt_num(_bot_a4[_sc_a4])}</b>).
+            </p>
 
-    <h2>{_sec_charts_num}. Biểu đồ Trực quan, Nhận xét &amp; Bảng Tổng hợp Số liệu</h2>
-    {"".join(_charts_html_parts)}
-    <div class="a4-tbl-cap">{_tbl1_cap}</div>
-    <table class="a4-tbl">
-        <thead><tr>{_a4_th}</tr></thead>
-        <tbody>{_a4_trs}</tbody>
-    </table>
+            {_obj_section_a4}
+        </div>
+        <div class="a4-page-footer">{_pg_intro}</div>
+    </section>
 
-    <h2>{_sec_detail_num}. Phân tích Chi tiết &amp; Đề xuất Hành động</h2>
-    <div class="a4-prose">
-        {_md_to_a4_black_html(st.session_state.editable_report)}
-        {_md_to_a4_black_html(st.session_state.editable_plan)}
-    </div>
+    <!-- TRANG 2: BIỂU ĐỒ TRỰC QUAN, NHẬN XÉT & BẢNG TỔNG HỢP SỐ LIỆU -->
+    <section class="a4-page">
+        <div class="a4-page-body"{_editable_attr}>
+            <h2>{_sec_charts_num}. Biểu đồ Trực quan, Nhận xét &amp; Bảng Tổng hợp Số liệu</h2>
+            {"".join(_charts_html_parts)}
+            <div class="a4-tbl-cap">{_tbl1_cap}</div>
+            <table class="a4-tbl">
+                <thead><tr>{_a4_th}</tr></thead>
+                <tbody>{_a4_trs}</tbody>
+            </table>
+        </div>
+        <div class="a4-page-footer">{_pg_charts}</div>
+    </section>
+
+    <!-- TRANG 3: PHÂN TÍCH CHI TIẾT & ĐỀ XUẤT HÀNH ĐỘNG -->
+    <section class="a4-page">
+        <div class="a4-page-body"{_editable_attr}>
+            <h2>{_sec_detail_num}. Phân tích Chi tiết &amp; Đề xuất Hành động</h2>
+            <div class="a4-prose">
+                {_md_to_a4_black_html(st.session_state.editable_report)}
+                {_md_to_a4_black_html(st.session_state.editable_plan)}
+            </div>
+        </div>
+        <div class="a4-page-footer">{_pg_detail}</div>
+    </section>
+
 </div>
 {_editor_script}
 </body>
