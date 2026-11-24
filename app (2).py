@@ -851,8 +851,8 @@ def _render_column_delete_bar(df_cur: pd.DataFrame, display_cols: list, filename
                 background: #f5f6f8;
             }}
             .scroll-pad {{
-                width: 15px;
-                min-width: 15px;
+                width: 9px;
+                min-width: 9px;
                 height: 100%;
                 border-left: 1px solid #e5e7eb;
                 background: #f5f6f8;
