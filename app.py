@@ -603,9 +603,13 @@ if step != 0:
             st.divider()
 
             if st.button("Làm mới phiên", key="sb_reset_session", **_W_STRETCH):
-                for k in ["files_loaded", "file_messages", "analysis_results", "editable_report", "editable_plan", "dashboard_scores_df"]:
-                    if k in st.session_state:
-                        st.session_state[k] = [] if k in ["files_loaded", "file_messages"] else None
+                _keep_keys = {"orchestrator", "api_key_set", "selected_ai_model"}
+                for _k in list(st.session_state.keys()):
+                    if _k not in _keep_keys:
+                        st.session_state.pop(_k, None)
+                st.session_state.files_loaded = []
+                st.session_state.file_messages = []
+                st.session_state.analysis_results = None
                 st.session_state.step1_approved = False
                 st.session_state.step2_approved = False
                 st.session_state.step3_approved = False
@@ -613,10 +617,12 @@ if step != 0:
                 st.session_state.show_step2_editor = False
                 st.session_state.s1_issues_dismissed = set()
                 st.session_state["_detect_issues_cache"] = {}
-                st.session_state.pop("_last_uploaded_sig", None)
-                st.session_state.pop("_last_step3_data_sig", None)
                 st.session_state.current_step = 0
                 orch.data_agent.raw_dataframes.clear()
+                if hasattr(orch.data_agent, "file_infos"):
+                    orch.data_agent.file_infos.clear()
+                if hasattr(orch.data_agent, "column_mappings"):
+                    orch.data_agent.column_mappings.clear()
                 set_spinner_msg("Đang làm mới toàn bộ phiên làm việc...")
                 st.rerun()
 
