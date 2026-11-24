@@ -775,7 +775,7 @@ def _pop_df_undo(filename: str, orch_obj) -> bool:
 
 
 def _render_column_delete_bar(df_cur: pd.DataFrame, display_cols: list, filename: str, key_prefix: str, orch_obj):
-    """Một hàng ô tích chọn xóa cột nằm ngay phía trên bảng dữ liệu (cuộn ngang đồng bộ mọi số lượng cột)."""
+    """Một hàng ô tích chọn xóa cột nằm sát trên tiêu đề bảng; tích ô rồi bấm phím Delete (hoặc bấm nút xóa) để xóa cột."""
     if not display_cols or len(df_cur.columns) <= 1:
         return
     _ver_key = f"{key_prefix}_colbar_ver"
@@ -783,10 +783,10 @@ def _render_column_delete_bar(df_cur: pd.DataFrame, display_cols: list, filename
     col_sel_df = pd.DataFrame(
         [[False] * len(display_cols)],
         columns=display_cols,
-        index=["Xóa cột"],
+        index=["Chọn cột"],
     )
     col_cfg = {
-        c: st.column_config.CheckboxColumn(str(c), default=False, help=f"Tích để xóa cột {c}")
+        c: st.column_config.CheckboxColumn(str(c), default=False, help=f"Tích để chọn cột '{c}', sau đó bấm phím Delete để xóa")
         for c in display_cols
     }
     edited_col_sel = st.data_editor(
@@ -794,7 +794,7 @@ def _render_column_delete_bar(df_cur: pd.DataFrame, display_cols: list, filename
         column_config=col_cfg,
         num_rows="fixed",
         hide_index=False,
-        height=76,
+        height=72,
         **_W_STRETCH,
         key=f"{key_prefix}_col_del_row_v{_ver}",
     )
@@ -804,10 +804,11 @@ def _render_column_delete_bar(df_cur: pd.DataFrame, display_cols: list, filename
         if remaining_cnt < 1:
             st.warning("Cần giữ lại ít nhất 1 cột dữ liệu.")
         else:
+            _del_btn_key = f"{key_prefix}_btn_del_cols"
             if st.button(
-                f"Xóa {len(selected_del_cols)} cột đã chọn",
+                f"Xóa {len(selected_del_cols)} cột đã chọn (hoặc bấm phím Delete)",
                 icon=":material/delete:",
-                key=f"{key_prefix}_btn_del_cols",
+                key=_del_btn_key,
             ):
                 _push_df_undo(filename, df_cur)
                 new_df = df_cur.drop(columns=selected_del_cols, errors="ignore")
@@ -820,8 +821,31 @@ def _render_column_delete_bar(df_cur: pd.DataFrame, display_cols: list, filename
                 )
                 st.session_state[_ver_key] = _ver + 1
                 st.session_state["_detect_issues_cache"] = {}
-                st.toast(f"Đã xóa {len(selected_del_cols)} cột. Bạn có thể bấm 'Quay lại bước trước' nếu xóa nhầm.")
+                st.toast(f"Đã xóa {len(selected_del_cols)} cột. Bạn có thể bấm 'Quay lại lần chỉnh sửa trước' nếu xóa nhầm.")
                 st.rerun()
+            import streamlit.components.v1 as _del_kb_comp
+            _del_kb_comp.html(
+                f"""<script>
+                (function() {{
+                    const pDoc = window.parent.document;
+                    if (window.parent.__diDelColHandler) {{
+                        pDoc.removeEventListener('keydown', window.parent.__diDelColHandler, true);
+                    }}
+                    window.parent.__diDelColHandler = function(e) {{
+                        if (e.key !== 'Delete') return;
+                        const tag = (pDoc.activeElement && pDoc.activeElement.tagName || '').toLowerCase();
+                        if (tag === 'input' || tag === 'textarea') return;
+                        const btn = pDoc.querySelector('.st-key-{_del_btn_key} button');
+                        if (btn) {{
+                            e.preventDefault();
+                            btn.click();
+                        }}
+                    }};
+                    pDoc.addEventListener('keydown', window.parent.__diDelColHandler, true);
+                }})();
+                </script>""",
+                height=0,
+            )
 
 
 def _format_groups_preview(groups: list, max_show: int = 3) -> str:
