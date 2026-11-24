@@ -829,6 +829,13 @@ def _render_column_delete_bar(df_cur: pd.DataFrame, display_cols: list, filename
                 border-right: 1px solid #e5e7eb;
                 background: #f5f6f8;
             }}
+            .scroll-pad {{
+                width: 15px;
+                min-width: 15px;
+                height: 100%;
+                border-left: 1px solid #e5e7eb;
+                background: #f5f6f8;
+            }}
             .cells {{
                 display: flex;
                 flex: 1;
@@ -870,7 +877,7 @@ def _render_column_delete_bar(df_cur: pd.DataFrame, display_cols: list, filename
             .box svg {{ display: none; width: 11px; height: 11px; stroke: #ffffff; stroke-width: 3; fill: none; }}
             .cell.checked .box svg {{ display: block; }}
             </style></head><body>
-            <div class="bar"><div class="corner"></div><div class="cells" id="cells"></div></div>
+            <div class="bar"><div class="corner"></div><div class="cells" id="cells"></div><div class="scroll-pad"></div></div>
             <script>
             (function() {{
                 const cols = {_cols_json};
