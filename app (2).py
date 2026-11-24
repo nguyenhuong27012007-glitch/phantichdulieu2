@@ -3803,7 +3803,7 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
 
         st.markdown(inline_dash_html, unsafe_allow_html=True)
 
-        def _build_a4_pdf_report_html() -> str:
+        def _build_a4_pdf_report_html(interactive: bool = False) -> str:
             import base64 as _b64
             import matplotlib
             matplotlib.use("Agg")
@@ -3858,42 +3858,45 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
 
             def _fig_to_b64(fig) -> str:
                 buf = io.BytesIO()
-                fig.savefig(buf, format="png", dpi=170, bbox_inches="tight", facecolor="white")
+                fig.savefig(buf, format="png", dpi=250, bbox_inches="tight", facecolor="white")
                 _plt.close(fig)
                 return _b64.b64encode(buf.getvalue()).decode("ascii")
 
             def _strip_tags(h_str: str) -> str:
                 return _re_lib.sub(r"<[^>]+>", "", str(h_str))
 
-            # Tạo ảnh biểu đồ sắc nét bằng Matplotlib (Times New Roman / DejaVu Serif)
+            # Biểu đồ Matplotlib độ phân giải cao (250 DPI), kích thước gọn gàng chuẩn A4
             _plt.rcParams["font.family"] = "DejaVu Serif"
-            _plt.rcParams["axes.edgecolor"] = "#333333"
-            _plt.rcParams["axes.linewidth"] = 0.8
+            _plt.rcParams["axes.edgecolor"] = "#222222"
+            _plt.rcParams["axes.linewidth"] = 0.75
 
             _charts_html_parts = []
+            _figure_list_items = []
             _fig_no = 1
 
             # Hình 1: Biểu đồ cột so sánh theo chiều phân nhóm chính
             _g1_p = _g1_a4.head(10)
-            fig1, ax1 = _plt.subplots(figsize=(7.2, 3.5))
-            _x_lbls = [str(x)[:20] for x in _g1_p["Nhóm"].tolist()]
+            fig1, ax1 = _plt.subplots(figsize=(6.0, 2.9))
+            _x_lbls = [str(x)[:18] for x in _g1_p["Nhóm"].tolist()]
             _y_vals = [float(v) for v in _g1_p[_sc_a4].tolist()]
-            bars = ax1.bar(_x_lbls, _y_vals, color="#2563eb", edgecolor="#1e3a8a", width=0.56)
-            ax1.set_title(f"So sánh {selected_metric} theo {selected_dim1}", fontsize=11, fontweight="bold", color="#000000", pad=10)
-            ax1.set_ylabel(str(selected_metric), fontsize=9.5, color="#000000")
-            ax1.tick_params(axis="x", labelsize=8.5, colors="#000000", rotation=20 if len(_x_lbls) > 5 else 0)
-            ax1.tick_params(axis="y", labelsize=8.5, colors="#000000")
-            ax1.grid(axis="y", linestyle="--", alpha=0.35, color="#666666")
+            bars = ax1.bar(_x_lbls, _y_vals, color="#2563eb", edgecolor="#1e3a8a", width=0.52, linewidth=0.7)
+            ax1.set_title(f"So sánh {selected_metric} theo {selected_dim1}", fontsize=10, fontweight="bold", color="#000000", pad=8)
+            ax1.set_ylabel(str(selected_metric), fontsize=8.5, color="#000000")
+            ax1.tick_params(axis="x", labelsize=8, colors="#000000", rotation=22 if len(_x_lbls) > 5 else 0)
+            ax1.tick_params(axis="y", labelsize=8, colors="#000000")
+            ax1.grid(axis="y", linestyle="--", alpha=0.35, color="#666666", linewidth=0.6)
             ax1.set_axisbelow(True)
             ax1.spines["top"].set_visible(False)
             ax1.spines["right"].set_visible(False)
             for b, v in zip(bars, _y_vals):
-                ax1.text(b.get_x() + b.get_width() / 2, b.get_height(), _fmt_num(v), ha="center", va="bottom", fontsize=8, fontweight="bold", color="#000000")
+                ax1.text(b.get_x() + b.get_width() / 2, b.get_height(), _fmt_num(v), ha="center", va="bottom", fontsize=7.5, fontweight="bold", color="#000000")
             _b64_bar = _fig_to_b64(fig1)
+            _cap1 = f"Hình {_fig_no}: Biểu đồ so sánh {_html_lib.escape(str(selected_metric))} theo {_html_lib.escape(str(selected_dim1))}"
+            _figure_list_items.append(_cap1)
             _charts_html_parts.append(
                 f'<div class="a4-figure">'
                 f'<img src="data:image/png;base64,{_b64_bar}" alt="Biểu đồ cột"/>'
-                f'<div class="a4-fig-cap">Hình {_fig_no}: Biểu đồ so sánh {_html_lib.escape(str(selected_metric))} theo {_html_lib.escape(str(selected_dim1))}</div>'
+                f'<div class="a4-fig-cap">{_cap1}</div>'
                 f'<p class="a4-fig-note"><b>Nhận xét:</b> {_html_lib.escape(_strip_tags(insights_bundle["ins_bar"]))}</p>'
                 f'</div>'
             )
@@ -3901,26 +3904,28 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
 
             # Hình 2: Biểu đồ cơ cấu tỷ trọng (Pie/Donut)
             if len(_g1_p) >= 2:
-                fig2, ax2 = _plt.subplots(figsize=(6.8, 3.5))
+                fig2, ax2 = _plt.subplots(figsize=(5.8, 2.9))
                 _pie_vals = [max(0.0, float(v)) for v in (_g1_p["Tỷ trọng (%)"] if is_additive else _g1_p["count"]).tolist()]
                 if sum(_pie_vals) > 0:
                     _pie_colors = ["#1d4ed8", "#3b82f6", "#60a5fa", "#93c5fd", "#0284c7", "#38bdf8", "#6366f1", "#818cf8", "#a5b4fc", "#cbd5e1"]
-                    wedges, _, autotexts = ax2.pie(
+                    wedges, _, _ = ax2.pie(
                         _pie_vals,
                         autopct="%1.1f%%",
                         startangle=90,
                         colors=_pie_colors[:len(_pie_vals)],
-                        pctdistance=0.78,
-                        wedgeprops={"width": 0.45, "edgecolor": "white", "linewidth": 1.2},
-                        textprops={"fontsize": 8, "color": "#000000", "fontweight": "bold"},
+                        pctdistance=0.77,
+                        wedgeprops={"width": 0.44, "edgecolor": "white", "linewidth": 1.1},
+                        textprops={"fontsize": 7.5, "color": "#000000", "fontweight": "bold"},
                     )
-                    ax2.legend(wedges, _x_lbls, title=str(selected_dim1), loc="center left", bbox_to_anchor=(1.0, 0.5), fontsize=8.5, title_fontsize=9, frameon=False)
-                    ax2.set_title(f"Cơ cấu tỷ trọng theo {selected_dim1}", fontsize=11, fontweight="bold", color="#000000", pad=8)
+                    ax2.legend(wedges, _x_lbls, title=str(selected_dim1), loc="center left", bbox_to_anchor=(1.0, 0.5), fontsize=8, title_fontsize=8.5, frameon=False)
+                    ax2.set_title(f"Cơ cấu tỷ trọng theo {selected_dim1}", fontsize=10, fontweight="bold", color="#000000", pad=6)
                     _b64_pie = _fig_to_b64(fig2)
+                    _cap2 = f"Hình {_fig_no}: Cơ cấu tỷ trọng {_html_lib.escape(str(selected_metric))} theo {_html_lib.escape(str(selected_dim1))}"
+                    _figure_list_items.append(_cap2)
                     _charts_html_parts.append(
                         f'<div class="a4-figure">'
                         f'<img src="data:image/png;base64,{_b64_pie}" alt="Biểu đồ cơ cấu"/>'
-                        f'<div class="a4-fig-cap">Hình {_fig_no}: Cơ cấu tỷ trọng {_html_lib.escape(str(selected_metric))} theo {_html_lib.escape(str(selected_dim1))}</div>'
+                        f'<div class="a4-fig-cap">{_cap2}</div>'
                         f'<p class="a4-fig-note"><b>Nhận xét:</b> {_html_lib.escape(_strip_tags(insights_bundle["ins_donut"]))}</p>'
                         f'</div>'
                     )
@@ -3931,25 +3936,27 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
             # Hình 3: Biểu đồ xu hướng theo thời gian (nếu tệp có cột thời gian >= 2 kỳ)
             if not _t_df_a4.empty and time_col and len(_t_df_a4) >= 2:
                 _t_p = _t_df_a4.tail(12)
-                fig3, ax3 = _plt.subplots(figsize=(7.2, 3.2))
+                fig3, ax3 = _plt.subplots(figsize=(6.0, 2.7))
                 _tx = [str(x) for x in _t_p[time_col].tolist()]
                 _ty = [float(v) for v in _t_p[_sc_a4].tolist()]
-                ax3.plot(_tx, _ty, marker="o", color="#1d4ed8", linewidth=2.0, markersize=5)
-                ax3.fill_between(_tx, _ty, color="#dbeafe", alpha=0.4)
-                ax3.set_title(f"Diễn biến {selected_metric} theo {time_col}", fontsize=11, fontweight="bold", color="#000000", pad=10)
-                ax3.set_ylabel(str(selected_metric), fontsize=9.5, color="#000000")
-                ax3.tick_params(axis="x", labelsize=8.5, colors="#000000", rotation=20 if len(_tx) > 5 else 0)
-                ax3.tick_params(axis="y", labelsize=8.5, colors="#000000")
-                ax3.grid(axis="y", linestyle="--", alpha=0.35, color="#666666")
+                ax3.plot(_tx, _ty, marker="o", color="#1d4ed8", linewidth=1.8, markersize=4.5)
+                ax3.fill_between(_tx, _ty, color="#dbeafe", alpha=0.38)
+                ax3.set_title(f"Diễn biến {selected_metric} theo {time_col}", fontsize=10, fontweight="bold", color="#000000", pad=8)
+                ax3.set_ylabel(str(selected_metric), fontsize=8.5, color="#000000")
+                ax3.tick_params(axis="x", labelsize=8, colors="#000000", rotation=22 if len(_tx) > 5 else 0)
+                ax3.tick_params(axis="y", labelsize=8, colors="#000000")
+                ax3.grid(axis="y", linestyle="--", alpha=0.35, color="#666666", linewidth=0.6)
                 ax3.spines["top"].set_visible(False)
                 ax3.spines["right"].set_visible(False)
                 for xi, yi in zip(_tx, _ty):
-                    ax3.annotate(_fmt_num(yi), (xi, yi), textcoords="offset points", xytext=(0, 6), ha="center", fontsize=8, fontweight="bold", color="#000000")
+                    ax3.annotate(_fmt_num(yi), (xi, yi), textcoords="offset points", xytext=(0, 5), ha="center", fontsize=7.5, fontweight="bold", color="#000000")
                 _b64_line = _fig_to_b64(fig3)
+                _cap3 = f"Hình {_fig_no}: Diễn biến {_html_lib.escape(str(selected_metric))} theo {_html_lib.escape(str(time_col))}"
+                _figure_list_items.append(_cap3)
                 _charts_html_parts.append(
                     f'<div class="a4-figure">'
                     f'<img src="data:image/png;base64,{_b64_line}" alt="Biểu đồ xu hướng"/>'
-                    f'<div class="a4-fig-cap">Hình {_fig_no}: Diễn biến {_html_lib.escape(str(selected_metric))} theo {_html_lib.escape(str(time_col))}</div>'
+                    f'<div class="a4-fig-cap">{_cap3}</div>'
                     f'<p class="a4-fig-note"><b>Nhận xét:</b> {_html_lib.escape(_strip_tags(insights_bundle["ins_right_panel"]))}</p>'
                     f'</div>'
                 )
@@ -3969,13 +3976,122 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
                     _tds += f"<td>{_vs}</td>"
                 _a4_trs += f"<tr>{_tds}</tr>"
 
+            _has_obj_s3 = bool(insights_bundle.get("objectives_md"))
             _obj_section_a4 = (
                 f'<h2>II. Giải đáp Mục tiêu Phân tích (từ Bước 1)</h2>'
                 f'<div class="a4-prose">{_md_to_a4_black_html(insights_bundle["objectives_md"])}</div>'
-                if insights_bundle.get("objectives_md") else ""
+                if _has_obj_s3 else ""
             )
-            _sec_charts_num = "III" if _obj_section_a4 else "II"
-            _sec_detail_num = "IV" if _obj_section_a4 else "III"
+            _sec_charts_num = "III" if _has_obj_s3 else "II"
+            _sec_detail_num = "IV" if _has_obj_s3 else "III"
+
+            # Mục lục, Danh mục hình ảnh, Danh mục bảng biểu chuẩn báo cáo
+            def _toc_row(label: str, ref_code: str, indent: bool = False) -> str:
+                cls = "toc-row toc-sub" if indent else "toc-row toc-main"
+                return f'<div class="{cls}"><span class="toc-label">{label}</span><span class="toc-dots"></span><span class="toc-ref">{ref_code}</span></div>'
+
+            _toc_rows = [
+                _toc_row("I. Giới thiệu Tổng quan Doanh nghiệp &amp; Bối cảnh Phân tích", "Mục I"),
+                _toc_row("1.1. Tổng quan Bối cảnh &amp; Phạm vi Dữ liệu", "1.1", indent=True),
+                _toc_row("1.2. Phương pháp Phân tích &amp; Hồ sơ Dữ liệu", "1.2", indent=True),
+                _toc_row("1.3. Tổng hợp Phát hiện Trọng tâm", "1.3", indent=True),
+            ]
+            if _has_obj_s3:
+                _toc_rows.append(_toc_row("II. Giải đáp Mục tiêu Phân tích (từ Bước 1)", "Mục II"))
+            _toc_rows.append(_toc_row(f"{_sec_charts_num}. Biểu đồ Trực quan, Nhận xét &amp; Bảng Tổng hợp Số liệu", f"Mục {_sec_charts_num}"))
+            _toc_rows.append(_toc_row(f"{_sec_detail_num}. Phân tích Chi tiết &amp; Đề xuất Hành động", f"Mục {_sec_detail_num}"))
+
+            _lof_rows = [_toc_row(c, f"Hình {idx}") for idx, c in enumerate(_figure_list_items, 1)]
+            _tbl1_cap = f"Bảng 1: Bảng tổng hợp số liệu chi tiết theo {_html_lib.escape(str(selected_dim1))}"
+            _lot_rows = [_toc_row(_tbl1_cap, "Bảng 1")]
+
+            _toolbar_html = """
+<div class="word-toolbar" id="wordToolbar">
+    <div class="wt-group">
+        <span class="wt-badge">Soạn thảo trực tiếp</span>
+        <button type="button" class="wt-btn" onclick="fmt('bold')" title="In đậm (Ctrl+B)"><b>B</b></button>
+        <button type="button" class="wt-btn" onclick="fmt('italic')" title="In nghiêng (Ctrl+I)"><i>I</i></button>
+        <button type="button" class="wt-btn" onclick="fmt('underline')" title="Gạch chân (Ctrl+U)"><u>U</u></button>
+    </div>
+    <div class="wt-sep"></div>
+    <div class="wt-group">
+        <select class="wt-select" onchange="fmtSize(this.value)" title="Cỡ chữ">
+            <option value="11pt">11 pt</option>
+            <option value="12pt">12 pt</option>
+            <option value="13pt" selected>13 pt</option>
+            <option value="14pt">14 pt</option>
+            <option value="16pt">16 pt</option>
+        </select>
+    </div>
+    <div class="wt-sep"></div>
+    <div class="wt-group">
+        <button type="button" class="wt-btn" onclick="fmt('justifyLeft')" title="Căn trái">≡L</button>
+        <button type="button" class="wt-btn" onclick="fmt('justifyCenter')" title="Căn giữa">≡C</button>
+        <button type="button" class="wt-btn" onclick="fmt('justifyRight')" title="Căn phải">≡R</button>
+        <button type="button" class="wt-btn" onclick="fmt('justifyFull')" title="Căn đều 2 bên">≡J</button>
+    </div>
+    <div class="wt-sep"></div>
+    <div class="wt-group">
+        <button type="button" class="wt-btn" onclick="fmt('insertUnorderedList')" title="Danh sách gạch đầu dòng">• List</button>
+        <button type="button" class="wt-btn" onclick="fmt('insertOrderedList')" title="Danh sách đánh số">1. List</button>
+        <button type="button" class="wt-btn" onclick="fmt('undo')" title="Hoàn tác (Ctrl+Z)">↶</button>
+        <button type="button" class="wt-btn" onclick="fmt('redo')" title="Làm lại (Ctrl+Y)">↷</button>
+    </div>
+    <div class="wt-spacer"></div>
+    <div class="wt-group">
+        <button type="button" class="wt-btn wt-reset" onclick="resetDoc()" title="Khôi phục nội dung gốc">Khôi phục gốc</button>
+        <button type="button" class="wt-btn wt-print" onclick="printEditedDoc()" title="In hoặc lưu PDF bản vừa chỉnh sửa">In / Lưu PDF (bản đã sửa)</button>
+    </div>
+</div>
+""" if interactive else ""
+
+            _editor_script = """
+<script>
+const sheetEl = document.getElementById('a4Sheet');
+const initialSheetHtml = sheetEl ? sheetEl.innerHTML : '';
+function fmt(cmd) {
+    if (!sheetEl) return;
+    sheetEl.focus();
+    document.execCommand(cmd, false, null);
+}
+function fmtSize(pt) {
+    if (!sheetEl) return;
+    sheetEl.focus();
+    document.execCommand('fontSize', false, '4');
+    const fonts = sheetEl.querySelectorAll('font[size="4"]');
+    fonts.forEach(f => {
+        const span = document.createElement('span');
+        span.style.fontSize = pt;
+        span.innerHTML = f.innerHTML;
+        f.parentNode.replaceChild(span, f);
+    });
+}
+function resetDoc() {
+    if (!sheetEl) return;
+    if (confirm('Khôi phục toàn bộ nội dung báo cáo về bản gốc ban đầu?')) {
+        sheetEl.innerHTML = initialSheetHtml;
+    }
+}
+function printEditedDoc() {
+    if (!sheetEl) return;
+    const styleEl = document.querySelector('style');
+    const cssText = styleEl ? styleEl.innerHTML : '';
+    const htmlOut = '<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><title>' + document.title + '</title><style>' + cssText + '</style></head><body><div class="a4-sheet">' + sheetEl.innerHTML + '</div></body></html>';
+    const w = window.open('', '_blank', 'width=960,height=1100');
+    if (w) {
+        w.document.open();
+        w.document.write(htmlOut);
+        w.document.close();
+        w.focus();
+        setTimeout(() => w.print(), 350);
+    } else {
+        window.print();
+    }
+}
+</script>
+""" if interactive else ""
+
+            _editable_attr = ' contenteditable="true" spellcheck="false"' if interactive else ""
 
             return f"""<!DOCTYPE html>
 <html lang="vi">
@@ -3990,17 +4106,72 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
     * {{ box-sizing: border-box; }}
     body {{
         margin: 0;
-        padding: 20px;
+        padding: 0 16px 28px 16px;
         background: #e5e7eb;
         font-family: "Times New Roman", Times, serif;
         color: #000000;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
     }}
+    .word-toolbar {{
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+        background: #f8fafc;
+        border-bottom: 1px solid #cbd5e1;
+        padding: 8px 14px;
+        margin: 0 -16px 18px -16px;
+        font-family: "Segoe UI", Arial, sans-serif;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+    }}
+    .wt-group {{ display: flex; align-items: center; gap: 4px; }}
+    .wt-sep {{ width: 1px; height: 22px; background: #cbd5e1; margin: 0 3px; }}
+    .wt-spacer {{ flex: 1; }}
+    .wt-badge {{
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #1e3a8a;
+        background: #dbeafe;
+        padding: 3px 8px;
+        border-radius: 5px;
+        margin-right: 4px;
+    }}
+    .wt-btn {{
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 5px;
+        padding: 4px 9px;
+        font-size: 12.5px;
+        color: #0f172a;
+        cursor: pointer;
+        line-height: 1.3;
+    }}
+    .wt-btn:hover {{ background: #eff6ff; border-color: #93c5fd; }}
+    .wt-select {{
+        border: 1px solid #cbd5e1;
+        border-radius: 5px;
+        padding: 4px 6px;
+        font-size: 12.5px;
+        background: #ffffff;
+        color: #0f172a;
+    }}
+    .wt-reset {{ color: #475569; }}
+    .wt-print {{
+        background: #1d4ed8;
+        color: #ffffff;
+        border-color: #1d4ed8;
+        font-weight: 600;
+        padding: 5px 12px;
+    }}
+    .wt-print:hover {{ background: #1e40af; border-color: #1e40af; }}
     .a4-sheet {{
         width: 210mm;
         max-width: 100%;
-        margin: 0 auto;
+        margin: 14px auto 0 auto;
         background: #ffffff;
         padding: 20mm 18mm 20mm 25mm;
         box-shadow: 0 6px 24px rgba(0, 0, 0, 0.14);
@@ -4008,6 +4179,10 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
         font-size: 13pt;
         line-height: 1.5;
         color: #000000;
+        outline: none;
+    }}
+    .a4-sheet[contenteditable="true"]:focus {{
+        box-shadow: 0 0 0 2px #93c5fd, 0 6px 24px rgba(0, 0, 0, 0.14);
     }}
     .a4-title {{
         text-align: center;
@@ -4027,9 +4202,46 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
         text-align: center;
         font-style: italic;
         font-size: 13pt;
-        margin: 0 0 20px 0;
+        margin: 0 0 10px 0;
         color: #000000;
     }}
+    .a4-meta-line {{
+        text-align: center;
+        font-size: 12pt;
+        color: #000000;
+        border-bottom: 1px solid #000000;
+        padding-bottom: 10px;
+        margin-bottom: 16px;
+    }}
+    .a4-frontmatter {{
+        margin-bottom: 16px;
+        page-break-after: always;
+    }}
+    .a4-fm-title {{
+        text-align: center;
+        font-size: 14pt;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin: 14px 0 8px 0;
+        color: #000000;
+    }}
+    .toc-row {{
+        display: flex;
+        align-items: baseline;
+        font-size: 12.5pt;
+        line-height: 1.55;
+        color: #000000;
+    }}
+    .toc-main {{ font-weight: 700; margin-top: 3px; }}
+    .toc-sub {{ padding-left: 20px; font-weight: 400; }}
+    .toc-label {{ flex-shrink: 0; max-width: 82%; }}
+    .toc-dots {{
+        flex: 1;
+        border-bottom: 1px dotted #000000;
+        margin: 0 6px;
+        min-width: 16px;
+    }}
+    .toc-ref {{ flex-shrink: 0; font-weight: 400; }}
     .a4-sheet h2 {{
         font-size: 14pt;
         font-weight: 700;
@@ -4057,12 +4269,14 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
         color: #000000;
     }}
     .a4-figure {{
-        margin: 14px 0 18px 0;
+        margin: 12px 0 16px 0;
         text-align: center;
         break-inside: avoid;
     }}
     .a4-figure img {{
-        max-width: 96%;
+        max-width: 74%;
+        max-height: 76mm;
+        width: auto;
         height: auto;
         border: 1px solid #d1d5db;
         padding: 4px;
@@ -4072,7 +4286,7 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
         font-size: 12pt;
         font-style: italic;
         color: #000000;
-        margin: 6px 0 8px 0;
+        margin: 5px 0 7px 0;
         text-align: center;
     }}
     .a4-fig-note {{
@@ -4110,15 +4324,33 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
     }}
     @media print {{
         body {{ background: #ffffff; padding: 0; }}
+        .word-toolbar {{ display: none !important; }}
         .a4-sheet {{ width: auto; margin: 0; padding: 0; box-shadow: none; }}
     }}
 </style>
 </head>
 <body>
-<div class="a4-sheet">
+{_toolbar_html}
+<div class="a4-sheet" id="a4Sheet"{_editable_attr}>
     <div class="a4-title">BÁO CÁO PHÂN TÍCH KINH DOANH</div>
     <div class="a4-subtitle">Mục tiêu phân tích: {_html_lib.escape(_goal_headline)}</div>
     <div class="a4-quote">Bài toán phân tích đặt ra: &ldquo;{_html_lib.escape(_goal_headline)}&rdquo;</div>
+    <div class="a4-meta-line">
+        Nguồn dữ liệu: <b>{_html_lib.escape(_files_display_str)}</b> &nbsp;|&nbsp;
+        Kỳ dữ liệu: <b>{_html_lib.escape(stats_bundle['time_range_label'])}</b> &nbsp;|&nbsp;
+        Quy mô: <b>{total_records_all:,}</b> bản ghi
+    </div>
+
+    <div class="a4-frontmatter">
+        <div class="a4-fm-title">MỤC LỤC</div>
+        {"".join(_toc_rows)}
+
+        <div class="a4-fm-title">DANH MỤC HÌNH ẢNH / BIỂU ĐỒ</div>
+        {"".join(_lof_rows)}
+
+        <div class="a4-fm-title">DANH MỤC BẢNG BIỂU</div>
+        {"".join(_lot_rows)}
+    </div>
 
     <h2>I. Giới thiệu Tổng quan Doanh nghiệp &amp; Bối cảnh Phân tích</h2>
 
@@ -4159,7 +4391,7 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
 
     <h2>{_sec_charts_num}. Biểu đồ Trực quan, Nhận xét &amp; Bảng Tổng hợp Số liệu</h2>
     {"".join(_charts_html_parts)}
-    <div class="a4-tbl-cap">Bảng 1: Bảng tổng hợp số liệu chi tiết theo {_html_lib.escape(str(selected_dim1))}</div>
+    <div class="a4-tbl-cap">{_tbl1_cap}</div>
     <table class="a4-tbl">
         <thead><tr>{_a4_th}</tr></thead>
         <tbody>{_a4_trs}</tbody>
@@ -4171,10 +4403,9 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
         {_md_to_a4_black_html(st.session_state.editable_plan)}
     </div>
 </div>
+{_editor_script}
 </body>
 </html>"""
-
-        a4_report_html = _build_a4_pdf_report_html()
 
         if "show_a4_preview" not in st.session_state:
             st.session_state.show_a4_preview = False
@@ -4182,7 +4413,7 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
         st.write("")
         a4_col1, a4_col2 = st.columns(2)
         with a4_col1:
-            lbl_a4_pv = "Đóng xem trước bản in A4" if st.session_state.show_a4_preview else "Xem trước bản in A4"
+            lbl_a4_pv = "Đóng xem trước & soạn thảo A4" if st.session_state.show_a4_preview else "Xem trước & chỉnh sửa bản in A4"
             if st.button(lbl_a4_pv, icon=":material/preview:", **_W_STRETCH, key="toggle_a4_preview_btn"):
                 st.session_state.show_a4_preview = not st.session_state.show_a4_preview
                 st.rerun()
@@ -4191,7 +4422,8 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
                 st.session_state["_trigger_a4_print"] = True
 
         if st.session_state.pop("_trigger_a4_print", False):
-            _a4_json = json.dumps(a4_report_html, ensure_ascii=False)
+            a4_print_html = _build_a4_pdf_report_html(interactive=False)
+            _a4_json = json.dumps(a4_print_html, ensure_ascii=False)
             components.html(
                 f"""<script>
                 (function() {{
@@ -4214,8 +4446,10 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
             )
 
         if st.session_state.show_a4_preview:
-            st.markdown("##### Xem trước bản báo cáo khổ giấy A4 (sẵn sàng in / lưu PDF)")
-            components.html(a4_report_html, height=760, scrolling=True)
+            st.markdown("##### Xem trước & chỉnh sửa trực tiếp bản báo cáo khổ giấy A4 (như Word)")
+            st.caption("Nhấp trực tiếp vào bất kỳ đoạn chữ, tiêu đề, mục lục hoặc ô bảng nào bên dưới để gõ sửa. Bấm nút **In / Lưu PDF (bản đã sửa)** trên thanh công cụ để in đúng nội dung bạn vừa chỉnh sửa.")
+            a4_editor_html = _build_a4_pdf_report_html(interactive=True)
+            components.html(a4_editor_html, height=820, scrolling=True)
 
         with st.container(key="floating_download_step3"):
             st.download_button(
