@@ -7,7 +7,7 @@ from textwrap import dedent
 
 import streamlit as st
 
-_UI_VERSION = 4
+_UI_VERSION = 5
 
 
 def clean_ui_text(value: str) -> str:
@@ -29,7 +29,7 @@ def load_styles():
 def render_brand():
     markup('''
         <div class="brand"><div class="brand-symbol" aria-hidden="true"><i></i><i></i><i></i></div>
-        <div><strong style="color:#1e3a8a !important;">Phân tích dữ liệu</strong></div></div>
+        <div><strong style="color:#1e3a8a !important;white-space:nowrap !important;font-size:1.06rem !important;">Phân tích dữ liệu</strong></div></div>
     ''')
 
 
