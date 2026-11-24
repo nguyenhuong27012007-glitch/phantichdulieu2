@@ -485,6 +485,27 @@ def _validate_df_meaningful(df: pd.DataFrame):
     return True, ""
 
 
+def _check_dashboard_ready(raw_dfs: dict):
+    """Kiểm tra ngay lập tức dữ liệu hiện tại có đủ điều kiện tạo Báo cáo & Dashboard ở Bước 3 hay không."""
+    valid_dfs = {k: v for k, v in (raw_dfs or {}).items() if v is not None and not v.empty}
+    if not valid_dfs:
+        return False, "Chưa có dữ liệu hợp lệ."
+    reasons = []
+    has_ready_file = False
+    for fn, df in valid_dfs.items():
+        ok_m, reason_m = _validate_df_meaningful(df)
+        has_num_col = len(df.select_dtypes(include=["number"]).columns) > 0
+        if ok_m and has_num_col:
+            has_ready_file = True
+        elif not ok_m:
+            reasons.append(f"`{fn}` ({reason_m})")
+        else:
+            reasons.append(f"`{fn}` (không có cột số liệu định lượng nào hợp lệ)")
+    if not has_ready_file:
+        return False, "; ".join(reasons) if reasons else "Tệp không có cột số liệu định lượng nào hợp lệ."
+    return True, ""
+
+
 def set_spinner_msg(msg: str):
     st.session_state.pending_spinner_msg = msg
 
@@ -1637,20 +1658,16 @@ try:
                     st.caption(clean_ui_text(st.session_state.pop("_ai_ctx_done_msg")))
 
         if orch.data_agent.raw_dataframes:
-            _invalid_files_s1 = []
-            _has_num_s1 = False
-            for _fn_s1, _df_s1 in orch.data_agent.raw_dataframes.items():
-                if _df_s1 is not None and not _df_s1.empty:
-                    _ok_s1, _reason_s1 = _validate_df_meaningful(_df_s1)
-                    if _ok_s1:
-                        _has_num_s1 = True
-                    else:
-                        _invalid_files_s1.append((_fn_s1, _reason_s1))
-            if not _has_num_s1 and _invalid_files_s1:
-                _reasons_str = "; ".join(f"`{fn}` ({rs})" for fn, rs in _invalid_files_s1)
-                st.error(f"**Chưa đủ điều kiện sang Bước 2:** {_reasons_str} Vui lòng tải lên tệp dữ liệu hợp lệ.")
+            _s1_ready, _s1_reason = _check_dashboard_ready(orch.data_agent.raw_dataframes)
+            if not _s1_ready:
+                st.session_state.step1_approved = False
+                st.session_state.step2_approved = False
+                st.error(
+                    f"**Dữ liệu hiện chưa đủ điều kiện để tạo Báo cáo & Dashboard:** {_s1_reason}. "
+                    f"Vui lòng bấm **Quay lại lần chỉnh sửa trước** để khôi phục cột số liệu hoặc nạp tệp khác."
+                )
             with st.container(key="floating_approve_step1"):
-                if st.button("Duyệt dữ liệu & sang bước 2", type="primary", key="btn_approve_step1", disabled=(not _has_num_s1)):
+                if st.button("Duyệt dữ liệu & sang bước 2", type="primary", key="btn_approve_step1", disabled=(not _s1_ready)):
                     set_spinner_msg("Đang chuyển sang Bước 2: Làm sạch & Kiểm tra dữ liệu...")
                     st.session_state.step1_approved = True
                     st.session_state.current_step = 2
@@ -1789,9 +1806,17 @@ try:
                     key=f"dl_cleaned_csv_s2_{selected_file}"
                 )
 
+            _s2_ready, _s2_reason = _check_dashboard_ready(orch.data_agent.raw_dataframes)
+            if not _s2_ready:
+                st.session_state.step2_approved = False
+                st.error(
+                    f"**Dữ liệu hiện chưa đủ điều kiện để tạo Báo cáo & Dashboard:** {_s2_reason}. "
+                    f"Vui lòng bấm **Quay lại lần chỉnh sửa trước** / **Khôi phục bản gốc** hoặc quay lại Bước 1 nạp tệp khác."
+                )
+
             if total_records > 0:
                 with st.container(key="floating_approve_step2"):
-                    if st.button("Duyệt dữ liệu & tạo báo cáo →", type="primary", key="btn_approve_step2"):
+                    if st.button("Duyệt dữ liệu & tạo báo cáo →", type="primary", key="btn_approve_step2", disabled=(not _s2_ready)):
                         set_spinner_msg("Đang phân tích dữ liệu và tạo Báo cáo & Dashboard...")
                         st.session_state.step2_approved = True
                         st.session_state.current_step = 3
