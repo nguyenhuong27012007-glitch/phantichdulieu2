@@ -3804,7 +3804,13 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
         st.markdown(inline_dash_html, unsafe_allow_html=True)
 
         def _build_a4_pdf_report_html() -> str:
+            import base64 as _b64
+            import matplotlib
+            matplotlib.use("Agg")
+            import matplotlib.pyplot as _plt
+
             _g1_a4 = stats_bundle["g1_raw"]
+            _t_df_a4 = stats_bundle["time_stats_df"]
             _top_a4 = _g1_a4.iloc[0]
             _bot_a4 = _g1_a4.iloc[-1]
             _sc_a4 = stats_bundle["sort_col"]
@@ -3814,13 +3820,162 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
             _first_q_line = next((ln.strip() for ln in _biz_questions_s3.splitlines() if ln.strip()), "")
             _goal_headline = _re_lib.sub(r"^(?:\d+[\.\)\:]|[-•*])\s*", "", _first_q_line).strip() if _first_q_line else f"Đánh giá hiệu suất {selected_metric} theo {selected_dim1}"
             _extra_sentence = f" Bối cảnh bổ sung từ đơn vị: {_html_lib.escape(_biz_extra_s3)}." if _biz_extra_s3 else ""
+
+            def _md_to_a4_black_html(md_text: str) -> str:
+                if not md_text:
+                    return ""
+                out = []
+                in_ul = False
+                for raw_ln in md_text.splitlines():
+                    ln = raw_ln.strip()
+                    if not ln:
+                        if in_ul:
+                            out.append("</ul>")
+                            in_ul = False
+                        continue
+                    ln_fmt = _html_lib.escape(ln)
+                    ln_fmt = _re_lib.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", ln_fmt)
+                    ln_fmt = _re_lib.sub(r"&lt;b&gt;(.+?)&lt;/b&gt;", r"<b>\1</b>", ln_fmt)
+                    ln_fmt = _re_lib.sub(r"`(.+?)`", r"<b>\1</b>", ln_fmt)
+                    if ln_fmt.startswith("### "):
+                        if in_ul:
+                            out.append("</ul>")
+                            in_ul = False
+                        out.append(f"<h3>{ln_fmt[4:]}</h3>")
+                    elif ln_fmt.startswith("- "):
+                        if not in_ul:
+                            out.append("<ul>")
+                            in_ul = True
+                        out.append(f"<li>{ln_fmt[2:]}</li>")
+                    else:
+                        if in_ul:
+                            out.append("</ul>")
+                            in_ul = False
+                        out.append(f"<p>{ln_fmt}</p>")
+                if in_ul:
+                    out.append("</ul>")
+                return "\n".join(out)
+
+            def _fig_to_b64(fig) -> str:
+                buf = io.BytesIO()
+                fig.savefig(buf, format="png", dpi=170, bbox_inches="tight", facecolor="white")
+                _plt.close(fig)
+                return _b64.b64encode(buf.getvalue()).decode("ascii")
+
+            def _strip_tags(h_str: str) -> str:
+                return _re_lib.sub(r"<[^>]+>", "", str(h_str))
+
+            # Tạo ảnh biểu đồ sắc nét bằng Matplotlib (Times New Roman / DejaVu Serif)
+            _plt.rcParams["font.family"] = "DejaVu Serif"
+            _plt.rcParams["axes.edgecolor"] = "#333333"
+            _plt.rcParams["axes.linewidth"] = 0.8
+
+            _charts_html_parts = []
+            _fig_no = 1
+
+            # Hình 1: Biểu đồ cột so sánh theo chiều phân nhóm chính
+            _g1_p = _g1_a4.head(10)
+            fig1, ax1 = _plt.subplots(figsize=(7.2, 3.5))
+            _x_lbls = [str(x)[:20] for x in _g1_p["Nhóm"].tolist()]
+            _y_vals = [float(v) for v in _g1_p[_sc_a4].tolist()]
+            bars = ax1.bar(_x_lbls, _y_vals, color="#2563eb", edgecolor="#1e3a8a", width=0.56)
+            ax1.set_title(f"So sánh {selected_metric} theo {selected_dim1}", fontsize=11, fontweight="bold", color="#000000", pad=10)
+            ax1.set_ylabel(str(selected_metric), fontsize=9.5, color="#000000")
+            ax1.tick_params(axis="x", labelsize=8.5, colors="#000000", rotation=20 if len(_x_lbls) > 5 else 0)
+            ax1.tick_params(axis="y", labelsize=8.5, colors="#000000")
+            ax1.grid(axis="y", linestyle="--", alpha=0.35, color="#666666")
+            ax1.set_axisbelow(True)
+            ax1.spines["top"].set_visible(False)
+            ax1.spines["right"].set_visible(False)
+            for b, v in zip(bars, _y_vals):
+                ax1.text(b.get_x() + b.get_width() / 2, b.get_height(), _fmt_num(v), ha="center", va="bottom", fontsize=8, fontweight="bold", color="#000000")
+            _b64_bar = _fig_to_b64(fig1)
+            _charts_html_parts.append(
+                f'<div class="a4-figure">'
+                f'<img src="data:image/png;base64,{_b64_bar}" alt="Biểu đồ cột"/>'
+                f'<div class="a4-fig-cap">Hình {_fig_no}: Biểu đồ so sánh {_html_lib.escape(str(selected_metric))} theo {_html_lib.escape(str(selected_dim1))}</div>'
+                f'<p class="a4-fig-note"><b>Nhận xét:</b> {_html_lib.escape(_strip_tags(insights_bundle["ins_bar"]))}</p>'
+                f'</div>'
+            )
+            _fig_no += 1
+
+            # Hình 2: Biểu đồ cơ cấu tỷ trọng (Pie/Donut)
+            if len(_g1_p) >= 2:
+                fig2, ax2 = _plt.subplots(figsize=(6.8, 3.5))
+                _pie_vals = [max(0.0, float(v)) for v in (_g1_p["Tỷ trọng (%)"] if is_additive else _g1_p["count"]).tolist()]
+                if sum(_pie_vals) > 0:
+                    _pie_colors = ["#1d4ed8", "#3b82f6", "#60a5fa", "#93c5fd", "#0284c7", "#38bdf8", "#6366f1", "#818cf8", "#a5b4fc", "#cbd5e1"]
+                    wedges, _, autotexts = ax2.pie(
+                        _pie_vals,
+                        autopct="%1.1f%%",
+                        startangle=90,
+                        colors=_pie_colors[:len(_pie_vals)],
+                        pctdistance=0.78,
+                        wedgeprops={"width": 0.45, "edgecolor": "white", "linewidth": 1.2},
+                        textprops={"fontsize": 8, "color": "#000000", "fontweight": "bold"},
+                    )
+                    ax2.legend(wedges, _x_lbls, title=str(selected_dim1), loc="center left", bbox_to_anchor=(1.0, 0.5), fontsize=8.5, title_fontsize=9, frameon=False)
+                    ax2.set_title(f"Cơ cấu tỷ trọng theo {selected_dim1}", fontsize=11, fontweight="bold", color="#000000", pad=8)
+                    _b64_pie = _fig_to_b64(fig2)
+                    _charts_html_parts.append(
+                        f'<div class="a4-figure">'
+                        f'<img src="data:image/png;base64,{_b64_pie}" alt="Biểu đồ cơ cấu"/>'
+                        f'<div class="a4-fig-cap">Hình {_fig_no}: Cơ cấu tỷ trọng {_html_lib.escape(str(selected_metric))} theo {_html_lib.escape(str(selected_dim1))}</div>'
+                        f'<p class="a4-fig-note"><b>Nhận xét:</b> {_html_lib.escape(_strip_tags(insights_bundle["ins_donut"]))}</p>'
+                        f'</div>'
+                    )
+                    _fig_no += 1
+                else:
+                    _plt.close(fig2)
+
+            # Hình 3: Biểu đồ xu hướng theo thời gian (nếu tệp có cột thời gian >= 2 kỳ)
+            if not _t_df_a4.empty and time_col and len(_t_df_a4) >= 2:
+                _t_p = _t_df_a4.tail(12)
+                fig3, ax3 = _plt.subplots(figsize=(7.2, 3.2))
+                _tx = [str(x) for x in _t_p[time_col].tolist()]
+                _ty = [float(v) for v in _t_p[_sc_a4].tolist()]
+                ax3.plot(_tx, _ty, marker="o", color="#1d4ed8", linewidth=2.0, markersize=5)
+                ax3.fill_between(_tx, _ty, color="#dbeafe", alpha=0.4)
+                ax3.set_title(f"Diễn biến {selected_metric} theo {time_col}", fontsize=11, fontweight="bold", color="#000000", pad=10)
+                ax3.set_ylabel(str(selected_metric), fontsize=9.5, color="#000000")
+                ax3.tick_params(axis="x", labelsize=8.5, colors="#000000", rotation=20 if len(_tx) > 5 else 0)
+                ax3.tick_params(axis="y", labelsize=8.5, colors="#000000")
+                ax3.grid(axis="y", linestyle="--", alpha=0.35, color="#666666")
+                ax3.spines["top"].set_visible(False)
+                ax3.spines["right"].set_visible(False)
+                for xi, yi in zip(_tx, _ty):
+                    ax3.annotate(_fmt_num(yi), (xi, yi), textcoords="offset points", xytext=(0, 6), ha="center", fontsize=8, fontweight="bold", color="#000000")
+                _b64_line = _fig_to_b64(fig3)
+                _charts_html_parts.append(
+                    f'<div class="a4-figure">'
+                    f'<img src="data:image/png;base64,{_b64_line}" alt="Biểu đồ xu hướng"/>'
+                    f'<div class="a4-fig-cap">Hình {_fig_no}: Diễn biến {_html_lib.escape(str(selected_metric))} theo {_html_lib.escape(str(time_col))}</div>'
+                    f'<p class="a4-fig-note"><b>Nhận xét:</b> {_html_lib.escape(_strip_tags(insights_bundle["ins_right_panel"]))}</p>'
+                    f'</div>'
+                )
+                _fig_no += 1
+
+            # Bảng tổng hợp số liệu chuẩn báo cáo (viền đen, Times New Roman, chữ đen)
+            _a4_th = "".join(f"<th>{_html_lib.escape(str(c))}</th>" for c in df_scores.columns)
+            _a4_trs = ""
+            for _, _rt in df_scores.iterrows():
+                _tds = ""
+                for _cn in df_scores.columns:
+                    _v = _rt[_cn]
+                    if isinstance(_v, (int, float)) and not isinstance(_v, bool):
+                        _vs = f"{_v:,.2f}%" if "%" in str(_cn) else (f"{int(_v):,}" if "Số bản ghi" in str(_cn) else _fmt_num(_v))
+                    else:
+                        _vs = _html_lib.escape(str(_v))
+                    _tds += f"<td>{_vs}</td>"
+                _a4_trs += f"<tr>{_tds}</tr>"
+
             _obj_section_a4 = (
                 f'<h2>II. Giải đáp Mục tiêu Phân tích (từ Bước 1)</h2>'
-                f'<div class="a4-prose">{_md_to_clean_html(insights_bundle["objectives_md"])}</div>'
+                f'<div class="a4-prose">{_md_to_a4_black_html(insights_bundle["objectives_md"])}</div>'
                 if insights_bundle.get("objectives_md") else ""
             )
-            _sec_detail_num = "III" if _obj_section_a4 else "II"
-            _sec_dash_num = "IV" if _obj_section_a4 else "III"
+            _sec_charts_num = "III" if _obj_section_a4 else "II"
+            _sec_detail_num = "IV" if _obj_section_a4 else "III"
 
             return f"""<!DOCTYPE html>
 <html lang="vi">
@@ -3830,15 +3985,15 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
 <style>
     @page {{
         size: A4 portrait;
-        margin: 18mm 18mm 18mm 20mm;
+        margin: 20mm 18mm 20mm 25mm;
     }}
     * {{ box-sizing: border-box; }}
     body {{
         margin: 0;
         padding: 20px;
-        background: #eef2f7;
-        font-family: "Times New Roman", Times, Georgia, serif;
-        color: #111827;
+        background: #e5e7eb;
+        font-family: "Times New Roman", Times, serif;
+        color: #000000;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
     }}
@@ -3847,118 +4002,112 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
         max-width: 100%;
         margin: 0 auto;
         background: #ffffff;
-        padding: 20mm 18mm;
-        box-shadow: 0 8px 30px rgba(15, 23, 42, 0.12);
-        line-height: 1.65;
+        padding: 20mm 18mm 20mm 25mm;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.14);
+        font-family: "Times New Roman", Times, serif;
         font-size: 13pt;
+        line-height: 1.5;
+        color: #000000;
     }}
     .a4-title {{
         text-align: center;
-        font-size: 17pt;
+        font-size: 16pt;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.4px;
         margin: 0 0 8px 0;
         color: #000000;
     }}
     .a4-subtitle {{
         text-align: center;
         font-size: 13pt;
-        margin: 0 0 6px 0;
-        color: #111827;
+        margin: 0 0 4px 0;
+        color: #000000;
     }}
     .a4-quote {{
         text-align: center;
         font-style: italic;
-        font-size: 12.5pt;
-        margin: 0 0 22px 0;
-        color: #1f2937;
+        font-size: 13pt;
+        margin: 0 0 20px 0;
+        color: #000000;
     }}
     .a4-sheet h2 {{
         font-size: 14pt;
         font-weight: 700;
-        margin: 20px 0 8px 0;
+        margin: 18px 0 8px 0;
         color: #000000;
     }}
     .a4-sheet h3 {{
         font-size: 13pt;
         font-weight: 700;
-        margin: 14px 0 6px 0;
+        margin: 12px 0 6px 0;
         color: #000000;
     }}
     .a4-sheet p {{
-        margin: 0 0 10px 0;
+        margin: 0 0 9px 0;
         text-align: justify;
+        color: #000000;
     }}
     .a4-prose ul {{
-        margin: 4px 0 10px 20px;
+        margin: 4px 0 10px 22px;
         padding: 0;
     }}
     .a4-prose li {{
         margin-bottom: 5px;
         text-align: justify;
+        color: #000000;
     }}
-    .a4-prose h4 {{
-        font-family: "Times New Roman", Times, serif !important;
-        font-size: 13pt !important;
-        color: #000000 !important;
-        margin: 12px 0 6px 0 !important;
+    .a4-figure {{
+        margin: 14px 0 18px 0;
+        text-align: center;
+        break-inside: avoid;
     }}
-    .a4-dash-section {{
-        margin-top: 18px;
-        page-break-before: auto;
-        font-family: "Inter", "Segoe UI", sans-serif;
-    }}
-    .a4-dash-section .di-dash-card {{
+    .a4-figure img {{
+        max-width: 96%;
+        height: auto;
+        border: 1px solid #d1d5db;
+        padding: 4px;
         background: #ffffff;
-        border: 1px solid #dbe4f0;
-        border-radius: 12px;
-        padding: 14px 16px;
-        margin-bottom: 12px;
+    }}
+    .a4-fig-cap {{
+        font-size: 12pt;
+        font-style: italic;
+        color: #000000;
+        margin: 6px 0 8px 0;
+        text-align: center;
+    }}
+    .a4-fig-note {{
+        font-size: 13pt;
+        color: #000000;
+        text-align: justify;
+        margin: 0 0 8px 0;
+    }}
+    .a4-tbl-cap {{
+        font-size: 12pt;
+        font-style: italic;
+        color: #000000;
+        margin: 12px 0 6px 0;
+        text-align: center;
+    }}
+    table.a4-tbl {{
+        width: 100%;
+        border-collapse: collapse;
+        font-family: "Times New Roman", Times, serif;
+        font-size: 11pt;
+        color: #000000;
+        margin-bottom: 14px;
         break-inside: avoid;
     }}
-    .a4-dash-section .di-kpi-grid {{
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 10px;
-        margin-bottom: 12px;
-        break-inside: avoid;
+    table.a4-tbl th, table.a4-tbl td {{
+        border: 1px solid #000000;
+        padding: 5px 7px;
+        text-align: left;
+        color: #000000;
     }}
-    .a4-dash-section .di-kpi-box {{
-        background: #f8fbff;
-        border: 1px solid #dbeafe;
-        border-radius: 10px;
-        padding: 10px 12px;
-    }}
-    .a4-dash-section .di-grid-2 {{
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        margin-bottom: 12px;
-        break-inside: avoid;
-    }}
-    .a4-dash-section .di-badge-pill {{
-        background: #eff6ff;
-        color: #1d4ed8;
-        border: 1px solid #bfdbfe;
-        font-size: 10px;
+    table.a4-tbl th {{
+        background: #f3f4f6;
         font-weight: 700;
-        padding: 3px 9px;
-        border-radius: 999px;
+        text-align: center;
     }}
-    .a4-dash-section .di-chart-caption {{
-        margin-top: 10px;
-        padding: 8px 10px;
-        background: #f5f9ff;
-        border-left: 3px solid #2563eb;
-        font-size: 11px;
-        color: #334155;
-        line-height: 1.45;
-    }}
-    .a4-dash-section .di-table-wrap {{ overflow: visible; border: 1px solid #dbe4f0; border-radius: 8px; }}
-    .a4-dash-section .di-table {{ width: 100%; border-collapse: collapse; font-size: 10.5px; }}
-    .a4-dash-section .di-table th {{ padding: 6px 8px; background: #eff6ff; color: #1e3a8a; text-align: left; border-bottom: 1px solid #bfdbfe; }}
-    .a4-dash-section .di-table td {{ padding: 6px 8px; border-bottom: 1px solid #e5e7eb; color: #1e293b; }}
     @media print {{
         body {{ background: #ffffff; padding: 0; }}
         .a4-sheet {{ width: auto; margin: 0; padding: 0; box-shadow: none; }}
@@ -3967,7 +4116,7 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
 </head>
 <body>
 <div class="a4-sheet">
-    <div class="a4-title">BÁO CÁO PHÂN TÍCH KINH DOANH &amp; DỮ LIỆU</div>
+    <div class="a4-title">BÁO CÁO PHÂN TÍCH KINH DOANH</div>
     <div class="a4-subtitle">Mục tiêu phân tích: {_html_lib.escape(_goal_headline)}</div>
     <div class="a4-quote">Bài toán phân tích đặt ra: &ldquo;{_html_lib.escape(_goal_headline)}&rdquo;</div>
 
@@ -3977,18 +4126,18 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
     <p>
         Đơn vị hoạt động trong lĩnh vực <b>{_html_lib.escape(_biz_t_disp)}</b>.
         Trong kỳ đánh giá hiện tại ({_html_lib.escape(stats_bundle['time_range_label'])}),
-        trọng tâm phân tích hướng tới mục tiêu &ldquo;{_html_lib.escape(_goal_headline)}&rdquo;.
-        Báo cáo này tổng hợp và phân tích trực tiếp trên tập dữ liệu đã qua kiểm duyệt
+        mục tiêu trọng tâm là &ldquo;{_html_lib.escape(_goal_headline)}&rdquo;.
+        Báo cáo này phân tích toàn diện trên tập dữ liệu đã qua kiểm duyệt
         <b>{_html_lib.escape(_files_display_str)}</b> gồm <b>{total_records_all:,}</b> bản ghi hợp lệ
         và <b>{len(df_all.columns)}</b> trường thông tin.{_extra_sentence}
     </p>
 
     <h3>1.2. Phương pháp Phân tích &amp; Hồ sơ Dữ liệu</h3>
     <p>
-        Báo cáo áp dụng khung phân tích chuẩn mực <b>DIID (Data → Information → Insight → Decision)</b>
+        Báo cáo áp dụng khung phân tích chuẩn mực DIID (Data → Information → Insight → Decision)
         kết hợp 4 phương pháp bổ trợ: (1) Phân tích Mô tả quy mô &amp; cấu trúc theo chỉ số
-        <b>{_html_lib.escape(selected_metric)}</b> và chiều phân nhóm <b>{_html_lib.escape(selected_dim1)}</b>;
-        (2) Phân tích Tập trung &amp; So sánh xếp hạng nhằm xác định nhóm động lực chính;
+        <b>{_html_lib.escape(str(selected_metric))}</b> và chiều phân nhóm <b>{_html_lib.escape(str(selected_dim1))}</b>;
+        (2) Phân tích Tập trung xác định nhóm động lực chính;
         (3) Phân tích Biến động &amp; Tương quan giữa các chỉ số định lượng trong tệp;
         và (4) Kiểm định độ tin cậy dữ liệu đầu vào.
         Độ đầy đủ dữ liệu sau khi làm sạch đạt <b>{_comp_a4:.1f}%</b>
@@ -3997,10 +4146,10 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
 
     <h3>1.3. Tổng hợp Phát hiện Trọng tâm</h3>
     <p>
-        Trên toàn bộ tập dữ liệu, chỉ số <b>{_html_lib.escape(selected_metric)}</b> ghi nhận mức trung bình
+        Trên toàn bộ tập dữ liệu, chỉ số <b>{_html_lib.escape(str(selected_metric))}</b> ghi nhận mức trung bình
         <b>{_fmt_num(stats_bundle['grand_mean'])}</b> (trung vị <b>{_fmt_num(stats_bundle['grand_median'])}</b>,
         biên độ từ <b>{_fmt_num(stats_bundle['grand_min'])}</b> đến <b>{_fmt_num(stats_bundle['grand_max'])}</b>).
-        Xét theo <b>{_html_lib.escape(selected_dim1)}</b>, nhóm dẫn đầu là
+        Xét theo <b>{_html_lib.escape(str(selected_dim1))}</b>, nhóm dẫn đầu là
         <b>{_html_lib.escape(str(_top_a4['Nhóm']))}</b> (đạt <b>{_fmt_num(_top_a4[_sc_a4])}</b>),
         trong khi nhóm thấp nhất là <b>{_html_lib.escape(str(_bot_a4['Nhóm']))}</b>
         (đạt <b>{_fmt_num(_bot_a4[_sc_a4])}</b>).
@@ -4008,15 +4157,18 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
 
     {_obj_section_a4}
 
+    <h2>{_sec_charts_num}. Biểu đồ Trực quan, Nhận xét &amp; Bảng Tổng hợp Số liệu</h2>
+    {"".join(_charts_html_parts)}
+    <div class="a4-tbl-cap">Bảng 1: Bảng tổng hợp số liệu chi tiết theo {_html_lib.escape(str(selected_dim1))}</div>
+    <table class="a4-tbl">
+        <thead><tr>{_a4_th}</tr></thead>
+        <tbody>{_a4_trs}</tbody>
+    </table>
+
     <h2>{_sec_detail_num}. Phân tích Chi tiết &amp; Đề xuất Hành động</h2>
     <div class="a4-prose">
-        {_md_to_clean_html(st.session_state.editable_report)}
-        {_md_to_clean_html(st.session_state.editable_plan)}
-    </div>
-
-    <h2>{_sec_dash_num}. Phụ lục: Biểu đồ Trực quan &amp; Bảng Tổng hợp Dashboard</h2>
-    <div class="a4-dash-section">
-        {inline_dash_html}
+        {_md_to_a4_black_html(st.session_state.editable_report)}
+        {_md_to_a4_black_html(st.session_state.editable_plan)}
     </div>
 </div>
 </body>
