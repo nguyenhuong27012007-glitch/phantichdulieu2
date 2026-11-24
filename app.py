@@ -823,8 +823,8 @@ def _render_column_delete_bar(df_cur: pd.DataFrame, display_cols: list, filename
                 user-select: none;
             }}
             .corner {{
-                width: 36px;
-                min-width: 36px;
+                width: 44px;
+                min-width: 44px;
                 height: 100%;
                 border-right: 1px solid #e5e7eb;
                 background: #f5f6f8;
