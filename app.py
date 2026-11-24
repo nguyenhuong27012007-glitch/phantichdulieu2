@@ -3803,6 +3803,268 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
 
         st.markdown(inline_dash_html, unsafe_allow_html=True)
 
+        def _build_a4_pdf_report_html() -> str:
+            _g1_a4 = stats_bundle["g1_raw"]
+            _top_a4 = _g1_a4.iloc[0]
+            _bot_a4 = _g1_a4.iloc[-1]
+            _sc_a4 = stats_bundle["sort_col"]
+            _comp_a4 = 100.0 * (df_all.size - total_nulls_all) / max(1, df_all.size)
+            _dup_a4 = int(df_all.duplicated().sum())
+            _biz_t_disp = _biz_type_s3 if _biz_type_s3 else "Phân tích Dữ liệu & Quản trị Vận hành"
+            _first_q_line = next((ln.strip() for ln in _biz_questions_s3.splitlines() if ln.strip()), "")
+            _goal_headline = _re_lib.sub(r"^(?:\d+[\.\)\:]|[-•*])\s*", "", _first_q_line).strip() if _first_q_line else f"Đánh giá hiệu suất {selected_metric} theo {selected_dim1}"
+            _extra_sentence = f" Bối cảnh bổ sung từ đơn vị: {_html_lib.escape(_biz_extra_s3)}." if _biz_extra_s3 else ""
+            _obj_section_a4 = (
+                f'<h2>II. Giải đáp Mục tiêu Phân tích (từ Bước 1)</h2>'
+                f'<div class="a4-prose">{_md_to_clean_html(insights_bundle["objectives_md"])}</div>'
+                if insights_bundle.get("objectives_md") else ""
+            )
+            _sec_detail_num = "III" if _obj_section_a4 else "II"
+            _sec_dash_num = "IV" if _obj_section_a4 else "III"
+
+            return f"""<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Báo Cáo Phân Tích A4 — {_html_lib.escape(_files_display_str)}</title>
+<style>
+    @page {{
+        size: A4 portrait;
+        margin: 18mm 18mm 18mm 20mm;
+    }}
+    * {{ box-sizing: border-box; }}
+    body {{
+        margin: 0;
+        padding: 20px;
+        background: #eef2f7;
+        font-family: "Times New Roman", Times, Georgia, serif;
+        color: #111827;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }}
+    .a4-sheet {{
+        width: 210mm;
+        max-width: 100%;
+        margin: 0 auto;
+        background: #ffffff;
+        padding: 20mm 18mm;
+        box-shadow: 0 8px 30px rgba(15, 23, 42, 0.12);
+        line-height: 1.65;
+        font-size: 13pt;
+    }}
+    .a4-title {{
+        text-align: center;
+        font-size: 17pt;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        margin: 0 0 8px 0;
+        color: #000000;
+    }}
+    .a4-subtitle {{
+        text-align: center;
+        font-size: 13pt;
+        margin: 0 0 6px 0;
+        color: #111827;
+    }}
+    .a4-quote {{
+        text-align: center;
+        font-style: italic;
+        font-size: 12.5pt;
+        margin: 0 0 22px 0;
+        color: #1f2937;
+    }}
+    .a4-sheet h2 {{
+        font-size: 14pt;
+        font-weight: 700;
+        margin: 20px 0 8px 0;
+        color: #000000;
+    }}
+    .a4-sheet h3 {{
+        font-size: 13pt;
+        font-weight: 700;
+        margin: 14px 0 6px 0;
+        color: #000000;
+    }}
+    .a4-sheet p {{
+        margin: 0 0 10px 0;
+        text-align: justify;
+    }}
+    .a4-prose ul {{
+        margin: 4px 0 10px 20px;
+        padding: 0;
+    }}
+    .a4-prose li {{
+        margin-bottom: 5px;
+        text-align: justify;
+    }}
+    .a4-prose h4 {{
+        font-family: "Times New Roman", Times, serif !important;
+        font-size: 13pt !important;
+        color: #000000 !important;
+        margin: 12px 0 6px 0 !important;
+    }}
+    .a4-dash-section {{
+        margin-top: 18px;
+        page-break-before: auto;
+        font-family: "Inter", "Segoe UI", sans-serif;
+    }}
+    .a4-dash-section .di-dash-card {{
+        background: #ffffff;
+        border: 1px solid #dbe4f0;
+        border-radius: 12px;
+        padding: 14px 16px;
+        margin-bottom: 12px;
+        break-inside: avoid;
+    }}
+    .a4-dash-section .di-kpi-grid {{
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 12px;
+        break-inside: avoid;
+    }}
+    .a4-dash-section .di-kpi-box {{
+        background: #f8fbff;
+        border: 1px solid #dbeafe;
+        border-radius: 10px;
+        padding: 10px 12px;
+    }}
+    .a4-dash-section .di-grid-2 {{
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 12px;
+        break-inside: avoid;
+    }}
+    .a4-dash-section .di-badge-pill {{
+        background: #eff6ff;
+        color: #1d4ed8;
+        border: 1px solid #bfdbfe;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 3px 9px;
+        border-radius: 999px;
+    }}
+    .a4-dash-section .di-chart-caption {{
+        margin-top: 10px;
+        padding: 8px 10px;
+        background: #f5f9ff;
+        border-left: 3px solid #2563eb;
+        font-size: 11px;
+        color: #334155;
+        line-height: 1.45;
+    }}
+    .a4-dash-section .di-table-wrap {{ overflow: visible; border: 1px solid #dbe4f0; border-radius: 8px; }}
+    .a4-dash-section .di-table {{ width: 100%; border-collapse: collapse; font-size: 10.5px; }}
+    .a4-dash-section .di-table th {{ padding: 6px 8px; background: #eff6ff; color: #1e3a8a; text-align: left; border-bottom: 1px solid #bfdbfe; }}
+    .a4-dash-section .di-table td {{ padding: 6px 8px; border-bottom: 1px solid #e5e7eb; color: #1e293b; }}
+    @media print {{
+        body {{ background: #ffffff; padding: 0; }}
+        .a4-sheet {{ width: auto; margin: 0; padding: 0; box-shadow: none; }}
+    }}
+</style>
+</head>
+<body>
+<div class="a4-sheet">
+    <div class="a4-title">BÁO CÁO PHÂN TÍCH KINH DOANH &amp; DỮ LIỆU</div>
+    <div class="a4-subtitle">Mục tiêu phân tích: {_html_lib.escape(_goal_headline)}</div>
+    <div class="a4-quote">Bài toán phân tích đặt ra: &ldquo;{_html_lib.escape(_goal_headline)}&rdquo;</div>
+
+    <h2>I. Giới thiệu Tổng quan Doanh nghiệp &amp; Bối cảnh Phân tích</h2>
+
+    <h3>1.1. Tổng quan Bối cảnh &amp; Phạm vi Dữ liệu</h3>
+    <p>
+        Đơn vị hoạt động trong lĩnh vực <b>{_html_lib.escape(_biz_t_disp)}</b>.
+        Trong kỳ đánh giá hiện tại ({_html_lib.escape(stats_bundle['time_range_label'])}),
+        trọng tâm phân tích hướng tới mục tiêu &ldquo;{_html_lib.escape(_goal_headline)}&rdquo;.
+        Báo cáo này tổng hợp và phân tích trực tiếp trên tập dữ liệu đã qua kiểm duyệt
+        <b>{_html_lib.escape(_files_display_str)}</b> gồm <b>{total_records_all:,}</b> bản ghi hợp lệ
+        và <b>{len(df_all.columns)}</b> trường thông tin.{_extra_sentence}
+    </p>
+
+    <h3>1.2. Phương pháp Phân tích &amp; Hồ sơ Dữ liệu</h3>
+    <p>
+        Báo cáo áp dụng khung phân tích chuẩn mực <b>DIID (Data → Information → Insight → Decision)</b>
+        kết hợp 4 phương pháp bổ trợ: (1) Phân tích Mô tả quy mô &amp; cấu trúc theo chỉ số
+        <b>{_html_lib.escape(selected_metric)}</b> và chiều phân nhóm <b>{_html_lib.escape(selected_dim1)}</b>;
+        (2) Phân tích Tập trung &amp; So sánh xếp hạng nhằm xác định nhóm động lực chính;
+        (3) Phân tích Biến động &amp; Tương quan giữa các chỉ số định lượng trong tệp;
+        và (4) Kiểm định độ tin cậy dữ liệu đầu vào.
+        Độ đầy đủ dữ liệu sau khi làm sạch đạt <b>{_comp_a4:.1f}%</b>
+        (còn <b>{total_nulls_all:,}</b> ô trống, <b>{_dup_a4:,}</b> dòng trùng lặp).
+    </p>
+
+    <h3>1.3. Tổng hợp Phát hiện Trọng tâm</h3>
+    <p>
+        Trên toàn bộ tập dữ liệu, chỉ số <b>{_html_lib.escape(selected_metric)}</b> ghi nhận mức trung bình
+        <b>{_fmt_num(stats_bundle['grand_mean'])}</b> (trung vị <b>{_fmt_num(stats_bundle['grand_median'])}</b>,
+        biên độ từ <b>{_fmt_num(stats_bundle['grand_min'])}</b> đến <b>{_fmt_num(stats_bundle['grand_max'])}</b>).
+        Xét theo <b>{_html_lib.escape(selected_dim1)}</b>, nhóm dẫn đầu là
+        <b>{_html_lib.escape(str(_top_a4['Nhóm']))}</b> (đạt <b>{_fmt_num(_top_a4[_sc_a4])}</b>),
+        trong khi nhóm thấp nhất là <b>{_html_lib.escape(str(_bot_a4['Nhóm']))}</b>
+        (đạt <b>{_fmt_num(_bot_a4[_sc_a4])}</b>).
+    </p>
+
+    {_obj_section_a4}
+
+    <h2>{_sec_detail_num}. Phân tích Chi tiết &amp; Đề xuất Hành động</h2>
+    <div class="a4-prose">
+        {_md_to_clean_html(st.session_state.editable_report)}
+        {_md_to_clean_html(st.session_state.editable_plan)}
+    </div>
+
+    <h2>{_sec_dash_num}. Phụ lục: Biểu đồ Trực quan &amp; Bảng Tổng hợp Dashboard</h2>
+    <div class="a4-dash-section">
+        {inline_dash_html}
+    </div>
+</div>
+</body>
+</html>"""
+
+        a4_report_html = _build_a4_pdf_report_html()
+
+        if "show_a4_preview" not in st.session_state:
+            st.session_state.show_a4_preview = False
+
+        st.write("")
+        a4_col1, a4_col2 = st.columns(2)
+        with a4_col1:
+            lbl_a4_pv = "Đóng xem trước bản in A4" if st.session_state.show_a4_preview else "Xem trước bản in A4"
+            if st.button(lbl_a4_pv, icon=":material/preview:", **_W_STRETCH, key="toggle_a4_preview_btn"):
+                st.session_state.show_a4_preview = not st.session_state.show_a4_preview
+                st.rerun()
+        with a4_col2:
+            if st.button("In báo cáo/Tải pdf", icon=":material/print:", type="primary", **_W_STRETCH, key="btn_print_a4_pdf"):
+                st.session_state["_trigger_a4_print"] = True
+
+        if st.session_state.pop("_trigger_a4_print", False):
+            _a4_json = json.dumps(a4_report_html, ensure_ascii=False)
+            components.html(
+                f"""<script>
+                (function() {{
+                    const htmlContent = {_a4_json};
+                    const win = window.open('', '_blank', 'width=960,height=1100');
+                    if (win) {{
+                        win.document.open();
+                        win.document.write(htmlContent);
+                        win.document.close();
+                        win.focus();
+                        setTimeout(function() {{ win.print(); }}, 350);
+                    }} else {{
+                        const blob = new Blob([htmlContent], {{ type: 'text/html;charset=utf-8' }});
+                        const url = URL.createObjectURL(blob);
+                        window.open(url, '_blank');
+                    }}
+                }})();
+                </script>""",
+                height=0,
+            )
+
+        if st.session_state.show_a4_preview:
+            st.markdown("##### Xem trước bản báo cáo khổ giấy A4 (sẵn sàng in / lưu PDF)")
+            components.html(a4_report_html, height=760, scrolling=True)
+
         with st.container(key="floating_download_step3"):
             st.download_button(
                 label="Tải báo cáo HTML ↓",
