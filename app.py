@@ -3998,7 +3998,8 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
                 return f'<div class="{cls}"><span class="toc-label">{label}</span><span class="toc-dots"></span><span class="toc-ref">{page_str}</span></div>'
 
             _toc_rows = [
-                _toc_row("DANH MỤC HÌNH ẢNH / BIỂU ĐỒ &amp; BẢNG BIỂU", "ii"),
+                _toc_row("DANH MỤC HÌNH ẢNH / BIỂU ĐỒ", "ii"),
+                _toc_row("DANH MỤC BẢNG BIỂU", "iii"),
                 _toc_row("I. Giới thiệu Tổng quan Doanh nghiệp &amp; Bối cảnh Phân tích", _pg_intro),
                 _toc_row("1.1. Tổng quan Bối cảnh &amp; Phạm vi Dữ liệu", _pg_intro, indent=True),
                 _toc_row("1.2. Phương pháp Phân tích &amp; Hồ sơ Dữ liệu", _pg_intro, indent=True),
@@ -4258,7 +4259,7 @@ function printEditedDoc() {
     .a4-cover-goal {{
         font-size: 14pt;
         font-weight: 700;
-        margin: 0 0 10px 0;
+        margin: 0 0 24px 0;
     }}
     .a4-cover-quote {{
         font-size: 13pt;
@@ -4431,7 +4432,6 @@ function printEditedDoc() {
                 <div>
                     <div class="a4-cover-main-title">BÁO CÁO PHÂN TÍCH KINH DOANH</div>
                     <div class="a4-cover-goal">Mục tiêu: {_html_lib.escape(_goal_headline)}</div>
-                    <div class="a4-cover-quote">&ldquo;{_html_lib.escape(_goal_headline)}&rdquo;</div>
                     <div class="a4-cover-meta">
                         <div><b>Nguồn dữ liệu:</b> {_html_lib.escape(_files_display_str)}</div>
                         <div><b>Kỳ đánh giá:</b> {_html_lib.escape(stats_bundle['time_range_label'])}</div>
@@ -4453,16 +4453,22 @@ function printEditedDoc() {
         <div class="a4-page-footer">i</div>
     </section>
 
-    <!-- TRANG ii: DANH MỤC HÌNH ẢNH / BIỂU ĐỒ & DANH MỤC BẢNG BIỂU -->
+    <!-- TRANG ii: DANH MỤC HÌNH ẢNH / BIỂU ĐỒ -->
     <section class="a4-page">
         <div class="a4-page-body"{_editable_attr}>
             <div class="a4-fm-title">DANH MỤC HÌNH ẢNH / BIỂU ĐỒ</div>
             {"".join(_lof_rows)}
-
-            <div class="a4-fm-subtitle">DANH MỤC BẢNG BIỂU</div>
-            {"".join(_lot_rows)}
         </div>
         <div class="a4-page-footer">ii</div>
+    </section>
+
+    <!-- TRANG iii: DANH MỤC BẢNG BIỂU -->
+    <section class="a4-page">
+        <div class="a4-page-body"{_editable_attr}>
+            <div class="a4-fm-title">DANH MỤC BẢNG BIỂU</div>
+            {"".join(_lot_rows)}
+        </div>
+        <div class="a4-page-footer">iii</div>
     </section>
 
     <!-- TRANG 1: TỔNG QUAN & GIẢI ĐÁP MỤC TIÊU -->
