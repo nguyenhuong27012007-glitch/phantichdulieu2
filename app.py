@@ -795,168 +795,459 @@ def _pop_df_undo(filename: str, orch_obj) -> bool:
     return True
 
 
-def _render_column_delete_bar(df_cur: pd.DataFrame, display_cols: list, filename: str, key_prefix: str, orch_obj):
-    """Hàng tích chọn cột thuần client-side (không rerun khi bấm, ẩn ô tích cho tới khi di chuột/bấm, bấm Delete để xóa)."""
-    if not display_cols or len(df_cur.columns) <= 1:
-        return []
-    _step_tag = "s1" if key_prefix.startswith("s1_") else "s2"
-    _payload_key = f"{_step_tag}_delcol_payload"
+def _apply_table_payload(df_cur: pd.DataFrame, filename: str, step_tag: str, orch_obj):
+    """Xử lý tín hiệu xóa cột / xóa hàng / lưu chỉnh sửa ô từ bảng hợp nhất."""
+    payload_key = f"{step_tag}_delcol_payload"
+    raw_payload = str(st.session_state.get(payload_key, "") or "").strip()
+    if not raw_payload:
+        return
+    st.session_state[payload_key] = ""
+    try:
+        data = json.loads(raw_payload)
+    except Exception:
+        return
 
-    # Nếu JS vừa gửi danh sách cột cần xóa qua phím Delete -> thực hiện xóa ngay
-    _raw_payload = str(st.session_state.get(_payload_key, "") or "").strip()
-    if _raw_payload:
-        st.session_state[_payload_key] = ""
-        try:
-            _req_cols = json.loads(_raw_payload)
-            _valid_del = [c for c in _req_cols if c in df_cur.columns]
-            if _valid_del and len(df_cur.columns) - len(_valid_del) >= 1:
-                _push_df_undo(filename, df_cur)
-                new_df = df_cur.drop(columns=_valid_del, errors="ignore")
-                orch_obj.data_agent.raw_dataframes[filename] = new_df
-                from utils.column_mapper import map_columns
-                orch_obj.data_agent.column_mappings[filename] = map_columns(list(new_df.columns))
-                orch_obj.data_agent.file_infos.setdefault(filename, {})["rows"] = len(new_df)
-                orch_obj.data_agent.file_infos[filename].setdefault("user_action_log", []).append(
-                    f"Đã xóa {len(_valid_del)} cột: {', '.join(str(c) for c in _valid_del)}."
-                )
-                st.session_state["_detect_issues_cache"] = {}
-                st.rerun()
-        except Exception:
-            pass
+    # Hỗ trợ cả định dạng list cũ (xóa cột) lẫn dict mới {action, cols, rows, edits}
+    if isinstance(data, list):
+        data = {"action": "delete_cols", "cols": data}
+    if not isinstance(data, dict):
+        return
 
-    _strip_key = f"{_step_tag}_col_del_strip"
-    _cols_json = json.dumps([str(c) for c in display_cols], ensure_ascii=False)
-    import streamlit.components.v1 as _col_bar_comp
-    with st.container(key=_strip_key):
-        _col_bar_comp.html(
-            f"""<!DOCTYPE html><html><head><meta charset="utf-8"><style>
-            * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-            html, body {{ width: 100%; height: 36px; overflow: hidden; background: transparent; font-family: "Inter", "Segoe UI", sans-serif; }}
-            .bar {{
-                display: flex;
-                width: 100%;
-                height: 36px;
-                background: #f5f6f8;
-                border: 1px solid #e2e8f0;
-                border-bottom: none;
-                border-radius: 12px 12px 0 0;
-                overflow: hidden;
-                user-select: none;
+    action = data.get("action", "")
+    del_cols = [c for c in data.get("cols", []) if c in df_cur.columns]
+    del_rows = data.get("rows", [])
+    edits = data.get("edits", {})
+
+    if action == "delete":
+        if del_cols and (len(df_cur.columns) - len(del_cols) < 1):
+            st.warning("Cần giữ lại ít nhất 1 cột dữ liệu.")
+            return
+        if not del_cols and not del_rows:
+            return
+        _push_df_undo(filename, df_cur)
+        new_df = df_cur.copy()
+        log_parts = []
+        if del_cols:
+            new_df = new_df.drop(columns=del_cols, errors="ignore")
+            log_parts.append(f"xóa {len(del_cols)} cột ({', '.join(str(c) for c in del_cols)})")
+        if del_rows:
+            valid_idx = [idx for idx in del_rows if idx in new_df.index]
+            if valid_idx:
+                new_df = new_df.drop(index=valid_idx, errors="ignore")
+                log_parts.append(f"xóa {len(valid_idx)} hàng")
+        orch_obj.data_agent.raw_dataframes[filename] = new_df
+        from utils.column_mapper import map_columns
+        from utils.file_handler import _auto_aggregate
+        orch_obj.data_agent.column_mappings[filename] = map_columns(list(new_df.columns))
+        if len(new_df) > 1000:
+            agg_df, agg_note = _auto_aggregate(new_df, filename)
+            orch_obj.data_agent.file_infos.setdefault(filename, {})["aggregated_df"] = agg_df
+            orch_obj.data_agent.file_infos[filename]["aggregation_note"] = agg_note
+        orch_obj.data_agent.file_infos.setdefault(filename, {})["rows"] = len(new_df)
+        if log_parts:
+            orch_obj.data_agent.file_infos[filename].setdefault("user_action_log", []).append(
+                f"Đã {', '.join(log_parts)} trên bảng."
+            )
+        st.session_state["_detect_issues_cache"] = {}
+        st.rerun()
+
+    elif action == "delete_cols" and del_cols:
+        if len(df_cur.columns) - len(del_cols) < 1:
+            st.warning("Cần giữ lại ít nhất 1 cột dữ liệu.")
+            return
+        _push_df_undo(filename, df_cur)
+        new_df = df_cur.drop(columns=del_cols, errors="ignore")
+        orch_obj.data_agent.raw_dataframes[filename] = new_df
+        from utils.column_mapper import map_columns
+        orch_obj.data_agent.column_mappings[filename] = map_columns(list(new_df.columns))
+        orch_obj.data_agent.file_infos.setdefault(filename, {})["rows"] = len(new_df)
+        orch_obj.data_agent.file_infos[filename].setdefault("user_action_log", []).append(
+            f"Đã xóa {len(del_cols)} cột: {', '.join(str(c) for c in del_cols)}."
+        )
+        st.session_state["_detect_issues_cache"] = {}
+        st.rerun()
+
+    elif action == "save_edits" and isinstance(edits, dict) and edits:
+        _push_df_undo(filename, df_cur)
+        new_df = df_cur.copy()
+        changed = 0
+        for cell_key, new_val in edits.items():
+            if "::" not in str(cell_key):
+                continue
+            r_str, c_name = str(cell_key).split("::", 1)
+            if c_name not in new_df.columns:
+                continue
+            try:
+                r_idx = int(r_str)
+            except Exception:
+                r_idx = r_str
+            if r_idx not in new_df.index:
+                continue
+            if pd.api.types.is_numeric_dtype(new_df[c_name]):
+                s_v = str(new_val).strip().replace(",", "")
+                if s_v == "" or s_v.lower() in ("none", "nan", "null"):
+                    new_df.at[r_idx, c_name] = float("nan")
+                else:
+                    try:
+                        new_df.at[r_idx, c_name] = float(s_v) if "." in s_v else int(s_v)
+                    except Exception:
+                        new_df[c_name] = new_df[c_name].astype(object)
+                        new_df.at[r_idx, c_name] = new_val
+            else:
+                new_df.at[r_idx, c_name] = None if str(new_val).strip() == "" else new_val
+            changed += 1
+        if changed > 0:
+            orch_obj.data_agent.raw_dataframes[filename] = new_df
+            from utils.column_mapper import map_columns
+            from utils.file_handler import _auto_aggregate
+            orch_obj.data_agent.column_mappings[filename] = map_columns(list(new_df.columns))
+            if len(new_df) > 1000:
+                agg_df, agg_note = _auto_aggregate(new_df, filename)
+                orch_obj.data_agent.file_infos.setdefault(filename, {})["aggregated_df"] = agg_df
+                orch_obj.data_agent.file_infos[filename]["aggregation_note"] = agg_note
+            orch_obj.data_agent.file_infos.setdefault(filename, {})["rows"] = len(new_df)
+            orch_obj.data_agent.file_infos[filename].setdefault("user_action_log", []).append(
+                f"Đã lưu {changed} ô chỉnh sửa trực tiếp trên bảng."
+            )
+            st.session_state["_detect_issues_cache"] = {}
+            st.toast(f"Đã lưu {changed} ô chỉnh sửa!")
+            st.rerun()
+
+
+def _render_unified_editable_table(view_df: pd.DataFrame, display_cols: list, df_cur: pd.DataFrame, filename: str, step_tag: str, orch_obj, height: int = 440, save_btn_key: str = "btn_save_step1"):
+    """Bảng dữ liệu hợp nhất 1 khối: có hàng tích chọn cột + cột tích chọn hàng nằm thật bên trong cùng 1 <table>, bấm Delete để xóa, sửa ô trực tiếp, 0 rerun khi bấm tích."""
+    _apply_table_payload(df_cur, filename, step_tag, orch_obj)
+
+    payload_key = f"{step_tag}_delcol_payload"
+    slice_df = view_df[display_cols].iloc[:500]
+    row_indices = [int(i) if isinstance(i, (int, float)) and not isinstance(i, bool) else str(i) for i in slice_df.index.tolist()]
+    cols_list = [str(c) for c in display_cols]
+    is_num_map = [bool(pd.api.types.is_numeric_dtype(slice_df[c])) for c in display_cols]
+
+    rows_payload = []
+    for pos, (_, r) in enumerate(slice_df.iterrows()):
+        vals = []
+        for c in display_cols:
+            v = r[c]
+            if pd.isna(v):
+                vals.append("")
+            elif isinstance(v, float) and v.is_integer():
+                vals.append(str(int(v)))
+            else:
+                vals.append(str(v))
+        rows_payload.append({"id": row_indices[pos], "vals": vals})
+
+    cols_json = json.dumps(cols_list, ensure_ascii=False)
+    rows_json = json.dumps(rows_payload, ensure_ascii=False)
+    num_json = json.dumps(is_num_map)
+
+    import streamlit.components.v1 as _tbl_comp
+    _tbl_comp.html(
+        f"""<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+        * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+        html, body {{
+            width: 100%; height: 100%; overflow: hidden;
+            font-family: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #ffffff;
+        }}
+        .wrap {{
+            width: 100%; height: {height}px;
+            overflow: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: #ffffff;
+        }}
+        table {{
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 13.5px;
+            color: #1e293b;
+        }}
+        th, td {{
+            border-right: 1px solid #eceff4;
+            border-bottom: 1px solid #eceff4;
+            height: 36px;
+            white-space: nowrap;
+        }}
+        th:last-child, td:last-child {{ border-right: none; }}
+        /* Row 1: Column-select row (same muted gray #f5f6f8 as row-select column, sticky top 0) */
+        thead tr.col-sel-row th {{
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            background: #f5f6f8;
+            height: 34px;
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+            padding: 0 8px;
+        }}
+        thead tr.col-sel-row th.corner {{
+            left: 0;
+            z-index: 7;
+            width: 38px;
+            min-width: 38px;
+            max-width: 38px;
+            cursor: default;
+        }}
+        thead tr.col-sel-row th.col-sel:hover {{ background: #eceff4; }}
+        thead tr.col-sel-row th.col-sel.checked {{ background: #fef2f2; }}
+
+        /* Row 2: Column headers (sticky top 34px) */
+        thead tr.col-hdr-row th {{
+            position: sticky;
+            top: 34px;
+            z-index: 4;
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 600;
+            font-size: 13px;
+            text-align: left;
+            padding: 0 12px;
+            min-width: 120px;
+        }}
+        thead tr.col-hdr-row th.corner {{
+            left: 0;
+            z-index: 6;
+            width: 38px;
+            min-width: 38px;
+            max-width: 38px;
+            background: #f5f6f8;
+            padding: 0;
+        }}
+        thead tr.col-hdr-row th.col-selected {{
+            background: #fef2f2;
+            color: #b91c1c;
+        }}
+
+        /* Column 0: Row-select column (sticky left 0, same muted gray #f5f6f8) */
+        tbody td.row-sel {{
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            width: 38px;
+            min-width: 38px;
+            max-width: 38px;
+            background: #f5f6f8;
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+            padding: 0;
+        }}
+        tbody td.row-sel:hover {{ background: #eceff4; }}
+        tbody tr.row-selected td.row-sel {{ background: #fef2f2; }}
+        tbody tr.row-selected td.data-cell {{ background: #fef2f2; }}
+        tbody td.data-cell.col-selected {{ background: #fef2f2; }}
+
+        /* Data cells */
+        tbody td.data-cell {{
+            padding: 0 12px;
+            background: #ffffff;
+            outline: none;
+            min-width: 120px;
+            max-width: 320px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }}
+        tbody td.data-cell.num {{ text-align: right; font-variant-numeric: tabular-nums; }}
+        tbody td.data-cell:focus {{
+            background: #eff6ff !important;
+            box-shadow: inset 0 0 0 2px #2563eb;
+            overflow: visible;
+        }}
+        tbody td.data-cell.edited {{
+            background: #f0f9ff;
+        }}
+        tbody td.data-cell.empty-cell {{ color: #94a3b8; }}
+
+        /* Hidden checkboxes until hover or checked — identical for BOTH row-select & col-select */
+        .chk-box {{
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            border: 1.5px solid #94a3b8;
+            background: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            vertical-align: middle;
+            opacity: 0;
+            transition: opacity 110ms ease, background-color 110ms ease, border-color 110ms ease;
+        }}
+        th.col-sel:hover .chk-box,
+        td.row-sel:hover .chk-box {{ opacity: 0.7; }}
+        th.col-sel.checked .chk-box,
+        tr.row-selected td.row-sel .chk-box {{
+            opacity: 1;
+            background: #ef4444;
+            border-color: #ef4444;
+        }}
+        .chk-box svg {{ display: none; width: 11px; height: 11px; stroke: #ffffff; stroke-width: 3; fill: none; }}
+        th.col-sel.checked .chk-box svg,
+        tr.row-selected td.row-sel .chk-box svg {{ display: block; }}
+        </style></head><body>
+        <div class="wrap" id="wrap">
+            <table>
+                <thead>
+                    <tr class="col-sel-row" id="colSelRow"><th class="corner"></th></tr>
+                    <tr class="col-hdr-row" id="colHdrRow"><th class="corner"></th></tr>
+                </thead>
+                <tbody id="tbody"></tbody>
+            </table>
+        </div>
+        <script>
+        (function() {{
+            const cols = {cols_json};
+            const rows = {rows_json};
+            const isNum = {num_json};
+            const selCols = new Set();
+            const selRows = new Set();
+            const pendingEdits = {{}};
+
+            const colSelRow = document.getElementById('colSelRow');
+            const colHdrRow = document.getElementById('colHdrRow');
+            const tbody = document.getElementById('tbody');
+
+            const chkSvg = '<span class="chk-box"><svg viewBox="0 0 12 10"><polyline points="1.5 5.5 4.5 8.5 10.5 1.5"/></svg></span>';
+
+            function refreshColHighlight(ci) {{
+                const on = selCols.has(cols[ci]);
+                const hdr = colHdrRow.children[ci + 1];
+                if (hdr) hdr.classList.toggle('col-selected', on);
+                for (let r = 0; r < tbody.children.length; r++) {{
+                    const td = tbody.children[r].children[ci + 1];
+                    if (td) td.classList.toggle('col-selected', on);
+                }}
             }}
-            .corner {{
-                width: 37px;
-                min-width: 37px;
-                height: 100%;
-                border-right: 1px solid #e5e7eb;
-                background: #f5f6f8;
-            }}
-            .scroll-pad {{
-                width: 9px;
-                min-width: 9px;
-                height: 100%;
-                border-left: 1px solid #e5e7eb;
-                background: #f5f6f8;
-            }}
-            .cells {{
-                display: flex;
-                flex: 1;
-                height: 100%;
-                min-width: 0;
-            }}
-            .cell {{
-                flex: 1 1 0;
-                min-width: 0;
-                height: 100%;
-                border-right: 1px solid #e5e7eb;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-                transition: background-color 120ms ease;
-            }}
-            .cell:last-child {{ border-right: none; }}
-            .cell:hover {{ background: #eceff4; }}
-            .cell.checked {{ background: #fef2f2; }}
-            .box {{
-                width: 16px;
-                height: 16px;
-                border-radius: 4px;
-                border: 1.5px solid #94a3b8;
-                background: #ffffff;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                opacity: 0;
-                transition: opacity 120ms ease, background-color 120ms ease, border-color 120ms ease;
-            }}
-            .cell:hover .box {{ opacity: 0.7; }}
-            .cell.checked .box {{
-                opacity: 1;
-                background: #ef4444;
-                border-color: #ef4444;
-            }}
-            .box svg {{ display: none; width: 11px; height: 11px; stroke: #ffffff; stroke-width: 3; fill: none; }}
-            .cell.checked .box svg {{ display: block; }}
-            </style></head><body>
-            <div class="bar"><div class="corner"></div><div class="cells" id="cells"></div><div class="scroll-pad"></div></div>
-            <script>
-            (function() {{
-                const cols = {_cols_json};
-                const selected = new Set();
-                const cellsEl = document.getElementById('cells');
-                cols.forEach((name) => {{
-                    const d = document.createElement('div');
-                    d.className = 'cell';
-                    d.title = name;
-                    d.innerHTML = '<span class="box"><svg viewBox="0 0 12 10"><polyline points="1.5 5.5 4.5 8.5 10.5 1.5"/></svg></span>';
-                    d.addEventListener('click', () => {{
-                        if (selected.has(name)) {{
-                            selected.delete(name);
-                            d.classList.remove('checked');
+
+            cols.forEach((cName, ci) => {{
+                const thSel = document.createElement('th');
+                thSel.className = 'col-sel';
+                thSel.innerHTML = chkSvg;
+                thSel.addEventListener('click', () => {{
+                    if (selCols.has(cName)) {{
+                        selCols.delete(cName);
+                        thSel.classList.remove('checked');
+                    }} else {{
+                        selCols.add(cName);
+                        thSel.classList.add('checked');
+                    }}
+                    refreshColHighlight(ci);
+                }});
+                colSelRow.appendChild(thSel);
+
+                const thHdr = document.createElement('th');
+                thHdr.textContent = cName;
+                colHdrRow.appendChild(thHdr);
+            }});
+
+            rows.forEach((rowObj) => {{
+                const tr = document.createElement('tr');
+                const tdSel = document.createElement('td');
+                tdSel.className = 'row-sel';
+                tdSel.innerHTML = chkSvg;
+                tdSel.addEventListener('click', () => {{
+                    if (selRows.has(rowObj.id)) {{
+                        selRows.delete(rowObj.id);
+                        tr.classList.remove('row-selected');
+                    }} else {{
+                        selRows.add(rowObj.id);
+                        tr.classList.add('row-selected');
+                    }}
+                }});
+                tr.appendChild(tdSel);
+
+                rowObj.vals.forEach((v, ci) => {{
+                    const td = document.createElement('td');
+                    td.className = 'data-cell' + (isNum[ci] ? ' num' : '') + (v === '' ? ' empty-cell' : '');
+                    td.contentEditable = 'true';
+                    td.spellcheck = false;
+                    td.textContent = v;
+                    td.dataset.orig = v;
+                    td.addEventListener('input', () => {{
+                        const cur = td.textContent;
+                        const k = rowObj.id + '::' + cols[ci];
+                        if (cur !== td.dataset.orig) {{
+                            pendingEdits[k] = cur;
+                            td.classList.add('edited');
                         }} else {{
-                            selected.add(name);
-                            d.classList.add('checked');
+                            delete pendingEdits[k];
+                            td.classList.remove('edited');
                         }}
                     }});
-                    cellsEl.appendChild(d);
+                    tr.appendChild(td);
                 }});
-                function triggerDelete(e) {{
-                    if (e.key !== 'Delete' || selected.size === 0) return;
+                tbody.appendChild(tr);
+            }});
+
+            function sendPayload(obj) {{
+                try {{
                     const pDoc = window.parent.document;
-                    const tag = (pDoc.activeElement && pDoc.activeElement.tagName || '').toLowerCase();
-                    if (tag === 'input' || tag === 'textarea') return;
-                    const inp = pDoc.querySelector('.st-key-{_payload_key} input');
-                    if (!inp) return;
-                    e.preventDefault();
-                    e.stopPropagation();
+                    const inp = pDoc.querySelector('.st-key-{payload_key} input');
+                    if (!inp) return false;
                     const setter = Object.getOwnPropertyDescriptor(window.parent.HTMLInputElement.prototype, 'value').set;
-                    setter.call(inp, JSON.stringify(Array.from(selected)));
+                    setter.call(inp, JSON.stringify(obj));
                     inp.dispatchEvent(new Event('input', {{ bubbles: true }}));
                     inp.dispatchEvent(new Event('change', {{ bubbles: true }}));
                     inp.dispatchEvent(new KeyboardEvent('keydown', {{ key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true }}));
+                    return true;
+                }} catch (err) {{
+                    return false;
                 }}
-                window.addEventListener('keydown', triggerDelete, true);
+            }}
+
+            function handleKeyDown(e) {{
+                if (e.key !== 'Delete') return;
+                if (selCols.size === 0 && selRows.size === 0) return;
+                const active = document.activeElement;
+                if (active && active.isContentEditable) return;
                 try {{
-                    const pDoc = window.parent.document;
-                    const handlerKey = '__diColDelKey_{_step_tag}';
-                    if (window.parent[handlerKey]) {{
-                        pDoc.removeEventListener('keydown', window.parent[handlerKey], true);
-                    }}
-                    window.parent[handlerKey] = triggerDelete;
-                    pDoc.addEventListener('keydown', triggerDelete, true);
+                    const pActive = window.parent.document.activeElement;
+                    const pTag = (pActive && pActive.tagName || '').toLowerCase();
+                    if (pTag === 'input' || pTag === 'textarea') return;
                 }} catch (err) {{}}
-            }})();
-            </script></body></html>""",
-            height=36,
-            scrolling=False,
-        )
-    return []
+                e.preventDefault();
+                e.stopPropagation();
+                sendPayload({{
+                    action: 'delete',
+                    cols: Array.from(selCols),
+                    rows: Array.from(selRows)
+                }});
+            }}
 
+            window.addEventListener('keydown', handleKeyDown, true);
+            try {{
+                const pDoc = window.parent.document;
+                const kdKey = '__diUnifiedDel_{step_tag}';
+                if (window.parent[kdKey]) {{
+                    pDoc.removeEventListener('keydown', window.parent[kdKey], true);
+                }}
+                window.parent[kdKey] = handleKeyDown;
+                pDoc.addEventListener('keydown', handleKeyDown, true);
 
-def _bind_column_delete_key(selected_del_cols: list, df_cur: pd.DataFrame, filename: str, key_prefix: str, orch_obj):
-    """Ô nhận tín hiệu ẩn nằm dưới bảng chính để nhận danh sách cột cần xóa khi bấm phím Delete."""
-    _step_tag = "s1" if key_prefix.startswith("s1_") else "s2"
-    st.text_input("", key=f"{_step_tag}_delcol_payload", label_visibility="collapsed")
+                // Hook nút Lưu sửa nhanh / Lưu dữ liệu để gửi toàn bộ các ô đã sửa
+                const saveKey = '__diUnifiedSave_{step_tag}';
+                if (window.parent[saveKey]) {{
+                    pDoc.removeEventListener('click', window.parent[saveKey], true);
+                }}
+                window.parent[saveKey] = function(ev) {{
+                    const btn = ev.target && ev.target.closest ? ev.target.closest('.st-key-{save_btn_key} button') : null;
+                    if (!btn) return;
+                    if (Object.keys(pendingEdits).length > 0) {{
+                        ev.preventDefault();
+                        ev.stopPropagation();
+                        sendPayload({{ action: 'save_edits', edits: pendingEdits }});
+                    }}
+                }};
+                pDoc.addEventListener('click', window.parent[saveKey], true);
+            }} catch (err) {{}}
+        }})();
+        </script></body></html>""",
+        height=height + 4,
+        scrolling=False,
+    )
+    st.text_input("table_payload", key=payload_key, label_visibility="collapsed")
 
 
 def _format_groups_preview(groups: list, max_show: int = 3) -> str:
@@ -1691,16 +1982,12 @@ try:
                 s1_view_df, display_cols, s1_is_filtered, s1_has_show_cols = _render_excel_filter_toolbar(
                     s1_df_cur, f"s1_{s1_chosen_file}"
                 )
-                _s1_del_cols = _render_column_delete_bar(s1_df_cur, display_cols, s1_chosen_file, f"s1_{s1_chosen_file}", orch)
-
-                _s1_col_cfg = {c: st.column_config.Column(width="medium") for c in display_cols}
-                if len(s1_view_df) > 1000:
-                    s1_slice = s1_view_df[display_cols].iloc[:500]
-                    s1_edited = st.data_editor(s1_slice, column_config=_s1_col_cfg, **_W_STRETCH, num_rows="dynamic", height=500, key=f"s1_editor_{s1_chosen_file}")
-                else:
-                    s1_slice = s1_view_df[display_cols]
-                    s1_edited = st.data_editor(s1_slice, column_config=_s1_col_cfg, **_W_STRETCH, num_rows="dynamic", height=440, key=f"s1_editor_{s1_chosen_file}")
-                _bind_column_delete_key(_s1_del_cols, s1_df_cur, s1_chosen_file, f"s1_{s1_chosen_file}", orch)
+                _render_unified_editable_table(
+                    s1_view_df, display_cols, s1_df_cur, s1_chosen_file, "s1", orch,
+                    height=440 if len(s1_view_df) <= 1000 else 500,
+                    save_btn_key="btn_save_step1",
+                )
+                s1_edited = s1_view_df[display_cols].iloc[:500] if len(s1_view_df) > 1000 else s1_view_df[display_cols]
 
                 _s1_undo_cnt = len(st.session_state.get("_df_undo_stack", {}).get(s1_chosen_file, []))
                 if s1_is_filtered and _s1_undo_cnt > 0:
@@ -2154,29 +2441,12 @@ try:
                     s2_view_df, s2_display_cols, s2_is_filtered, s2_has_show_cols = _render_excel_filter_toolbar(
                         df_current, f"s2_{selected_file}"
                     )
-                    _s2_del_cols = _render_column_delete_bar(df_current, s2_display_cols, selected_file, f"s2_{selected_file}", orch)
-                    _s2_col_cfg = {c: st.column_config.Column(width="medium") for c in s2_display_cols}
-                    if len(s2_view_df) > 1000:
-                        df_slice = s2_view_df[s2_display_cols].iloc[:500]
-                        edited_slice = st.data_editor(
-                            df_slice,
-                            column_config=_s2_col_cfg,
-                            **_W_STRETCH,
-                            num_rows="dynamic",
-                            height=540,
-                            key=f"editor_{selected_file}_large"
-                        )
-                    else:
-                        st.caption("Nhấp đúp vào ô bất kỳ để sửa trực tiếp, sau đó bấm nút **Lưu Dữ Liệu Đã Sửa** hoặc **Làm Sạch & Chuẩn Hóa** bên dưới:")
-                        edited_slice = st.data_editor(
-                            s2_view_df[s2_display_cols],
-                            column_config=_s2_col_cfg,
-                            **_W_STRETCH,
-                            num_rows="dynamic",
-                            height=500,
-                            key=f"editor_{selected_file}"
-                        )
-                    _bind_column_delete_key(_s2_del_cols, df_current, selected_file, f"s2_{selected_file}", orch)
+                    _render_unified_editable_table(
+                        s2_view_df, s2_display_cols, df_current, selected_file, "s2", orch,
+                        height=480 if len(s2_view_df) <= 1000 else 520,
+                        save_btn_key="btn_save_step2",
+                    )
+                    edited_slice = s2_view_df[s2_display_cols].iloc[:500] if len(s2_view_df) > 1000 else s2_view_df[s2_display_cols]
 
                     _s2_undo_cnt = len(st.session_state.get("_df_undo_stack", {}).get(selected_file, []))
                     if _s2_undo_cnt > 0:
