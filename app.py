@@ -22,56 +22,79 @@ from html import escape as _ui_escape
 from pathlib import Path as _UiPath
 from textwrap import dedent as _ui_dedent
 
-_FALLBACK_STYLES_CSS = ':root {\n    --ink: #0f2447;\n    --muted: #64748b;\n    --blue: #2563eb;\n    --blue-dark: #1d4ed8;\n    --line: #e2e8f1;\n    --surface: #ffffff;\n    --bg: #f6f8fc;\n}\n\nhtml { scroll-behavior: smooth; }\nbody, .stApp { font-family: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif; color: var(--ink); }\n[data-testid="stAppViewContainer"], [data-testid="stMain"] { background: var(--bg); }\n[data-testid="stHeader"] { background: transparent; height: 2.2rem; }\n[data-testid="stMainBlockContainer"] {\n    max-width: 1280px;\n    padding: 0.75rem clamp(1.1rem, 3vw, 2.75rem) 6rem;\n}\n[data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"] { gap: 1.15rem; }\n\n/* Quiet hover sidebar on desktop — zero left offset so main canvas matches clean full-width layout */\n[data-testid="stSidebar"] { background: #ffffff; border-right: 1px solid var(--line); }\n[data-testid="stSidebar"] > div:first-child { width: 260px; }\n[data-testid="stSidebarUserContent"] { padding: 1.6rem 1.15rem; }\n.brand { display: flex; gap: 12px; align-items: center; margin-bottom: 2.1rem; }\n.brand-symbol { width: 39px; height: 41px; background: #2563eb; border-radius: 12px; display: flex; align-items: end; justify-content: center; gap: 3px; padding: 11px 8px; box-sizing: border-box; }\n.brand-symbol i { width: 5px; background: white; border-radius: 2px; height: 9px; }\n.brand-symbol i:nth-child(2) { height: 15px; opacity: .7; }\n.brand-symbol i:nth-child(3) { height: 20px; }\n.brand strong { display: block; font-size: 1.2rem; color: var(--ink); letter-spacing: -.5px; }\n.brand span { display: block; font-size: .72rem; letter-spacing: .5px; color: var(--muted); margin-top: 2px; }\n.sidebar-label { color: #8994a5; font-size: .72rem; font-weight: 700; letter-spacing: 1.3px; margin: 0 0 .7rem .6rem; }\n.st-key-workspace_nav { gap: .4rem; }\n.st-key-workspace_nav .stButton { width: 100%; }\n.st-key-workspace_nav .stButton button { justify-content: flex-start; padding: .68rem .9rem; width: 100%; border: none; background: transparent; color: #5b6b82; box-shadow: none; }\n.st-key-workspace_nav .stButton button[kind="primary"] { background: #edf3ff; color: #2156c7; border: none; }\n.st-key-workspace_nav .stButton button[kind="primary"] p { font-weight: 650; }\n.st-key-workspace_nav .stButton button:hover { background: #f2f5fa; color: #2156c7; transform: none; box-shadow: none; }\n.st-key-workspace_nav .stButton button[kind="primary"]:hover { background: #e5eeff; }\n[data-testid="stSidebar"] hr { margin: 1.25rem 0; border-color: var(--line); }\n\n@media (hover: hover) and (pointer: fine) {\n    [data-testid="stSidebar"] {\n        position: fixed !important;\n        inset: 0 auto 0 0;\n        width: 260px !important;\n        min-width: 260px !important;\n        height: 100dvh;\n        transform: translateX(-248px) !important;\n        visibility: visible !important;\n        transition: transform 220ms cubic-bezier(.2, .8, .2, 1), box-shadow 220ms;\n        z-index: 1005;\n        overflow: visible;\n        box-shadow: none;\n        background: transparent;\n        border-right-color: transparent;\n    }\n    [data-testid="stSidebar"]:hover,\n    [data-testid="stSidebar"]:focus-within {\n        transform: translateX(0) !important;\n        background: #ffffff;\n        border-right-color: var(--line);\n        box-shadow: 12px 0 40px rgba(15, 36, 71, 0.10);\n    }\n    [data-testid="stSidebar"]::after {\n        content: "";\n        position: absolute;\n        right: 3px;\n        top: calc(50% - 24px);\n        width: 4px;\n        height: 48px;\n        border-radius: 999px;\n        background: #cbd5e1;\n        opacity: .65;\n        pointer-events: none;\n        transition: opacity 180ms;\n    }\n    [data-testid="stSidebar"]:hover::after,\n    [data-testid="stSidebar"]:focus-within::after { opacity: 0; }\n    [data-testid="stSidebarCollapseButton"], [data-testid="stSidebarCollapsedControl"], [data-testid="stExpandSidebarButton"] { display: none; }\n    [data-testid="stMain"] { margin-left: 0 !important; width: 100% !important; }\n    [data-testid="stSidebarUserContent"] { padding-top: 2rem; }\n}\n\n/* Topbar (Images 1-6): step pill + loaded count chip on left, rounded AI Settings popover on right */\n.st-key-workspace_topbar {\n    padding-bottom: 0.9rem;\n    border-bottom: 1px solid #e6ecf5;\n    margin-bottom: 0.1rem;\n}\n.app-topline {\n    display: flex;\n    align-items: center;\n    flex-wrap: wrap;\n    gap: 10px;\n    color: var(--muted);\n    font-size: .82rem;\n}\n.step-pill-badge {\n    display: inline-flex;\n    align-items: center;\n    background: #ffffff;\n    border: 1px solid #dce5f2;\n    border-radius: 999px;\n    padding: 6px 14px;\n    font-size: .82rem;\n    font-weight: 700;\n    color: #162f56;\n    box-shadow: 0 1px 3px rgba(15, 36, 71, 0.03);\n}\n.session-chip {\n    display: inline-flex;\n    align-items: center;\n    gap: 7px;\n    border: 1px solid #e6ecf5;\n    background: #f8fafd;\n    border-radius: 999px;\n    padding: 5px 13px;\n    white-space: nowrap;\n    color: #5b6d85;\n    font-size: .79rem;\n    font-weight: 600;\n}\n.session-chip .chip-dot {\n    width: 7px;\n    height: 7px;\n    border-radius: 50%;\n    background: #94a3b8;\n    display: inline-block;\n}\n.session-chip.has-files {\n    background: #f2fbf7;\n    border-color: #d1fae5;\n    color: #1e6049;\n}\n.session-chip.has-files .chip-dot {\n    background: #10b981;\n}\n.st-key-workspace_topbar [data-testid="stPopover"] button {\n    background: #ffffff !important;\n    border: 1px solid #dbe4f0 !important;\n    border-radius: 999px !important;\n    font-size: .84rem !important;\n    font-weight: 650 !important;\n    color: #162f56 !important;\n    min-height: 38px !important;\n    padding: 0 16px !important;\n    box-shadow: 0 1px 4px rgba(15, 36, 71, 0.04) !important;\n}\n.st-key-workspace_topbar [data-testid="stPopover"] button:hover {\n    border-color: #93c5fd !important;\n    color: #2563eb !important;\n    background: #f8fbff !important;\n}\n\n/* Full-pill Top Wizard Bar (Images 1-5) */\n.st-key-top_wizard_bar {\n    background: #ffffff;\n    border: 1px solid #e2e8f1;\n    border-radius: 999px;\n    padding: 6px;\n    box-shadow: 0 2px 10px rgba(15, 36, 71, 0.035);\n}\n.st-key-top_wizard_bar button {\n    min-height: 42px !important;\n    border: 0 !important;\n    border-radius: 999px !important;\n    background: transparent !important;\n    color: #64748b !important;\n    font-size: .9rem !important;\n    font-weight: 600 !important;\n    box-shadow: none !important;\n}\n.st-key-top_wizard_bar button:hover:not(:disabled) {\n    background: #f1f5f9 !important;\n    color: #1e3a8a !important;\n}\n.st-key-top_wizard_bar .stButton button[kind="primary"] {\n    background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%) !important;\n    color: #ffffff !important;\n    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.28) !important;\n}\n.st-key-top_wizard_bar .stButton button[kind="primary"] p {\n    font-weight: 700 !important;\n    color: #ffffff !important;\n}\n.st-key-top_wizard_bar button:disabled {\n    background: transparent !important;\n    color: #94a3b8 !important;\n    opacity: .75;\n}\n\n/* Page Headings (Images 1-5) */\n.eyebrow {\n    color: #2563eb;\n    font-size: .78rem;\n    font-weight: 800;\n    letter-spacing: .07em;\n    line-height: 1.5;\n    display: inline-block;\n}\n.page-heading { margin: .25rem 0 .25rem; }\n.page-heading h1 {\n    font-size: clamp(1.7rem, 2.5vw, 2.15rem);\n    font-weight: 800;\n    color: var(--ink);\n    letter-spacing: -.025em;\n    line-height: 1.25;\n    margin: .2rem 0 .35rem;\n    padding: 0;\n}\n.page-heading p { font-size: .94rem; color: var(--muted); margin: 0; line-height: 1.6; }\n\n/* Crisp White Surface Cards (Images 1-6) */\n.st-key-zone_upload_left, .st-key-zone_gsheet_right, .st-key-zone_biz_context,\n.st-key-zone_step1_table, .st-key-zone_step1_summary,\n.st-key-zone_step2_workspace, .st-key-zone_step2_audit_card,\n.st-key-err_preview_card, .st-key-s2_err_preview_card {\n    background: #ffffff;\n    border: 1px solid #e2e8f1;\n    border-radius: 18px;\n    padding: 1.4rem 1.55rem;\n    box-shadow: 0 2px 10px rgba(15, 36, 71, 0.03);\n    min-width: 0;\n}\n.st-key-zone_upload_left, .st-key-zone_gsheet_right { min-height: 270px; }\n\n/* Step 1 dashed upload & Google Sheet inner boxes (Image 1) */\n[data-testid="stFileUploaderDropzone"] {\n    background: #f8fbff !important;\n    border: 1.5px dashed #93c5fd !important;\n    border-radius: 14px !important;\n    padding: 1.2rem 1rem !important;\n}\n.st-key-step1_gsheet_inner_box {\n    background: #fafcff;\n    border: 1.5px dashed #cbd5e1;\n    border-radius: 14px;\n    padding: 1.15rem;\n}\n.st-key-btn_load_sample_s1 button {\n    background: #ffffff !important;\n    border: 1px solid #cbd5e1 !important;\n    color: #1e3a5f !important;\n    font-weight: 650 !important;\n    border-radius: 12px !important;\n}\n.st-key-btn_load_sample_s1 button:hover {\n    border-color: #93c5fd !important;\n    background: #f8fbff !important;\n    color: #2563eb !important;\n}\n\n/* Step 1 Warning Banner (Image 2) */\n.s1-warn-banner {\n    background: #fffbeb;\n    border: 1.5px solid #f59e0b;\n    border-radius: 14px;\n    padding: 14px 18px;\n    color: #78350f;\n    font-size: .88rem;\n    line-height: 1.6;\n}\n.s1-warn-banner .s1-warn-title { font-weight: 700; color: #1e293b; margin-bottom: 4px; }\n.s1-warn-banner .s1-file-pill {\n    background: #fef3c7;\n    color: #92400e;\n    border-radius: 6px;\n    padding: 2px 8px;\n    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;\n    font-size: .84rem;\n    font-weight: 600;\n}\n.s1-warn-banner ul { margin: 4px 0 0 18px; padding: 0; }\n.s1-warn-banner li { margin: 2px 0; color: #334155; }\n\n/* Business Context Card (Images 1-2) */\n.st-key-zone_biz_context > [data-testid="stVerticalBlock"] { gap: 1.05rem; }\n.context-heading h2 { font-size: 1.18rem; font-weight: 800; letter-spacing: -.015em; margin: 0 0 .25rem; padding: 0; color: var(--ink); }\n.context-heading p { font-size: .88rem; color: var(--muted); line-height: 1.55; margin: 0; }\n.st-key-zone_biz_context [data-baseweb="input"],\n.st-key-zone_biz_context [data-baseweb="textarea"] { background: #fbfcfe; border: 1px solid #dde5f0; border-radius: 10px; }\n.st-key-zone_biz_context [data-testid="stTextInput"] input,\n.st-key-zone_biz_context [data-testid="stTextArea"] textarea { background: transparent; line-height: 1.6; font-size: .9rem; }\n.st-key-context_actions { padding-top: .25rem; }\n.st-key-context_actions [data-testid="stHorizontalBlock"] { align-items: center; }\n.st-key-context_actions [data-testid="stCaptionContainer"] p { font-size: .82rem; line-height: 1.5; margin: 0; color: #7b889c; }\n.st-key-btn_ai_suggest_ctx button {\n    background: #ffffff !important;\n    border: 1px solid #dbe4f0 !important;\n    color: #1e3a5f !important;\n    font-weight: 650 !important;\n    border-radius: 10px !important;\n}\n.st-key-btn_ai_suggest_ctx button:hover:not(:disabled) {\n    background: #f5f8ff !important;\n    border-color: #93c5fd !important;\n    color: #2563eb !important;\n}\n.st-key-context_feedback { padding: .7rem 1rem; background: #f3f8f6; border: 1px solid #d1fae5; border-radius: 10px; }\n.st-key-context_feedback [data-testid="stCaptionContainer"] p { color: #065f46; margin: 0; }\n\n/* Table toolbar inside white card (Image 2) */\n[class*="_table_toolbar"] { background: transparent; border: 0; padding: 0; }\n[class*="_table_toolbar"] [data-testid="stExpander"] {\n    background: #f8fafc !important;\n    border: 1px solid #e2e8f1 !important;\n    border-radius: 10px !important;\n}\n[class*="_table_toolbar"] [data-testid="stExpander"] summary { color: #1e3a5f; font-weight: 600; font-size: .86rem; }\n\n/* Step 2 Mint-Green Clean Success Banner (Image 4) & Soft Ice-Blue Audit Log (Images 3 & 4) */\n.st-key-s2_clean_success_card {\n    background: #ecfdf5 !important;\n    border: 1px solid #a7f3d0 !important;\n    border-radius: 14px !important;\n    padding: 18px 22px !important;\n}\n.s2-clean-title { color: #047857; font-size: 1.05rem; font-weight: 800; margin-bottom: 8px; }\n.s2-clean-list { margin: 0 0 0 18px; padding: 0; color: #065f46; font-size: .88rem; line-height: 1.75; }\n.s2-audit-log-box {\n    background: #f4f8ff;\n    border: 1px solid #dbeafe;\n    border-radius: 14px;\n    padding: 16px 20px;\n    color: #1e3a5f;\n    font-size: .87rem;\n    line-height: 1.7;\n}\n.s2-audit-log-box .s2-audit-title { font-weight: 800; color: #0f2447; margin-bottom: 6px; font-size: .92rem; }\n.s2-audit-log-box ul { margin: 0 0 0 18px; padding: 0; color: #334155; }\n.s2-audit-log-box li { margin: 2px 0; }\n\n/* Image 7 — Floating Pill CTA Button pinned at bottom-right corner */\n.st-key-floating_approve_step1,\n.st-key-floating_approve_step2,\n.st-key-floating_download_step3 {\n    position: fixed !important;\n    right: 24px !important;\n    bottom: 56px !important;\n    z-index: 1002 !important;\n    width: auto !important;\n    max-width: calc(100vw - 32px) !important;\n    background: rgba(255, 255, 255, 0.96) !important;\n    padding: 6px !important;\n    border-radius: 999px !important;\n    border: 1.5px solid #bfdbfe !important;\n    box-shadow: 0 12px 32px rgba(37, 99, 235, 0.24), 0 4px 12px rgba(15, 23, 42, 0.08) !important;\n    backdrop-filter: blur(10px) !important;\n}\n.st-key-floating_approve_step1 [data-testid="stVerticalBlock"],\n.st-key-floating_approve_step2 [data-testid="stVerticalBlock"],\n.st-key-floating_download_step3 [data-testid="stVerticalBlock"] {\n    gap: 0 !important;\n}\n.st-key-floating_approve_step1 .stButton,\n.st-key-floating_approve_step2 .stButton,\n.st-key-floating_download_step3 .stDownloadButton {\n    width: auto !important;\n}\n.st-key-floating_approve_step1 button,\n.st-key-floating_approve_step2 button,\n.st-key-floating_download_step3 button {\n    min-height: 46px !important;\n    padding: 0 26px !important;\n    border-radius: 999px !important;\n    background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%) !important;\n    border: none !important;\n    color: #ffffff !important;\n    font-weight: 700 !important;\n    white-space: nowrap !important;\n    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.28) !important;\n}\n.st-key-floating_approve_step1 button p,\n.st-key-floating_approve_step2 button p,\n.st-key-floating_download_step3 button p {\n    font-size: .92rem !important;\n    font-weight: 700 !important;\n    color: #ffffff !important;\n}\n.st-key-floating_approve_step1 button:hover:not(:disabled),\n.st-key-floating_approve_step2 button:hover:not(:disabled),\n.st-key-floating_download_step3 button:hover:not(:disabled) {\n    background: linear-gradient(90deg, #1d4ed8 0%, #1e40af 100%) !important;\n    transform: translateY(-1px);\n    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.36) !important;\n}\n.st-key-floating_approve_step1 button:disabled,\n.st-key-floating_approve_step2 button:disabled {\n    background: #94a3b8 !important;\n    box-shadow: none !important;\n    opacity: .85;\n}\n\n/* Native Streamlit widgets harmony */\n[data-testid="stMetric"] { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 1.1rem; }\n[data-testid="stMetricValue"] { font-weight: 700; color: var(--ink); }\n[data-testid="stAlert"] { border-radius: 12px; border: 1px solid #e1e9f4; }\n[data-testid="stExpander"] { border-radius: 12px; background: white; border-color: var(--line); }\n[data-testid="stWidgetLabel"] p { font-size: .84rem; font-weight: 650; color: #1e3a5f; }\n.stMarkdown p, .stMarkdown li { line-height: 1.65; }\n.stMarkdown h3 { font-size: 1.2rem; font-weight: 750; color: var(--ink); }\n.stMarkdown h4 { font-size: 1.05rem; font-weight: 750; color: var(--ink); }\n.stMarkdown h5 { font-size: .96rem; font-weight: 700; color: var(--ink); }\n.stButton button, .stDownloadButton button {\n    min-height: 42px;\n    border-radius: 10px;\n    border: 1px solid #dce3ee;\n    background: #ffffff;\n    color: #162f56;\n    font-weight: 600;\n    transition: background-color 160ms, border-color 160ms, box-shadow 160ms, transform 160ms;\n}\n.stButton button:hover:not(:disabled), .stDownloadButton button:hover:not(:disabled) {\n    border-color: #93c5fd;\n    color: #2563eb;\n    background: #f8fbff;\n}\n.stButton button p, .stDownloadButton button p { font-size: .875rem; font-weight: 600; }\n.stButton button[kind="primary"], .stDownloadButton button[kind="primary"] {\n    background: #2563eb;\n    border-color: #2563eb;\n    color: white;\n}\n.stButton button[kind="primary"] p, .stDownloadButton button[kind="primary"] p { color: white; font-weight: 700; }\n.stButton button[kind="primary"]:hover:not(:disabled), .stDownloadButton button[kind="primary"]:hover:not(:disabled) {\n    background: #1d4ed8;\n    border-color: #1d4ed8;\n    color: white;\n}\nbutton:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px solid #729cff !important; outline-offset: 2px !important; }\n[data-baseweb="input"], [data-baseweb="select"] > div, [data-baseweb="textarea"] { border-radius: 10px !important; background-color: #ffffff; }\n[data-testid="stTextInput"] input, [data-testid="stTextArea"] textarea { font-size: .9rem; }\n[data-testid="stDataFrame"], [data-testid="stDataEditor"] { border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f1; }\n\n/* Seamless Step 3 Dashboard Styles (Images 5 & 6) */\n.di-dash-root { color: #1e293b; font-family: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif; }\n.di-dash-root * { box-sizing: border-box; }\n.di-dash-card {\n    background: #ffffff;\n    border: 1px solid #e2e8f1;\n    border-radius: 16px;\n    padding: 20px 22px;\n    box-shadow: 0 2px 10px rgba(15, 36, 71, 0.03);\n    margin-bottom: 16px;\n}\n.di-badge-pill {\n    background: #eff6ff;\n    color: #2563eb;\n    border: 1px solid #dbeafe;\n    font-size: .76rem;\n    font-weight: 700;\n    padding: 4px 12px;\n    border-radius: 999px;\n    display: inline-block;\n    white-space: nowrap;\n}\n.di-kpi-grid {\n    display: grid;\n    grid-template-columns: repeat(4, minmax(0, 1fr));\n    gap: 14px;\n    margin-bottom: 16px;\n}\n.di-kpi-box {\n    background: #ffffff;\n    border: 1px solid #e2e8f1;\n    border-radius: 14px;\n    padding: 16px 18px;\n    box-shadow: 0 2px 8px rgba(15, 36, 71, 0.025);\n}\n.di-grid-2 {\n    display: grid;\n    grid-template-columns: 1.2fr 1fr;\n    gap: 16px;\n    margin-bottom: 16px;\n}\n.di-chart-caption {\n    margin-top: 14px;\n    padding: 11px 14px;\n    background: #f8fbff;\n    border-left: 3px solid #2563eb;\n    border-radius: 0 10px 10px 0;\n    font-size: .84rem;\n    color: #334155;\n    line-height: 1.55;\n}\n.di-table-wrap { overflow-x: auto; border: 1px solid #e8eef6; border-radius: 12px; }\n.di-table { width: 100%; border-collapse: collapse; min-width: 560px; }\n.di-table th {\n    padding: 11px 14px;\n    text-align: left;\n    font-size: .8rem;\n    font-weight: 700;\n    color: #163360;\n    background: #f5f9ff;\n    border-bottom: 1px solid #dbe6f5;\n}\n.di-table td {\n    padding: 11px 14px;\n    font-size: .85rem;\n    color: #1e293b;\n    border-bottom: 1px solid #eef2f7;\n    font-weight: 500;\n}\n.di-table tr:last-child td { border-bottom: 0; }\n.di-table td.rank-col { color: #1d4ed8; font-weight: 700; }\n.di-table td.group-col { color: #0f2447; font-weight: 700; }\n\n.more-groups-btn { color: #2563eb; cursor: pointer; }\n.inline-groups-details { display: inline-block; }\n.more-groups-expanded { padding: .75rem; background: #eff5ff; border: 1px solid #dbe5f6; border-radius: 8px; }\n\n@keyframes page-in { from { opacity: .7; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }\n.page-heading { animation: page-in 260ms ease-out both; }\n\n@media (max-width: 960px) {\n    .di-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }\n    .di-grid-2 { grid-template-columns: minmax(0, 1fr); }\n}\n@media (max-width: 767px) {\n    [data-testid="stMainBlockContainer"] { padding: 0.75rem 0.9rem 5.5rem; }\n    .st-key-top_wizard_bar [data-testid="stHorizontalBlock"] { flex-wrap: nowrap; gap: .2rem; }\n    .st-key-top_wizard_bar [data-testid="stColumn"] { min-width: 0; flex: 1 1 0; width: 33%; }\n    .st-key-top_wizard_bar button { padding: .45rem .25rem !important; }\n    .st-key-top_wizard_bar button p { font-size: .76rem !important; }\n    .st-key-zone_upload_left, .st-key-zone_gsheet_right, .st-key-zone_biz_context,\n    .st-key-zone_step1_table, .st-key-zone_step2_audit_card, .st-key-zone_step2_workspace { padding: 1rem; }\n    .st-key-source_divider { display: none; }\n    .st-key-floating_approve_step1,\n    .st-key-floating_approve_step2,\n    .st-key-floating_download_step3 { right: 14px !important; bottom: 18px !important; }\n    .st-key-floating_approve_step1 button,\n    .st-key-floating_approve_step2 button,\n    .st-key-floating_download_step3 button { padding: 0 18px !important; min-height: 42px !important; }\n    .di-kpi-grid { grid-template-columns: minmax(0, 1fr); }\n}\n@media (prefers-reduced-motion: reduce) {\n    *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }\n}\n'
+_FALLBACK_STYLES_CSS = '/* DI_THEME_V3 */\n:root {\n    --ink: #1e3a8a;\n    --ink-body: #334155;\n    --muted: #64748b;\n    --blue: #2563eb;\n    --blue-dark: #1d4ed8;\n    --line: #e2e8f0;\n    --surface: #ffffff;\n    --bg: #f4f7fb;\n}\n\nhtml { scroll-behavior: smooth; }\nbody, .stApp {\n    font-family: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif !important;\n    color: var(--ink-body);\n}\n[data-testid="stAppViewContainer"], [data-testid="stMain"] {\n    background: var(--bg) !important;\n    overflow-x: hidden;\n}\n[data-testid="stHeader"] {\n    background: transparent !important;\n    height: 2.2rem !important;\n    pointer-events: none;\n}\n[data-testid="stHeader"] * { pointer-events: auto; }\n[data-testid="stMainBlockContainer"] {\n    max-width: 1220px !important;\n    padding: 0 clamp(1.1rem, 3vw, 2.5rem) 6.5rem !important;\n}\n[data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"] { gap: 1rem !important; }\n\n/* Quiet hover sidebar on desktop — zero left offset so main layout matches reference 100% */\n[data-testid="stSidebar"] { background: #ffffff !important; border-right: 1px solid var(--line) !important; }\n[data-testid="stSidebar"] > div:first-child { width: 260px; }\n[data-testid="stSidebarUserContent"] { padding: 1.6rem 1.15rem; }\n.brand { display: flex; gap: 12px; align-items: center; margin-bottom: 2.1rem; }\n.brand-symbol { width: 39px; height: 41px; background: #2563eb; border-radius: 12px; display: flex; align-items: end; justify-content: center; gap: 3px; padding: 11px 8px; box-sizing: border-box; }\n.brand-symbol i { width: 5px; background: white; border-radius: 2px; height: 9px; }\n.brand-symbol i:nth-child(2) { height: 15px; opacity: .7; }\n.brand-symbol i:nth-child(3) { height: 20px; }\n.brand strong { display: block; font-size: 1.2rem; color: #1e3a8a !important; letter-spacing: -.5px; }\n.brand span { display: block; font-size: .72rem; letter-spacing: .5px; color: var(--muted); margin-top: 2px; }\n.sidebar-label { color: #8994a5; font-size: .72rem; font-weight: 700; letter-spacing: 1.3px; margin: 0 0 .7rem .6rem; }\n.st-key-workspace_nav { gap: .4rem; }\n.st-key-workspace_nav .stButton { width: 100%; }\n.st-key-workspace_nav .stButton button { justify-content: flex-start !important; padding: .68rem .9rem !important; width: 100%; border: none !important; background: transparent !important; color: #5b6b82 !important; box-shadow: none !important; }\n.st-key-workspace_nav .stButton button p { color: #5b6b82 !important; }\n.st-key-workspace_nav .stButton button[kind="primary"] { background: #edf3ff !important; color: #1d4ed8 !important; border: none !important; }\n.st-key-workspace_nav .stButton button[kind="primary"] p { font-weight: 700 !important; color: #1d4ed8 !important; }\n.st-key-workspace_nav .stButton button:hover { background: #f2f5fa !important; }\n[data-testid="stSidebar"] hr { margin: 1.25rem 0; border-color: var(--line); }\n\n@media (hover: hover) and (pointer: fine) {\n    [data-testid="stSidebar"] {\n        position: fixed !important;\n        inset: 0 auto 0 0;\n        width: 260px !important;\n        min-width: 260px !important;\n        height: 100dvh;\n        transform: translateX(-250px) !important;\n        visibility: visible !important;\n        transition: transform 220ms cubic-bezier(.2, .8, .2, 1), box-shadow 220ms;\n        z-index: 1005;\n        overflow: visible;\n        box-shadow: none;\n        background: transparent !important;\n        border-right-color: transparent !important;\n    }\n    [data-testid="stSidebar"]:hover,\n    [data-testid="stSidebar"]:focus-within {\n        transform: translateX(0) !important;\n        background: #ffffff !important;\n        border-right-color: var(--line) !important;\n        box-shadow: 12px 0 40px rgba(30, 58, 138, 0.12);\n    }\n    [data-testid="stSidebar"]::after {\n        content: "";\n        position: absolute;\n        right: 2px;\n        top: calc(50% - 22px);\n        width: 4px;\n        height: 44px;\n        border-radius: 999px;\n        background: #cbd5e1;\n        opacity: .55;\n        pointer-events: none;\n        transition: opacity 180ms;\n    }\n    [data-testid="stSidebar"]:hover::after,\n    [data-testid="stSidebar"]:focus-within::after { opacity: 0; }\n    [data-testid="stSidebarCollapseButton"], [data-testid="stSidebarCollapsedControl"], [data-testid="stExpandSidebarButton"] { display: none !important; }\n    [data-testid="stMain"] { margin-left: 0 !important; width: 100% !important; }\n    [data-testid="stSidebarUserContent"] { padding-top: 2rem; }\n}\n\n/* Full-bleed crisp WHITE Topbar starting right at the top (Images 1-6) */\n.st-key-workspace_topbar {\n    background: #ffffff !important;\n    box-shadow: 0 0 0 100vmax #ffffff, 0 1px 0 100vmax #e2e8f0 !important;\n    clip-path: inset(0 -100vmax -2px -100vmax) !important;\n    padding: 0.72rem 0 !important;\n    margin-bottom: 0.45rem !important;\n    position: relative;\n    z-index: 20;\n}\n.st-key-workspace_topbar > div { gap: 0 !important; }\n.app-topline {\n    display: flex;\n    align-items: center;\n    flex-wrap: wrap;\n    gap: 10px;\n    color: var(--muted);\n    font-size: .82rem;\n}\n.step-pill-badge {\n    display: inline-flex;\n    align-items: center;\n    background: #ffffff;\n    border: 1px solid #dce5f2;\n    border-radius: 999px;\n    padding: 6px 15px;\n    font-size: .82rem;\n    font-weight: 700;\n    color: #1e3a8a !important;\n    box-shadow: 0 1px 3px rgba(30, 58, 138, 0.04);\n}\n.session-chip {\n    display: inline-flex;\n    align-items: center;\n    gap: 7px;\n    border: 1px solid #eef2f7;\n    background: #f8fafc;\n    border-radius: 999px;\n    padding: 5px 13px;\n    white-space: nowrap;\n    color: #64748b !important;\n    font-size: .79rem;\n    font-weight: 600;\n}\n.session-chip .chip-dot {\n    width: 7px;\n    height: 7px;\n    border-radius: 50%;\n    background: #94a3b8;\n    display: inline-block;\n}\n.session-chip.has-files {\n    background: #f3fbf7;\n    border-color: #d1fae5;\n    color: #475569 !important;\n}\n.session-chip.has-files .chip-dot {\n    background: #10b981;\n}\n.st-key-workspace_topbar [data-testid="stPopover"] button {\n    background: #ffffff !important;\n    border: 1px solid #d5e0ee !important;\n    border-radius: 10px !important;\n    font-size: .84rem !important;\n    font-weight: 700 !important;\n    color: #1e3a8a !important;\n    min-height: 38px !important;\n    padding: 0 14px !important;\n    box-shadow: 0 1px 3px rgba(30, 58, 138, 0.04) !important;\n    white-space: nowrap !important;\n}\n.st-key-workspace_topbar [data-testid="stPopover"] button p {\n    color: #1e3a8a !important;\n    font-weight: 700 !important;\n}\n.st-key-workspace_topbar [data-testid="stPopover"] button:hover {\n    border-color: #93c5fd !important;\n    background: #f8fbff !important;\n}\n\n/* Full-pill Top Wizard Bar (Images 1-5) */\n.st-key-top_wizard_bar {\n    background: #ffffff !important;\n    border: 1px solid #e2e8f0 !important;\n    border-radius: 999px !important;\n    padding: 5px 6px !important;\n    box-shadow: 0 2px 10px rgba(30, 58, 138, 0.04) !important;\n}\n.st-key-top_wizard_bar > div { gap: 0 !important; padding: 0 !important; }\n.st-key-top_wizard_bar [data-testid="stHorizontalBlock"] { gap: 4px !important; }\n.st-key-top_wizard_bar [data-testid="stButton"] button {\n    min-height: 40px !important;\n    border: 0 !important;\n    border-radius: 999px !important;\n    background: transparent !important;\n    color: #64748b !important;\n    font-size: .88rem !important;\n    font-weight: 600 !important;\n    box-shadow: none !important;\n}\n.st-key-top_wizard_bar [data-testid="stButton"] button p {\n    color: #64748b !important;\n    font-weight: 600 !important;\n    font-size: .88rem !important;\n}\n.st-key-top_wizard_bar [data-testid="stButton"] button:hover:not(:disabled) {\n    background: #f1f5f9 !important;\n}\n.st-key-top_wizard_bar [data-testid="stButton"] button:hover:not(:disabled) p {\n    color: #1e3a8a !important;\n}\n.st-key-top_wizard_bar [data-testid="stButton"] button[kind="primary"] {\n    background: #2563eb !important;\n    color: #ffffff !important;\n    box-shadow: 0 3px 10px rgba(37, 99, 235, 0.28) !important;\n}\n.st-key-top_wizard_bar [data-testid="stButton"] button[kind="primary"] p {\n    font-weight: 700 !important;\n    color: #ffffff !important;\n}\n.st-key-top_wizard_bar [data-testid="stButton"] button:disabled {\n    background: transparent !important;\n    opacity: 1 !important;\n}\n.st-key-top_wizard_bar [data-testid="stButton"] button:disabled p {\n    color: #94a3b8 !important;\n    font-weight: 600 !important;\n}\n\n/* Page Headings — exact #1e3a8a royal navy blue (Images 1-5) */\n[data-testid="stMarkdownContainer"] .eyebrow, .eyebrow {\n    color: #2563eb !important;\n    font-size: .76rem !important;\n    font-weight: 800 !important;\n    letter-spacing: .06em !important;\n    line-height: 1.4 !important;\n    display: inline-block;\n}\n.page-heading { margin: .15rem 0 .2rem; }\n[data-testid="stMarkdownContainer"] .page-heading h1,\n.page-heading h1 {\n    font-size: clamp(1.75rem, 2.5vw, 2.1rem) !important;\n    font-weight: 800 !important;\n    color: #1e3a8a !important;\n    letter-spacing: -.025em !important;\n    line-height: 1.22 !important;\n    margin: .18rem 0 .35rem !important;\n    padding: 0 !important;\n}\n[data-testid="stMarkdownContainer"] .page-heading p,\n.page-heading p {\n    font-size: .92rem !important;\n    color: #64748b !important;\n    margin: 0 !important;\n    line-height: 1.55 !important;\n}\n\n/* Crisp White Surface Cards (Images 1-6) */\n.st-key-zone_upload_left, .st-key-zone_gsheet_right, .st-key-zone_biz_context,\n.st-key-zone_step1_table, .st-key-zone_step1_summary,\n.st-key-zone_step2_workspace, .st-key-zone_step2_audit_card,\n.st-key-err_preview_card, .st-key-s2_err_preview_card {\n    background: #ffffff !important;\n    border: 1px solid #e2e8f0 !important;\n    border-radius: 16px !important;\n    padding: 1.35rem 1.5rem !important;\n    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.035) !important;\n    min-width: 0;\n}\n.st-key-zone_upload_left, .st-key-zone_gsheet_right { min-height: 280px; }\n\n/* Step 1 dashed upload zone — safe across Streamlit 1.50 - 1.67+ (Image 1) */\n[data-testid="stFileUploaderDropzone"] {\n    background: #f5f9ff !important;\n    border: 1.5px dashed #93c5fd !important;\n    border-radius: 14px !important;\n    padding: 1.35rem 1rem !important;\n    min-height: 132px !important;\n    display: flex !important;\n    flex-direction: column !important;\n    align-items: center !important;\n    justify-content: center !important;\n    text-align: center !important;\n    gap: 8px !important;\n}\n[data-testid="stFileUploaderDropzone"]:hover {\n    background: #eff6ff !important;\n    border-color: #2563eb !important;\n}\n[data-testid="stFileUploaderDropzoneInstructions"] {\n    display: flex !important;\n    flex-direction: column !important;\n    align-items: center !important;\n    justify-content: center !important;\n    gap: 3px !important;\n    color: #64748b !important;\n}\n[data-testid="stFileUploaderDropzoneInstructions"]::before {\n    content: "Nhấn để chọn tệp hoặc kéo thả vào đây";\n    display: block;\n    font-size: 0.9rem !important;\n    font-weight: 700 !important;\n    color: #1e3a8a !important;\n}\n[data-testid="stFileUploaderDropzone"] button {\n    background: #ffffff !important;\n    border: 1px solid #bfdbfe !important;\n    color: #2563eb !important;\n    border-radius: 10px !important;\n    font-size: 0.84rem !important;\n    font-weight: 700 !important;\n    min-height: 36px !important;\n    padding: 0 16px !important;\n}\n[data-testid="stFileUploaderDropzone"] button p,\n[data-testid="stFileUploaderDropzone"] button span {\n    color: #2563eb !important;\n    font-weight: 700 !important;\n}\n\n/* Step 1 Google Sheet dashed inner box (Image 1) */\n.st-key-step1_gsheet_inner_box {\n    background: #fafcff !important;\n    border: 1.5px dashed #d5dfec !important;\n    border-radius: 14px !important;\n    padding: 1.35rem 1.15rem !important;\n}\n.st-key-step1_gsheet_inner_box [data-testid="stVerticalBlock"] { gap: 0.85rem !important; }\n.st-key-btn_load_sample_s1 button {\n    background: #ffffff !important;\n    border: 1px solid #cbd5e1 !important;\n    border-radius: 10px !important;\n    min-height: 42px !important;\n}\n.st-key-btn_load_sample_s1 button p {\n    color: #1e3a8a !important;\n    font-weight: 700 !important;\n    font-size: .86rem !important;\n}\n.st-key-btn_load_sample_s1 button:hover {\n    border-color: #93c5fd !important;\n    background: #f8fbff !important;\n}\n\n/* Step 1 Warning Banner (Image 2) */\n.s1-warn-banner {\n    background: #fffbeb !important;\n    border: 1.5px solid #f59e0b !important;\n    border-radius: 14px !important;\n    padding: 14px 18px !important;\n    color: #78350f !important;\n    font-size: .88rem !important;\n    line-height: 1.65 !important;\n}\n.s1-warn-banner .s1-warn-title { font-weight: 700; color: #1e293b !important; margin-bottom: 4px; }\n.s1-warn-banner .s1-file-pill {\n    background: #fef3c7;\n    color: #92400e;\n    border-radius: 6px;\n    padding: 2px 8px;\n    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;\n    font-size: .84rem;\n    font-weight: 700;\n}\n.s1-warn-banner ul { margin: 4px 0 0 18px; padding: 0; }\n.s1-warn-banner li { margin: 2px 0; color: #334155 !important; }\n\n/* Business Context Card (Images 1-2) */\n.st-key-zone_biz_context > [data-testid="stVerticalBlock"] { gap: 0.95rem !important; }\n[data-testid="stMarkdownContainer"] .context-heading h2,\n.context-heading h2 {\n    font-size: 1.15rem !important;\n    font-weight: 800 !important;\n    letter-spacing: -.015em !important;\n    margin: 0 0 .2rem !important;\n    padding: 0 !important;\n    color: #1e3a8a !important;\n}\n[data-testid="stMarkdownContainer"] .context-heading p,\n.context-heading p { font-size: .86rem !important; color: #64748b !important; line-height: 1.5 !important; margin: 0 !important; }\n.st-key-zone_biz_context [data-baseweb="input"],\n.st-key-zone_biz_context [data-baseweb="textarea"] {\n    background: #ffffff !important;\n    border: 1px solid #d5dfec !important;\n    border-radius: 10px !important;\n}\n.st-key-zone_biz_context [data-testid="stTextInput"] input,\n.st-key-zone_biz_context [data-testid="stTextArea"] textarea {\n    background: transparent !important;\n    color: #1e293b !important;\n    line-height: 1.6 !important;\n    font-size: .89rem !important;\n}\n.st-key-context_actions { padding-top: .15rem; }\n.st-key-context_actions [data-testid="stHorizontalBlock"] { align-items: center !important; }\n.st-key-context_actions [data-testid="stCaptionContainer"] p { font-size: .82rem !important; line-height: 1.5 !important; margin: 0 !important; color: #64748b !important; }\n.st-key-btn_ai_suggest_ctx button {\n    background: #ffffff !important;\n    border: 1px solid #d5dfec !important;\n    border-radius: 10px !important;\n    padding: 0 18px !important;\n    min-height: 40px !important;\n}\n.st-key-btn_ai_suggest_ctx button p { color: #1e3a8a !important; font-weight: 700 !important; }\n.st-key-btn_ai_suggest_ctx button:disabled {\n    background: #f8fafc !important;\n    border-color: #e2e8f0 !important;\n}\n.st-key-btn_ai_suggest_ctx button:disabled p { color: #94a3b8 !important; }\n.st-key-btn_ai_suggest_ctx button:hover:not(:disabled) {\n    background: #f5f9ff !important;\n    border-color: #93c5fd !important;\n}\n.st-key-context_feedback { padding: .65rem 1rem; background: #f2fbf7; border: 1px solid #a7f3d0; border-radius: 10px; }\n.st-key-context_feedback [data-testid="stCaptionContainer"] p { color: #047857 !important; margin: 0; font-weight: 600; }\n\n/* Table toolbar inside white card (Image 2) */\n[class*="_table_toolbar"] { background: transparent !important; border: 0 !important; padding: 0 !important; }\n[class*="_table_toolbar"] [data-testid="stExpander"] {\n    background: #f8fafc !important;\n    border: 1px solid #e2e8f0 !important;\n    border-radius: 10px !important;\n}\n[class*="_table_toolbar"] [data-testid="stExpander"] summary,\n[class*="_table_toolbar"] [data-testid="stExpander"] summary p {\n    color: #1e3a8a !important;\n    font-weight: 700 !important;\n    font-size: .85rem !important;\n}\n\n/* Step 2 Checkbox titles, Mint-Green Clean Success Banner (Image 4) & Soft Ice-Blue Audit Log (Images 3 & 4) */\n.st-key-zone_step2_audit_card [data-testid="stCheckbox"] label p {\n    font-weight: 700 !important;\n    color: #1e3a8a !important;\n    font-size: .92rem !important;\n}\n.st-key-s2_clean_success_card {\n    background: #ecfdf5 !important;\n    border: 1px solid #86efac !important;\n    border-radius: 14px !important;\n    padding: 18px 22px !important;\n}\n.s2-clean-title { color: #047857 !important; font-size: 1.05rem !important; font-weight: 800 !important; margin-bottom: 8px; }\n.s2-clean-list { margin: 0 0 0 18px; padding: 0; color: #065f46 !important; font-size: .88rem !important; line-height: 1.75; }\n.s2-clean-list li, .s2-clean-list b { color: #065f46 !important; }\n.s2-audit-log-box {\n    background: #f2f7ff !important;\n    border: 1px solid #d6e6ff !important;\n    border-radius: 14px !important;\n    padding: 16px 20px !important;\n    color: #334155 !important;\n    font-size: .87rem !important;\n    line-height: 1.7;\n}\n.s2-audit-log-box .s2-audit-title { font-weight: 800 !important; color: #1e3a8a !important; margin-bottom: 6px; font-size: .92rem !important; }\n.s2-audit-log-box ul { margin: 0 0 0 18px; padding: 0; color: #334155 !important; }\n.s2-audit-log-box li { margin: 2px 0; color: #334155 !important; }\n.s2-audit-log-box b { color: #1e293b !important; }\n\n/* Image 7 — Floating Pill CTA Button pinned at bottom-right corner */\n.st-key-floating_approve_step1,\n.st-key-floating_approve_step2,\n.st-key-floating_download_step3 {\n    position: fixed !important;\n    right: 24px !important;\n    bottom: 56px !important;\n    z-index: 1002 !important;\n    width: auto !important;\n    max-width: calc(100vw - 32px) !important;\n    background: rgba(255, 255, 255, 0.96) !important;\n    padding: 6px !important;\n    border-radius: 999px !important;\n    border: 1.5px solid #bfdbfe !important;\n    box-shadow: 0 12px 32px rgba(37, 99, 235, 0.24), 0 4px 12px rgba(15, 36, 71, 0.08) !important;\n    backdrop-filter: blur(10px) !important;\n}\n.st-key-floating_approve_step1 [data-testid="stVerticalBlock"],\n.st-key-floating_approve_step2 [data-testid="stVerticalBlock"],\n.st-key-floating_download_step3 [data-testid="stVerticalBlock"] {\n    gap: 0 !important;\n}\n.st-key-floating_approve_step1 .stButton,\n.st-key-floating_approve_step2 .stButton,\n.st-key-floating_download_step3 .stDownloadButton {\n    width: auto !important;\n}\n.st-key-floating_approve_step1 button,\n.st-key-floating_approve_step2 button,\n.st-key-floating_download_step3 button {\n    min-height: 46px !important;\n    padding: 0 26px !important;\n    border-radius: 999px !important;\n    background: #2563eb !important;\n    border: none !important;\n    color: #ffffff !important;\n    font-weight: 700 !important;\n    white-space: nowrap !important;\n    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.28) !important;\n}\n.st-key-floating_approve_step1 button p,\n.st-key-floating_approve_step2 button p,\n.st-key-floating_download_step3 button p {\n    font-size: .92rem !important;\n    font-weight: 700 !important;\n    color: #ffffff !important;\n}\n.st-key-floating_approve_step1 button:hover:not(:disabled),\n.st-key-floating_approve_step2 button:hover:not(:disabled),\n.st-key-floating_download_step3 button:hover:not(:disabled) {\n    background: #1d4ed8 !important;\n    transform: translateY(-1px);\n    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.36) !important;\n}\n.st-key-floating_approve_step1 button:disabled,\n.st-key-floating_approve_step2 button:disabled {\n    background: #94a3b8 !important;\n    box-shadow: none !important;\n    opacity: .85;\n}\n\n/* Native Streamlit widgets — strict #1e3a8a royal navy labels & button text (Images 1-6) */\n[data-testid="stMetric"] { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 1.1rem; }\n[data-testid="stMetricValue"] { font-weight: 800; color: #1e3a8a !important; }\n[data-testid="stAlert"] { border-radius: 12px; border: 1px solid #dbe6f5; }\n[data-testid="stExpander"] { border-radius: 12px !important; background: #ffffff !important; border-color: var(--line) !important; }\n[data-testid="stWidgetLabel"] label,\n[data-testid="stWidgetLabel"] p {\n    font-size: .83rem !important;\n    font-weight: 700 !important;\n    color: #1e3a8a !important;\n}\n.stMarkdown p, .stMarkdown li { line-height: 1.65; color: #334155; }\n.stMarkdown h3 { font-size: 1.2rem !important; font-weight: 800 !important; color: #1e3a8a !important; }\n.stMarkdown h4 { font-size: 1.05rem !important; font-weight: 800 !important; color: #1e3a8a !important; }\n.stMarkdown h5 { font-size: .96rem !important; font-weight: 700 !important; color: #1e3a8a !important; }\n[data-testid="stButton"] button, [data-testid="stDownloadButton"] button {\n    min-height: 41px !important;\n    border-radius: 10px !important;\n    border: 1px solid #d5dfec !important;\n    background: #ffffff !important;\n    color: #1e3a8a !important;\n    font-weight: 700 !important;\n    transition: background-color 160ms, border-color 160ms, box-shadow 160ms, transform 160ms;\n}\n[data-testid="stButton"] button p, [data-testid="stDownloadButton"] button p {\n    font-size: .86rem !important;\n    font-weight: 700 !important;\n    color: #1e3a8a !important;\n}\n[data-testid="stButton"] button:hover:not(:disabled),\n[data-testid="stDownloadButton"] button:hover:not(:disabled) {\n    border-color: #93c5fd !important;\n    background: #f8fbff !important;\n}\n[data-testid="stButton"] button[kind="primary"],\n[data-testid="stDownloadButton"] button[kind="primary"] {\n    background: #2563eb !important;\n    border-color: #2563eb !important;\n    color: #ffffff !important;\n}\n[data-testid="stButton"] button[kind="primary"] p,\n[data-testid="stDownloadButton"] button[kind="primary"] p {\n    color: #ffffff !important;\n    font-weight: 700 !important;\n}\n[data-testid="stButton"] button[kind="primary"]:hover:not(:disabled),\n[data-testid="stDownloadButton"] button[kind="primary"]:hover:not(:disabled) {\n    background: #1d4ed8 !important;\n    border-color: #1d4ed8 !important;\n}\nbutton:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px solid #729cff !important; outline-offset: 2px !important; }\n[data-baseweb="input"], [data-baseweb="select"] > div, [data-baseweb="textarea"] {\n    border-radius: 10px !important;\n    background-color: #ffffff !important;\n    border-color: #d5dfec !important;\n}\n[data-baseweb="select"] span, [data-baseweb="select"] div { color: #1e293b !important; }\n[data-testid="stTextInput"] input, [data-testid="stTextArea"] textarea { font-size: .89rem !important; color: #1e293b !important; }\n[data-testid="stDataFrame"], [data-testid="stDataEditor"] { border-radius: 12px !important; overflow: hidden; border: 1px solid #e2e8f0 !important; }\n\n/* Seamless Step 3 Dashboard Styles — exact royal navy #1e3a8a & clean white cards (Images 5 & 6) */\n.di-dash-root { color: #334155; font-family: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif; }\n.di-dash-root * { box-sizing: border-box; }\n.di-dash-card {\n    background: #ffffff;\n    border: 1px solid #e2e8f0;\n    border-radius: 16px;\n    padding: 20px 22px;\n    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.035);\n    margin-bottom: 16px;\n}\n.di-badge-pill {\n    background: #eff6ff;\n    color: #2563eb !important;\n    border: 1px solid #dbeafe;\n    font-size: .76rem;\n    font-weight: 700;\n    padding: 4px 12px;\n    border-radius: 999px;\n    display: inline-block;\n    white-space: nowrap;\n}\n.di-kpi-grid {\n    display: grid;\n    grid-template-columns: repeat(4, minmax(0, 1fr));\n    gap: 14px;\n    margin-bottom: 16px;\n}\n.di-kpi-box {\n    background: #ffffff;\n    border: 1px solid #e2e8f0;\n    border-radius: 14px;\n    padding: 16px 18px;\n    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.03);\n}\n.di-grid-2 {\n    display: grid;\n    grid-template-columns: 1.2fr 1fr;\n    gap: 16px;\n    margin-bottom: 16px;\n}\n.di-chart-caption {\n    margin-top: 14px;\n    padding: 11px 14px;\n    background: #f5f9ff;\n    border-left: 3.5px solid #2563eb;\n    border-radius: 0 10px 10px 0;\n    font-size: .84rem;\n    color: #334155;\n    line-height: 1.55;\n}\n.di-table-wrap { overflow-x: auto; border: 1px solid #e5edf7; border-radius: 12px; }\n.di-table { width: 100%; border-collapse: collapse; min-width: 560px; }\n.di-table th {\n    padding: 11px 14px;\n    text-align: left;\n    font-size: .8rem;\n    font-weight: 700;\n    color: #1e3a8a !important;\n    background: #f4f8ff;\n    border-bottom: 1px solid #dbe6f5;\n}\n.di-table td {\n    padding: 11px 14px;\n    font-size: .85rem;\n    color: #334155;\n    border-bottom: 1px solid #eef2f7;\n    font-weight: 500;\n}\n.di-table tr:last-child td { border-bottom: 0; }\n.di-table td.rank-col { color: #1d4ed8 !important; font-weight: 700; }\n.di-table td.group-col { color: #1e3a8a !important; font-weight: 700; }\n\n.more-groups-btn { color: #2563eb; cursor: pointer; }\n.inline-groups-details { display: inline-block; }\n.more-groups-expanded { padding: .75rem; background: #eff5ff; border: 1px solid #dbe5f6; border-radius: 8px; }\n\n@keyframes page-in { from { opacity: .7; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }\n.page-heading { animation: page-in 260ms ease-out both; }\n\n@media (max-width: 960px) {\n    .di-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }\n    .di-grid-2 { grid-template-columns: minmax(0, 1fr); }\n}\n@media (max-width: 767px) {\n    [data-testid="stMainBlockContainer"] { padding: 0 0.9rem 5.5rem !important; }\n    .st-key-top_wizard_bar [data-testid="stHorizontalBlock"] { flex-wrap: nowrap; gap: .2rem; }\n    .st-key-top_wizard_bar [data-testid="stColumn"] { min-width: 0; flex: 1 1 0; width: 33%; }\n    .st-key-top_wizard_bar button { padding: .45rem .25rem !important; }\n    .st-key-top_wizard_bar button p { font-size: .76rem !important; }\n    .st-key-zone_upload_left, .st-key-zone_gsheet_right, .st-key-zone_biz_context,\n    .st-key-zone_step1_table, .st-key-zone_step2_audit_card, .st-key-zone_step2_workspace { padding: 1rem !important; }\n    .st-key-source_divider { display: none; }\n    .st-key-floating_approve_step1,\n    .st-key-floating_approve_step2,\n    .st-key-floating_download_step3 { right: 14px !important; bottom: 18px !important; }\n    .st-key-floating_approve_step1 button,\n    .st-key-floating_approve_step2 button,\n    .st-key-floating_download_step3 button { padding: 0 18px !important; min-height: 42px !important; }\n    .di-kpi-grid { grid-template-columns: minmax(0, 1fr); }\n}\n@media (prefers-reduced-motion: reduce) {\n    *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }\n}\n'
+
+def _builtin_clean_ui_text(value: str) -> str:
+    return _ui_re.sub(r"[\U0001f000-\U0001faff\u2600-\u27bf\u2b00-\u2bff\u23f3\ufe0f\u200d]", "", str(value)).strip()
+
+def _builtin_markup(content: str):
+    st.markdown(_ui_dedent(content).strip(), unsafe_allow_html=True)
+
+def _builtin_load_styles():
+    css_path = _UiPath(__file__).parent / "assets" / "styles.css"
+    css = ""
+    if css_path.exists():
+        _raw_css = css_path.read_text(encoding="utf-8")
+        if "DI_THEME_V3" in _raw_css:
+            css = _raw_css
+    if not css:
+        css = _FALLBACK_STYLES_CSS
+    st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
+
+def _builtin_render_brand():
+    _builtin_markup("""
+        <div class="brand"><div class="brand-symbol" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div><strong style="color:#1e3a8a !important;">Data Insight</strong><span>KHÔNG GIAN PHÂN TÍCH</span></div></div>
+    """)
+
+def _builtin_render_header(step: int, file_count: int):
+    step_labels = [
+        "Tổng quan",
+        "Bước 1 · Nhập dữ liệu",
+        "Bước 2 · Làm sạch dữ liệu",
+        "Bước 3 · Báo cáo & Dashboard",
+    ]
+    label = step_labels[step] if 0 <= step < len(step_labels) else step_labels[0]
+    chip_cls = "session-chip has-files" if file_count > 0 else "session-chip"
+    _builtin_markup(f"""
+        <div class="app-topline">
+            <span class="step-pill-badge" style="color:#1e3a8a !important;">{_ui_escape(label)}</span>
+            <span class="{chip_cls}"><i class="chip-dot"></i>{file_count} tệp đã nạp</span>
+        </div>
+    """)
+
+def _builtin_render_page_title(eyebrow: str, title: str, description: str):
+    _builtin_markup(f"""
+        <div class="page-heading">
+            <span class="eyebrow" style="color:#2563eb !important;font-weight:800 !important;">{_ui_escape(eyebrow)}</span>
+            <h1 style="color:#1e3a8a !important;font-weight:800 !important;">{_ui_escape(title)}</h1>
+            <p style="color:#64748b !important;">{_ui_escape(description)}</p>
+        </div>
+    """)
 
 try:
-    from ui import clean_ui_text, load_styles as _ui_load_styles, markup, render_brand, render_header, render_page_title
-
-    def load_styles():
-        css_path = _UiPath(__file__).parent / "assets" / "styles.css"
-        if css_path.exists():
-            _ui_load_styles()
-        else:
-            st.markdown(f"<style>{_FALLBACK_STYLES_CSS}</style>", unsafe_allow_html=True)
+    import ui as _ui_mod
+    if getattr(_ui_mod, "_UI_VERSION", 0) >= 3:
+        clean_ui_text = _ui_mod.clean_ui_text
+        markup = _ui_mod.markup
+        render_brand = _ui_mod.render_brand
+        render_header = _ui_mod.render_header
+        render_page_title = _ui_mod.render_page_title
+        load_styles = _builtin_load_styles
+    else:
+        clean_ui_text = _builtin_clean_ui_text
+        markup = _builtin_markup
+        load_styles = _builtin_load_styles
+        render_brand = _builtin_render_brand
+        render_header = _builtin_render_header
+        render_page_title = _builtin_render_page_title
 except Exception:
-    def clean_ui_text(value: str) -> str:
-        return _ui_re.sub(r"[\U0001f000-\U0001faff\u2600-\u27bf\u2b00-\u2bff\u23f3\ufe0f\u200d]", "", str(value)).strip()
-
-    def markup(content: str):
-        st.markdown(_ui_dedent(content).strip(), unsafe_allow_html=True)
-
-    def load_styles():
-        css_path = _UiPath(__file__).parent / "assets" / "styles.css"
-        css = css_path.read_text(encoding="utf-8") if css_path.exists() else _FALLBACK_STYLES_CSS
-        st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
-
-    def render_brand():
-        markup("""
-            <div class="brand"><div class="brand-symbol" aria-hidden="true"><i></i><i></i><i></i></div>
-            <div><strong>Data Insight</strong><span>KHÔNG GIAN PHÂN TÍCH</span></div></div>
-        """)
-
-    def render_header(step: int, file_count: int):
-        step_labels = [
-            "Tổng quan",
-            "Bước 1 · Nhập dữ liệu",
-            "Bước 2 · Làm sạch dữ liệu",
-            "Bước 3 · Báo cáo & Dashboard",
-        ]
-        label = step_labels[step] if 0 <= step < len(step_labels) else step_labels[0]
-        chip_cls = "session-chip has-files" if file_count > 0 else "session-chip"
-        markup(f"""
-            <div class="app-topline">
-                <span class="step-pill-badge">{_ui_escape(label)}</span>
-                <span class="{chip_cls}"><i class="chip-dot"></i>{file_count} tệp đã nạp</span>
-            </div>
-        """)
-
-    def render_page_title(eyebrow: str, title: str, description: str):
-        markup(f"""
-            <div class="page-heading"><span class="eyebrow">{_ui_escape(eyebrow)}</span>
-            <h1>{_ui_escape(title)}</h1><p>{_ui_escape(description)}</p></div>
-        """)
+    clean_ui_text = _builtin_clean_ui_text
+    markup = _builtin_markup
+    load_styles = _builtin_load_styles
+    render_brand = _builtin_render_brand
+    render_header = _builtin_render_header
+    render_page_title = _builtin_render_page_title
 
 _W_STRETCH = {"width": "stretch"} if "width" in inspect.signature(st.button).parameters else {"use_container_width": True}
 from agents.orchestrator import AgentOrchestrator
@@ -488,7 +511,7 @@ if step != 0:
     load_styles()
 
     with st.container(key="workspace_topbar"):
-        header_area, settings_area = st.columns([5, 1.1], vertical_alignment="center")
+        header_area, settings_area = st.columns([5.8, 1.0], vertical_alignment="center")
         with header_area:
             render_header(step, len(orch.data_agent.raw_dataframes))
         with settings_area:
@@ -1307,7 +1330,7 @@ try:
                         st.error(f"**Lỗi đọc tệp '{item['file']}':** {clean_ui_text(item['msg'])}\n\n* Hướng dẫn khắc phục: Kiểm tra xem tệp có đang mở hoặc bị khóa bởi phần mềm khác không, hoặc lưu lại tệp dưới định dạng chuẩn CSV (UTF-8) / Excel (.xlsx).*")
 
         with st.container(key="zone_biz_context"):
-            markup('<div class="context-heading"><h2>Bối cảnh doanh nghiệp</h2><p>Thêm thông tin để báo cáo tập trung vào điều bạn cần biết.</p></div>')
+            markup('<div class="context-heading"><h2 style="color:#1e3a8a !important;font-weight:800 !important;">Bối cảnh doanh nghiệp</h2><p style="color:#64748b !important;">Thêm thông tin để báo cáo tập trung vào điều bạn cần biết.</p></div>')
             col_ctx1, col_ctx2 = st.columns([1, 1.6], gap="large")
             with col_ctx1:
                 st.text_input(
@@ -1330,7 +1353,7 @@ try:
                 )
 
             with st.container(key="context_actions"):
-                ctx_action, ctx_help = st.columns([1.1, 2.5], gap="medium")
+                ctx_action, ctx_help = st.columns([0.75, 3.25], gap="medium")
                 with ctx_action:
                     if st.button("Gợi ý từ dữ liệu", key="btn_ai_suggest_ctx", **_W_STRETCH, disabled=not has_loaded_files):
                         if has_loaded_files:
@@ -1406,7 +1429,7 @@ try:
                 col_s1_hdr, col_s1_sel = st.columns([2.5, 1.35], vertical_alignment="center")
                 with col_s1_hdr:
                     markup(
-                        f'<div style="font-size:1.12rem;font-weight:800;color:#0f2447;margin-bottom:2px;">Xem và chỉnh sửa dữ liệu</div>'
+                        f'<div style="font-size:1.12rem;font-weight:800;color:#1e3a8a;margin-bottom:2px;">Xem và chỉnh sửa dữ liệu</div>'
                         f'<div style="font-size:0.83rem;color:#64748b;">Nhấp vào ô bất kỳ để sửa trực tiếp ({len(_s1_preview_df):,} dòng × {len(_s1_preview_df.columns)} cột)</div>'
                     )
                 with col_s1_sel:
@@ -1424,7 +1447,11 @@ try:
                     s1_slice = s1_view_df[display_cols]
                     s1_edited = st.data_editor(s1_slice, **_W_STRETCH, num_rows="dynamic", height=440, key=f"s1_editor_{s1_chosen_file}")
 
-                col_s1_save, col_s1_apply_filter, col_s1_hint = st.columns([0.9, 1.3, 2.8], vertical_alignment="center")
+                if s1_is_filtered:
+                    col_s1_save, col_s1_apply_filter, col_s1_hint = st.columns([0.85, 1.35, 2.3], vertical_alignment="center")
+                else:
+                    col_s1_save, col_s1_hint = st.columns([0.85, 3.65], vertical_alignment="center")
+                    col_s1_apply_filter = None
                 with col_s1_hint:
                     st.caption("Nhấp trực tiếp vào ô bất kỳ để chỉnh sửa nội dung.")
                 with col_s1_save:
@@ -1452,8 +1479,8 @@ try:
                             st.rerun()
                         except Exception:
                             st.error("Không thể lưu thay đổi. Vui lòng kiểm tra định dạng dữ liệu vừa nhập.")
-                with col_s1_apply_filter:
-                    if s1_is_filtered:
+                if col_s1_apply_filter is not None:
+                    with col_s1_apply_filter:
                         if st.button("Chỉ giữ các dòng đang lọc", **_W_STRETCH, key="btn_keep_filtered_step1"):
                             orch.data_agent.raw_dataframes[s1_chosen_file] = s1_view_df.reset_index(drop=True)
                             st.session_state["_detect_issues_cache"] = {}
@@ -1495,7 +1522,7 @@ try:
 
             with top_bar_c2:
                 total_records = sum(len(df) for df in orch.data_agent.raw_dataframes.values())
-                st.markdown(f"<div style='padding-bottom:10px; font-size:0.93rem; color:#0f2447;'><b>{total_rows:,} dòng × {len(df_current.columns)} cột</b></div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='padding-bottom:10px; font-size:0.93rem; color:#1e3a8a;'><b>{total_rows:,} dòng × {len(df_current.columns)} cột</b></div>", unsafe_allow_html=True)
 
             with top_bar_c3:
                 csv_clean_bytes = df_current.to_csv(index=False).encode("utf-8-sig")
@@ -1603,7 +1630,7 @@ try:
                                         Cần phê duyệt trước khi phân tích
                                     </span>
                                 </div>
-                                <div style="font-size:1.45rem; font-weight:800; color:#0f172a; letter-spacing:-0.02em; margin-bottom:2px;">
+                                <div style="font-size:1.35rem; font-weight:800; color:#1e3a8a; letter-spacing:-0.02em; margin-bottom:2px;">
                                     Kiểm tra &amp; Xử lý lỗi dữ liệu
                                 </div>
                                 <div style="font-size:0.88rem; color:#475569; line-height:1.45; margin-bottom:10px;">
@@ -1724,10 +1751,11 @@ try:
                                             box-shadow: none !important;
                                             outline: none !important;
                                         }}
-                                        .st-key-{sug_box_key} div[data-testid="stTextInput"] label {{
-                                            font-size: 0.78rem !important;
-                                            font-weight: 700 !important;
-                                            color: #1e3a8a !important;
+                                        .st-key-{sug_box_key} div[data-testid="stTextInput"] label,
+                                        .st-key-{sug_box_key} div[data-testid="stTextInput"] label p {{
+                                            font-size: 0.73rem !important;
+                                            font-weight: 600 !important;
+                                            color: #64748b !important;
                                             margin-bottom: 0 !important;
                                         }}
                                         .st-key-{sug_box_key} input {{
@@ -1757,12 +1785,12 @@ try:
                                         border-radius: 16px !important;
                                         padding: 12px 18px !important;
                                         margin-top: 4px !important;
-                                        box-shadow: 0 10px 24px -6px rgba(15, 23, 42, 0.08), 0 4px 8px -2px rgba(15, 23, 42, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
+                                        box-shadow: 0 1px 4px rgba(30, 58, 138, 0.04) !important;
                                     }
                                     .st-key-btn_toggle_pv_s2 button {
-                                        background: #eff6ff !important;
-                                        color: #2563eb !important;
-                                        border: 1px solid #bfdbfe !important;
+                                        background: #ffffff !important;
+                                        color: #1e3a8a !important;
+                                        border: 1px solid #cbd5e1 !important;
                                         border-radius: 999px !important;
                                         font-weight: 700 !important;
                                         font-size: 0.82rem !important;
@@ -2653,11 +2681,11 @@ try:
                 sub_lbl = f"TB: {_fmt_num(r['mean'])}" if additive else f"Median: {_fmt_num(r['median'])}"
                 bars_g1_html += f"""
                 <div style="flex:1; display:flex; flex-direction:column; align-items:center; min-width:{col_min_w};">
-                    <div style="font-weight:800; color:#1e293b; font-size:0.80rem; margin-bottom:6px; white-space:nowrap;">{_fmt_num(val_main)}</div>
-                    <div style="width:{bar_w}; height:145px; background:#e2e8f0; border-radius:10px; display:flex; align-items:flex-end; overflow:hidden;">
-                        <div style="width:100%; height:{h_pct}%; background:linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%); border-radius:10px;"></div>
+                    <div style="font-weight:800; color:#1e3a8a; font-size:0.82rem; margin-bottom:6px; white-space:nowrap;">{_fmt_num(val_main)}</div>
+                    <div style="width:{bar_w}; height:145px; background:#e6edf7; border-radius:10px; display:flex; align-items:flex-end; overflow:hidden;">
+                        <div style="width:100%; height:{h_pct}%; background:linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%); border-radius:9px;"></div>
                     </div>
-                    <div style="font-weight:700; color:#334155; font-size:0.80rem; margin-top:8px; text-align:center; word-break:break-word;">{_html_lib.escape(str(r['Nhóm']))}</div>
+                    <div style="font-weight:700; color:#1e3a8a; font-size:0.80rem; margin-top:8px; text-align:center; word-break:break-word;">{_html_lib.escape(str(r['Nhóm']))}</div>
                     <div style="font-size:0.71rem; color:#64748b; white-space:nowrap;">{sub_lbl}</div>
                 </div>
                 """
@@ -2837,7 +2865,7 @@ try:
 <div class="di-dash-root">
 <div class="di-dash-card" style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;">
 <div>
-<div style="font-size:1.18rem;font-weight:800;color:#0f2447;">{_html_lib.escape(title)}</div>
+<div style="font-size:1.18rem;font-weight:800;color:#1e3a8a;">{_html_lib.escape(title)}</div>
 <div style="font-size:0.84rem;color:#64748b;margin-top:4px;">Phân tích tự động 100% từ dữ liệu thực tế ({total_records_all:,} dòng × {len(df_all.columns)} cột · Chỉ số: <b style="color:#1e293b;">{_html_lib.escape(selected_metric)}</b> · Chiều chính: <b style="color:#1e293b;">{_html_lib.escape(selected_dim1)}</b>)</div>
 </div>
 <span class="di-badge-pill">{time_badge}</span>
@@ -2845,22 +2873,22 @@ try:
 <div class="di-kpi-grid">
 <div class="di-kpi-box">
 <div style="font-size:0.79rem;color:#64748b;font-weight:600;">{_html_lib.escape(kpi1_title)}</div>
-<div style="font-size:1.48rem;font-weight:800;color:#0f2447;margin:6px 0 4px 0;">{kpi1_val}</div>
+<div style="font-size:1.48rem;font-weight:800;color:#1e3a8a;margin:6px 0 4px 0;">{kpi1_val}</div>
 <div style="font-size:0.77rem;color:#2563eb;font-weight:600;">Trên {total_records_all:,} bản ghi hợp lệ</div>
 </div>
 <div class="di-kpi-box">
 <div style="font-size:0.79rem;color:#64748b;font-weight:600;">{_html_lib.escape(kpi2_title)}</div>
-<div style="font-size:1.48rem;font-weight:800;color:#0f2447;margin:6px 0 4px 0;">{kpi2_val}</div>
+<div style="font-size:1.48rem;font-weight:800;color:#1e3a8a;margin:6px 0 4px 0;">{kpi2_val}</div>
 <div style="font-size:0.77rem;color:#2563eb;font-weight:600;">Min: {_fmt_num(bundle['grand_min'])} · Max: {_fmt_num(bundle['grand_max'])}</div>
 </div>
 <div class="di-kpi-box">
 <div style="font-size:0.79rem;color:#64748b;font-weight:600;">Nhóm dẫn đầu ({_html_lib.escape(selected_dim1)})</div>
-<div style="font-size:1.48rem;font-weight:800;color:#0f2447;margin:6px 0 4px 0;">{_html_lib.escape(str(top_g['Nhóm']))}</div>
+<div style="font-size:1.48rem;font-weight:800;color:#1e3a8a;margin:6px 0 4px 0;">{_html_lib.escape(str(top_g['Nhóm']))}</div>
 <div style="font-size:0.77rem;color:#2563eb;font-weight:600;">{top_val_txt}</div>
 </div>
 <div class="di-kpi-box">
 <div style="font-size:0.79rem;color:#64748b;font-weight:600;">Biến động / Quy mô nhóm</div>
-<div style="font-size:1.48rem;font-weight:800;color:#0f2447;margin:6px 0 4px 0;">{growth_kpi_txt}</div>
+<div style="font-size:1.48rem;font-weight:800;color:#1e3a8a;margin:6px 0 4px 0;">{growth_kpi_txt}</div>
 <div style="font-size:0.77rem;color:#2563eb;font-weight:600;">{_html_lib.escape(growth_kpi_sub)}</div>
 </div>
 </div>
@@ -2868,7 +2896,7 @@ try:
 <div class="di-dash-card" style="margin-bottom:0;display:flex;flex-direction:column;justify-content:space-between;">
 <div>
 <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;">
-<span style="font-size:0.98rem;font-weight:800;color:#0f2447;">Biểu đồ so sánh {_html_lib.escape(selected_metric)} theo {_html_lib.escape(selected_dim1)}</span>
+<span style="font-size:0.98rem;font-weight:800;color:#1e3a8a;">Biểu đồ so sánh {_html_lib.escape(selected_metric)} theo {_html_lib.escape(selected_dim1)}</span>
 <span class="di-badge-pill">{len(g1_plot)}/{len(g1)} nhóm</span>
 </div>
 <div style="display:flex;justify-content:space-around;align-items:flex-end;padding:16px 12px;background:#f8fbff;border-radius:14px;gap:8px;overflow-x:auto;">
@@ -2880,13 +2908,13 @@ try:
 <div class="di-dash-card" style="margin-bottom:0;display:flex;flex-direction:column;justify-content:space-between;">
 <div>
 <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
-<span style="font-size:0.98rem;font-weight:800;color:#0f2447;">{_html_lib.escape(donut_title)}</span>
+<span style="font-size:0.98rem;font-weight:800;color:#1e3a8a;">{_html_lib.escape(donut_title)}</span>
 <span class="di-badge-pill">Cơ cấu %</span>
 </div>
 <div style="display:flex;flex-direction:column;align-items:center;margin:16px 0 8px 0;">
 <div style="width:142px;height:142px;border-radius:50%;background:conic-gradient({conic_css});display:flex;align-items:center;justify-content:center;">
 <div style="width:88px;height:88px;border-radius:50%;background:#ffffff;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-<span style="font-weight:800;font-size:1.05rem;color:#0f2447;">100%</span>
+<span style="font-weight:800;font-size:1.05rem;color:#1e3a8a;">100%</span>
 <span style="font-size:0.74rem;color:#64748b;">{len(g1)} nhóm</span>
 </div>
 </div>
@@ -2900,7 +2928,7 @@ try:
 <div class="di-dash-card" style="margin-bottom:0;display:flex;flex-direction:column;justify-content:space-between;">
 <div>
 <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;">
-<span style="font-size:0.98rem;font-weight:800;color:#0f2447;">Phân tích chi tiết theo {_html_lib.escape(selected_dim1)}</span>
+<span style="font-size:0.98rem;font-weight:800;color:#1e3a8a;">Phân tích chi tiết theo {_html_lib.escape(selected_dim1)}</span>
 <span class="di-badge-pill">Chiều phân nhóm chính</span>
 </div>
 {primary_bars_html}
@@ -2911,7 +2939,7 @@ try:
 <div class="di-dash-card" style="margin-bottom:0;display:flex;flex-direction:column;justify-content:space-between;">
 <div>
 <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;">
-<span style="font-size:0.98rem;font-weight:800;color:#0f2447;">{_html_lib.escape(right_panel_title)}</span>
+<span style="font-size:0.98rem;font-weight:800;color:#1e3a8a;">{_html_lib.escape(right_panel_title)}</span>
 <span class="di-badge-pill">{time_badge}</span>
 </div>
 {right_panel_html}
@@ -2921,7 +2949,7 @@ try:
 </div>
 <div class="di-dash-card">
 <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;">
-<span style="font-size:1.02rem;font-weight:800;color:#0f2447;">Bảng tổng hợp số liệu chi tiết theo {_html_lib.escape(selected_dim1)}</span>
+<span style="font-size:1.02rem;font-weight:800;color:#1e3a8a;">Bảng tổng hợp số liệu chi tiết theo {_html_lib.escape(selected_dim1)}</span>
 <span class="di-badge-pill">Số liệu gốc 100%</span>
 </div>
 <div class="di-table-wrap">
@@ -2933,14 +2961,14 @@ try:
 </div>
 <div class="di-dash-card">
 <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;">
-<span style="font-size:1.02rem;font-weight:800;color:#0f2447;">Phân tích chi tiết dữ liệu</span>
+<span style="font-size:1.02rem;font-weight:800;color:#1e3a8a;">Phân tích chi tiết dữ liệu</span>
 <span class="di-badge-pill">100% từ dữ liệu gốc</span>
 </div>
 {_md_to_clean_html(rep_md)}
 </div>
 <div class="di-dash-card">
 <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;">
-<span style="font-size:1.02rem;font-weight:800;color:#0f2447;">Đề xuất hành động dựa trên dữ liệu</span>
+<span style="font-size:1.02rem;font-weight:800;color:#1e3a8a;">Đề xuất hành động dựa trên dữ liệu</span>
 <span class="di-badge-pill">Bám sát dữ liệu gốc</span>
 </div>
 {_md_to_clean_html(pln_md)}
@@ -2970,7 +2998,7 @@ body {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', san
 .di-table td {{ padding: 11px 14px; font-size: 0.85rem; color: #1e293b; border-bottom: 1px solid #eef2f7; font-weight: 500; }}
 .di-table tr:last-child td {{ border-bottom: 0; }}
 .di-table td.rank-col {{ color: #1d4ed8; font-weight: 700; }}
-.di-table td.group-col {{ color: #0f2447; font-weight: 700; }}
+.di-table td.group-col {{ color: #1e3a8a; font-weight: 700; }}
 @media (max-width: 900px) {{ .di-kpi-grid {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }} .di-grid-2 {{ grid-template-columns: minmax(0, 1fr); }} }}
 @media (max-width: 520px) {{ body {{ padding: 10px; }} .di-kpi-grid {{ grid-template-columns: minmax(0, 1fr); }} }}
 </style>

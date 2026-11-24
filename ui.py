@@ -7,6 +7,8 @@ from textwrap import dedent
 
 import streamlit as st
 
+_UI_VERSION = 3
+
 
 def clean_ui_text(value: str) -> str:
     """Remove legacy emoji from status messages without changing stored data."""
@@ -27,7 +29,7 @@ def load_styles():
 def render_brand():
     markup('''
         <div class="brand"><div class="brand-symbol" aria-hidden="true"><i></i><i></i><i></i></div>
-        <div><strong>Data Insight</strong><span>KHÔNG GIAN PHÂN TÍCH</span></div></div>
+        <div><strong style="color:#1e3a8a !important;">Data Insight</strong><span>KHÔNG GIAN PHÂN TÍCH</span></div></div>
     ''')
 
 
@@ -42,7 +44,7 @@ def render_header(step: int, file_count: int):
     chip_cls = "session-chip has-files" if file_count > 0 else "session-chip"
     markup(f'''
         <div class="app-topline">
-            <span class="step-pill-badge">{escape(label)}</span>
+            <span class="step-pill-badge" style="color:#1e3a8a !important;">{escape(label)}</span>
             <span class="{chip_cls}"><i class="chip-dot"></i>{file_count} tệp đã nạp</span>
         </div>
     ''')
@@ -50,6 +52,9 @@ def render_header(step: int, file_count: int):
 
 def render_page_title(eyebrow: str, title: str, description: str):
     markup(f'''
-        <div class="page-heading"><span class="eyebrow">{escape(eyebrow)}</span>
-        <h1>{escape(title)}</h1><p>{escape(description)}</p></div>
+        <div class="page-heading">
+            <span class="eyebrow" style="color:#2563eb !important;font-weight:800 !important;">{escape(eyebrow)}</span>
+            <h1 style="color:#1e3a8a !important;font-weight:800 !important;">{escape(title)}</h1>
+            <p style="color:#64748b !important;">{escape(description)}</p>
+        </div>
     ''')
