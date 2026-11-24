@@ -823,8 +823,8 @@ def _render_column_delete_bar(df_cur: pd.DataFrame, display_cols: list, filename
                 user-select: none;
             }}
             .corner {{
-                width: 44px;
-                min-width: 44px;
+                width: 37px;
+                min-width: 37px;
                 height: 100%;
                 border-right: 1px solid #e5e7eb;
                 background: #f5f6f8;
@@ -1669,12 +1669,13 @@ try:
                 )
                 _s1_del_cols = _render_column_delete_bar(s1_df_cur, display_cols, s1_chosen_file, f"s1_{s1_chosen_file}", orch)
 
+                _s1_col_cfg = {c: st.column_config.Column(width="medium") for c in display_cols}
                 if len(s1_view_df) > 1000:
                     s1_slice = s1_view_df[display_cols].iloc[:500]
-                    s1_edited = st.data_editor(s1_slice, **_W_STRETCH, num_rows="dynamic", height=500, key=f"s1_editor_{s1_chosen_file}")
+                    s1_edited = st.data_editor(s1_slice, column_config=_s1_col_cfg, **_W_STRETCH, num_rows="dynamic", height=500, key=f"s1_editor_{s1_chosen_file}")
                 else:
                     s1_slice = s1_view_df[display_cols]
-                    s1_edited = st.data_editor(s1_slice, **_W_STRETCH, num_rows="dynamic", height=440, key=f"s1_editor_{s1_chosen_file}")
+                    s1_edited = st.data_editor(s1_slice, column_config=_s1_col_cfg, **_W_STRETCH, num_rows="dynamic", height=440, key=f"s1_editor_{s1_chosen_file}")
                 _bind_column_delete_key(_s1_del_cols, s1_df_cur, s1_chosen_file, f"s1_{s1_chosen_file}", orch)
 
                 _s1_undo_cnt = len(st.session_state.get("_df_undo_stack", {}).get(s1_chosen_file, []))
@@ -2122,10 +2123,12 @@ try:
                         df_current, f"s2_{selected_file}"
                     )
                     _s2_del_cols = _render_column_delete_bar(df_current, s2_display_cols, selected_file, f"s2_{selected_file}", orch)
+                    _s2_col_cfg = {c: st.column_config.Column(width="medium") for c in s2_display_cols}
                     if len(s2_view_df) > 1000:
                         df_slice = s2_view_df[s2_display_cols].iloc[:500]
                         edited_slice = st.data_editor(
                             df_slice,
+                            column_config=_s2_col_cfg,
                             **_W_STRETCH,
                             num_rows="dynamic",
                             height=540,
@@ -2135,6 +2138,7 @@ try:
                         st.caption("Nhấp đúp vào ô bất kỳ để sửa trực tiếp, sau đó bấm nút **Lưu Dữ Liệu Đã Sửa** hoặc **Làm Sạch & Chuẩn Hóa** bên dưới:")
                         edited_slice = st.data_editor(
                             s2_view_df[s2_display_cols],
+                            column_config=_s2_col_cfg,
                             **_W_STRETCH,
                             num_rows="dynamic",
                             height=500,
